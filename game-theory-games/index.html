@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Theory Playground</title>
+<style>
+:root {
+  --bg: #080812;
+  --surface: #12121e;
+  --border: rgba(120,80,255,0.2);
+  --accent: #7c4dff;
+  --accent2: #00e5ff;
+  --text: #e8e8f0;
+  --text-dim: #888899;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+}
+.grid-bg {
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(124,77,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,77,255,.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.orb { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; opacity:.12; }
+.orb-1 { width:500px; height:500px; background:var(--accent); top:-150px; left:-150px; }
+.orb-2 { width:400px; height:400px; background:var(--accent2); bottom:-100px; right:-100px; }
+.container { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:40px 20px; }
+.hero { text-align:center; padding:60px 0 50px; }
+.hero h1 {
+  font-size:3.2rem; font-weight:900; line-height:1.1; margin-bottom:16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero p { font-size:1.05rem; color:var(--text-dim); max-width:520px; margin:0 auto; line-height:1.7; }
+.games { display:grid; grid-template-columns:1fr; gap:20px; margin:40px 0; }
+.game-entry {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text);
+  transition: all .25s;
+}
+.game-entry:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 40px rgba(124,77,255,.2);
+}
+.ge-icon { font-size: 3rem; }
+.ge-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+.ge-desc { font-size: .88rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 10px; }
+.ge-tags { display:flex; gap:8px; flex-wrap:wrap; }
+.tag {
+  padding: 3px 10px; border-radius: 20px; font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; background: rgba(124,77,255,.12);
+  color: var(--accent); border: 1px solid rgba(124,77,255,.25);
+}
+.ge-arrow {
+  font-size: 1.4rem; color: var(--text-dim);
+  transition: transform .2s, color .2s;
+}
+.game-entry:hover .ge-arrow { transform: translateX(5px); color: var(--accent2); }
+.footer {
+  text-align: center; padding: 40px 0 20px;
+  font-size: .82rem; color: var(--text-dim); line-height: 1.8;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+@media(max-width:580px) {
+  .hero h1 { font-size:2.2rem; }
+  .game-entry { grid-template-columns: auto 1fr; }
+  .ge-arrow { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="container">
+  <div class="hero">
+    <h1>Game Theory<br>Playground</h1>
+    <p>Interactive simulations of the most famous thought experiments in game theory — from cooperation and betrayal to fairness, free-riding, and the traps of sunk costs.</p>
+  </div>
+
+  <div class="games">
+    <a class="game-entry" href="game-theory-arena.html">
+      <div class="ge-icon">⚔️</div>
+      <div>
+        <div class="ge-title">Game Theory Arena</div>
+        <p class="ge-desc">The three classics: Prisoner's Dilemma, Stag Hunt, and Chicken. Choose your strategy, pick an opponent, and play 5 rounds to see how cooperation and betrayal unfold.</p>
+        <div class="ge-tags">
+          <span class="tag">Prisoner's Dilemma</span>
+          <span class="tag">Stag Hunt</span>
+          <span class="tag">Chicken</span>
+        </div>
+      </div>
+      <div class="ge-arrow">→</div>
+    </a>
+
+    <a class="game-entry" href="game-theory-lab2.html">
+      <div class="ge-icon">🧪</div>
+      <div>
+        <div class="ge-title">Game Theory Lab II</div>
+        <p class="ge-desc">Four deeper games: the Ultimatum Game (fairness vs rationality), Public Goods (free-rider problem), Keynesian Beauty Contest (iterated reasoning), and the Dollar Auction (sunk-cost trap).</p>
+        <div class="ge-tags">
+          <span class="tag">Ultimatum</span>
+          <span class="tag">Public Goods</span>
+          <span class="tag">Beauty Contest</span>
+          <span class="tag">Dollar Auction</span>
+        </div>
+      </div>
+      <div class="ge-arrow">→</div>
+    </a>
+
+    <a class="game-entry" href="evolution-of-trust.html">
+      <div class="ge-icon">🔬</div>
+      <div>
+        <div class="ge-title">Evolution of Trust</div>
+        <p class="ge-desc">Watch strategies evolve over generations. Which approach — cooperate, defect, copy, or punish — survives the long game? A simulation of how trust emerges (or collapses) in populations.</p>
+        <div class="ge-tags">
+          <span class="tag">Evolution</span>
+          <span class="tag">Simulation</span>
+          <span class="tag">Iterated</span>
+        </div>
+      </div>
+      <div class="ge-arrow">→</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    Built with vanilla HTML, CSS, and JavaScript — no dependencies.<br>
+    Each game runs entirely in your browser.
+  </div>
+</div>
+</body>
+</html>

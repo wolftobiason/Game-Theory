@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Musk Horizon — Path to Multiplanetary Civilization</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050505;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;overflow:hidden;height:100vh}
+#starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
+#particles{position:fixed;inset:0;z-index:50;pointer-events:none}
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);background:rgba(5,5,5,0.85);border-bottom:1px solid rgba(255,255,255,0.06);height:64px;display:flex;align-items:center;padding:0 20px;gap:12px}
+#era-tabs{display:flex;gap:3px;flex:1;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+#era-tabs::-webkit-scrollbar{display:none}
+.era-tab{padding:5px 12px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;transition:all .2s;color:rgba(255,255,255,0.45);white-space:nowrap;border:1px solid transparent;background:none}
+.era-tab:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.06)}
+.era-tab.active{color:#fff;background:rgba(227,6,19,0.18);border-color:rgba(227,6,19,0.35)}
+#search-input{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;padding:6px 12px;font-size:13px;outline:none;width:160px;transition:all .25s;flex-shrink:0}
+#search-input:focus{background:rgba(255,255,255,0.1);border-color:rgba(0,200,255,0.4);width:200px}
+#search-input::placeholder{color:rgba(255,255,255,0.28)}
+#accel-btn{flex-shrink:0;background:rgba(227,6,19,0.14);border:1px solid rgba(227,6,19,0.3);color:#E30613;padding:6px 13px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;letter-spacing:.02em}
+#accel-btn:hover{background:rgba(227,6,19,0.25)}
+#accel-btn.active{background:rgba(227,6,19,0.3);box-shadow:0 0 16px rgba(227,6,19,0.3)}
+#tree-wrap{position:fixed;top:64px;bottom:68px;left:0;right:0;overflow:auto;z-index:10}
+#tree-wrap::-webkit-scrollbar{height:3px;width:3px}
+#tree-wrap::-webkit-scrollbar-track{background:transparent}
+#tree-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}
+#tree-inner{position:relative;width:2820px;height:1060px}
+#conn-svg{position:absolute;top:0;left:0;width:2820px;height:1060px;pointer-events:none}
+#nodes-layer{position:absolute;top:0;left:0;width:100%;height:100%}
+.nc{position:absolute;width:198px;border-radius:15px;padding:15px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);backdrop-filter:blur(8px);cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,opacity .35s,border-color .3s;user-select:none}
+.nc:hover{transform:scale(1.055) translateY(-2px)}
+.nc.locked{opacity:.28;cursor:default}
+.nc.locked:hover{transform:none}
+.nc.unlocked{border-color:rgba(227,6,19,0.28);background:rgba(227,6,19,0.04)}
+.nc.researched{box-shadow:0 0 18px rgba(0,200,255,0.12),0 4px 20px rgba(0,0,0,0.5)}
+.nc.dimmed{opacity:.15!important}
+.nc-icon{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.nc-icon-box{padding:7px;border-radius:9px}
+.nc-title{font-weight:700;font-size:12.5px;line-height:1.3;margin-bottom:4px;color:rgba(255,255,255,.92)}
+.nc-desc{font-size:10.5px;color:rgba(255,255,255,.38);line-height:1.45;margin-bottom:9px}
+.nc-foot{display:flex;align-items:center;justify-content:space-between}
+.nc-year{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.05em}
+.pring{transform:rotate(-90deg);overflow:visible}
+#prog-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;height:68px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);background:rgba(5,5,5,0.85);border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 24px;gap:16px}
+#prog-track{flex:1;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+#prog-fill{height:100%;background:linear-gradient(90deg,#E30613,#00C8FF);border-radius:2px;width:0%;transition:width .8s cubic-bezier(.32,.72,0,1);box-shadow:0 0 8px rgba(0,200,255,0.5)}
+#prog-pct{font-size:19px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;flex-shrink:0;min-width:36px;text-align:right}
+#sim-year-val{color:rgba(255,255,255,.7);font-weight:700;font-size:14px}
+#modal-wrap{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-end}
+#modal-wrap.open{display:flex}
+#modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#modal-box{position:relative;z-index:1;width:100%;max-width:680px;margin:0 auto;max-height:88vh;overflow-y:auto;background:rgba(8,8,14,0.97);backdrop-filter:blur(40px);border-radius:22px 22px 0 0;border:1px solid rgba(255,255,255,0.09);border-bottom:none;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);padding:28px 28px 40px}
+#modal-wrap.open #modal-box{transform:translateY(0)}
+#toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:2000;display:none;background:rgba(8,8,14,0.96);border:1px solid rgba(255,215,0,0.4);border-radius:14px;padding:14px 22px;text-align:center;min-width:260px;pointer-events:none}
+@keyframes toastIn{0%{opacity:0;transform:translateX(-50%) scale(.88) translateY(-8px)}15%{opacity:1;transform:translateX(-50%) scale(1.04) translateY(0)}80%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(.96) translateY(-4px)}}
+.toast-anim{animation:toastIn 3.2s ease-out forwards}
+@keyframes resGlow{0%,100%{box-shadow:0 0 12px rgba(0,200,255,.25)}50%{box-shadow:0 0 28px rgba(0,200,255,.55)}}
+.researching{animation:resGlow 1.4s ease-in-out infinite}
+.logo{display:flex;align-items:center;gap:7px;flex-shrink:0;text-decoration:none}
+.logo-text{font-weight:700;font-size:14px;letter-spacing:-.02em;color:#fff}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<canvas id="particles"></canvas>
+
+<nav id="nav">
+  <div class="logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E30613" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+    </svg>
+    <span class="logo-text">Musk Horizon</span>
+  </div>
+  <div id="era-tabs">
+    <button class="era-tab active" data-era="all">All Eras</button>
+    <button class="era-tab" data-era="foundation">Foundation <span style="opacity:.45;font-size:10px">2025–27</span></button>
+    <button class="era-tab" data-era="autonomy">Autonomy <span style="opacity:.45;font-size:10px">2027–29</span></button>
+    <button class="era-tab" data-era="ai_supremacy">AI Supremacy <span style="opacity:.45;font-size:10px">2029–32</span></button>
+    <button class="era-tab" data-era="orbital">Orbital <span style="opacity:.45;font-size:10px">2030–35</span></button>
+    <button class="era-tab" data-era="mars">Mars Colony <span style="opacity:.45;font-size:10px">2035–40</span></button>
+    <button class="era-tab" data-era="multiplanetary">Multiplanetary <span style="opacity:.45;font-size:10px">2040+</span></button>
+  </div>
+  <input id="search-input" type="text" placeholder="&#128269; Search…">
+  <button id="accel-btn">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+    Accelerate
+  </button>
+</nav>
+
+<div id="tree-wrap">
+  <div id="tree-inner">
+    <svg id="conn-svg">
+      <defs>
+        <filter id="gf" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <g id="era-lines"></g>
+      <g id="conn-lines"></g>
+    </svg>
+    <div id="nodes-layer"></div>
+  </div>
+</div>
+
+<div id="prog-bar">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00C8FF" stroke-width="2" style="flex-shrink:0">
+    <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </svg>
+  <span style="font-size:12px;color:rgba(255,255,255,.5);white-space:nowrap;flex-shrink:0">Progress to Multiplanetary</span>
+  <div id="prog-track"><div id="prog-fill"></div></div>
+  <div style="display:flex;align-items:baseline;gap:2px;flex-shrink:0">
+    <span id="prog-pct">0</span><span style="font-size:12px;color:rgba(255,255,255,.35)">%</span>
+  </div>
+  <div style="flex-shrink:0;font-size:11px;color:rgba(255,255,255,.3);padding-left:8px;border-left:1px solid rgba(255,255,255,.08)">
+    Year <span id="sim-year-val">2025</span>
+  </div>
+</div>
+
+<div id="modal-wrap">
+  <div id="modal-backdrop" onclick="closeModal()"></div>
+  <div id="modal-box"><div id="modal-body"></div></div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ─── ICONS (inline SVG paths) ───────────────────────────────────────────────
+const IC = {
+  truck:    `<path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>`,
+  battery:  `<rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="11" x2="23" y2="13"/><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="10" x2="10" y2="14"/><line x1="14" y1="10" x2="14" y2="14"/>`,
+  rocket:   `<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>`,
+  robot:    `<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><line x1="12" y1="3" x2="12" y2="7"/><circle cx="8.5" cy="16" r="1.5"/><circle cx="15.5" cy="16" r="1.5"/><path d="M9.5 21h5"/>`,
+  cpu:      `<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>`,
+  car:      `<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5a2 2 0 0 1-2 2h-2"/><circle cx="9" cy="17" r="2"/><circle cx="19" cy="17" r="2"/>`,
+  brain:    `<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.66z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.66z"/>`,
+  satellite:`<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.31M17.7 17.7a8 8 0 0 0 0-11.31M3.5 3.5a12 12 0 0 0 0 16.97M20.5 20.5a12 12 0 0 0 0-16.97"/>`,
+  moon:     `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`,
+  globe:    `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`,
+  users:    `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  zap:      `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+  network:  `<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><line x1="12" y1="12" x2="12" y2="8"/>`,
+  home:     `<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
+  city:     `<line x1="3" y1="22" x2="21" y2="22"/><rect x="9" y="2" width="6" height="20"/><path d="M3 22V12l6-6"/><path d="M21 22V12l-6-6"/>`,
+  star:     `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`,
+  link2:    `<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>`,
+  flag:     `<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>`,
+  shovel:   `<line x1="3" y1="6" x2="3" y2="6"/><path d="M3.5 2.5 20.5 19.5"/><path d="m2 22 4-4"/><path d="M17.5 2.5a4.95 4.95 0 0 1 7 7L19 15l-9-9z"/>`,
+};
+
+// ─── ERAS ────────────────────────────────────────────────────────────────────
+const ERAS = {
+  foundation:     { name:'Foundation',    range:'2025–27', color:'#E30613', colX: 80  },
+  autonomy:       { name:'Autonomy',      range:'2027–29', color:'#FF6B35', colX: 460 },
+  ai_supremacy:   { name:'AI Supremacy',  range:'2029–32', color:'#A855F7', colX: 840 },
+  orbital:        { name:'Orbital',       range:'2030–35', color:'#00C8FF', colX: 1220},
+  mars:           { name:'Mars Colony',   range:'2035–40', color:'#FF4455', colX: 1600},
+  multiplanetary: { name:'Multiplanetary',range:'2040+',   color:'#FFD700', colX: 2000},
+};
+
+// ─── NODES ───────────────────────────────────────────────────────────────────
+// Each node: id, era, year, name, icon, desc, quote, detail, prereqs[], x, y, milestone?
+const NODES = [
+  // ── FOUNDATION ──
+  {id:'cybertruck',    era:'foundation',   year:2025, name:'Cybertruck',            icon:'truck',
+   desc:'Stainless steel electric pickup redefines American utility',
+   quote:'"The Cybertruck will be the best truck ever built — period."',
+   detail:'Tesla\'s angular masterpiece in 30X cold-rolled stainless steel proved electric could dominate the toughest segments. Its exoskeleton and range of 500+ miles set the stage for a new era of American manufacturing.',
+   prereqs:[], x:80, y:75},
+
+  {id:'megapack',      era:'foundation',   year:2025, name:'Megapack V2',           icon:'battery',
+   desc:'Grid-scale energy storage enabling 100% renewable grids',
+   quote:'"Energy storage is the bridge between renewable generation and civilization."',
+   detail:'Each Megapack V2 stores 3.9 MWh, enough to power 3,600 homes for an hour. Terafactories produce them at a rate that makes fossil fuel grids economically obsolete by 2028.',
+   prereqs:[], x:80, y:255},
+
+  {id:'starship',      era:'foundation',   year:2025, name:'Starship Flights',      icon:'rocket',
+   desc:"World's most powerful fully-reusable launch system reaching orbit",
+   quote:'"Starship is the most important technology ever developed for making life multiplanetary."',
+   detail:'Standing 121 meters tall with 7,590 tons of thrust at liftoff, Starship\'s full reusability slashes launch costs below $10/kg to LEO. Each flight is a step toward the civilization-level infrastructure change.',
+   prereqs:[], x:80, y:435},
+
+  {id:'optimus2',      era:'foundation',   year:2025, name:'Optimus Gen 2',         icon:'robot',
+   desc:'Humanoid robot with dexterous hands doing real factory work autonomously',
+   quote:'"Optimus will be the most valuable product in the history of any company."',
+   detail:'Gen 2 moves 30% faster than Gen 1, achieves 11 degrees of freedom per hand, and operates autonomously inside Tesla factories. Over 1,000 units run in Fremont before public launch.',
+   prereqs:[], x:80, y:615},
+
+  {id:'dojo',          era:'foundation',   year:2026, name:'AI4 Chip',               icon:'cpu',
+   desc:"Tesla's custom AI inference chip powering the entire autonomous fleet",
+   quote:'"The AI4 is the best AI inference chip in the world — we designed it ourselves."',
+   detail:'Tesla\'s AI4 chip delivers 2,000 TOPS of inference performance at unprecedented efficiency. Deployed across the entire Tesla fleet, it processes billions of real-world miles of driving data — the engine behind FSD and Optimus.',
+   prereqs:[], x:80, y:795},
+
+  // ── AUTONOMY ──
+  {id:'starship_catch',era:'autonomy',     year:2025, name:'Starship Tower Catch',  icon:'zap',
+   desc:'Mechazilla arms catch the 70-meter Super Heavy booster mid-air',
+   quote:'"Catching a booster with robot chopstick arms — we actually did this."',
+   detail:'Eliminating landing legs from Super Heavy reduces structural mass by 3 tons and enables sub-one-hour turnaround. The Mechazilla catch system is the most precise large-scale robotic feat in engineering history.',
+   prereqs:['starship'], x:460, y:435},
+
+  {id:'fsd',           era:'autonomy',     year:2027, name:'FSD Unsupervised',      icon:'car',
+   desc:'End-to-end neural FSD drives anywhere without human supervision',
+   quote:'"Full autonomy is the thing that will make everything else financially work."',
+   detail:'FSD Unsupervised uses a pure-vision transformer trained on 10 billion miles of human data. No HD maps, no lidar — just cameras and neural nets that see the world like a human, reacting faster.',
+   prereqs:['cybertruck','dojo'], x:460, y:75},
+
+  {id:'grok4',         era:'autonomy',     year:2027, name:'Grok 4',                icon:'brain',
+   desc:"World's leading frontier AI surpassing PhDs in all scientific domains",
+   quote:'"Grok 4 is what artificial general reasoning looks like from the outside."',
+   detail:'Grok 4 achieves top-0.1% human performance on IMO, GPQA, and SWE-bench simultaneously. Its internal reasoning chain runs for thousands of tokens before output, catching errors humans would miss.',
+   prereqs:['dojo'], x:460, y:255},
+
+  {id:'uncrewed_mars', era:'autonomy',     year:2028, name:'Uncrewed Mars Mission', icon:'globe',
+   desc:'Starship delivers Optimus robots and Megapacks to Mars first',
+   quote:'"The first ships to Mars build the road. Humans come after the infrastructure is ready."',
+   detail:'Two uncrewed Starships carrying 100 Optimus robots, 50 Megapacks, and Boring Company tunnel hardware depart for Mars during the 2026 launch window. They spend 26 months constructing foundational infrastructure.',
+   prereqs:['starship'], x:460, y:615},
+
+  // ── AI SUPREMACY ──
+  {id:'robotaxi',      era:'ai_supremacy', year:2028, name:'Robotaxi Network',      icon:'network',
+   desc:'Millions of Teslas earn revenue autonomously around the clock',
+   quote:'"The fleet will generate more revenue than every other car company combined."',
+   detail:'At peak US deployment, 2.5 million Tesla vehicles participate in the Robotaxi Network. Owners sleep while their cars earn $30,000–$50,000 per year. The economics of car ownership permanently invert.',
+   prereqs:['fsd'], x:840, y:75},
+
+  {id:'cybercab',      era:'ai_supremacy', year:2028, name:'Cybercab',              icon:'car',
+   desc:'Purpose-built autonomous two-seater — no steering wheel, no pedals',
+   quote:'"The Cybercab is the first vehicle designed purely for autonomy, not retrofit."',
+   detail:'Inductive wireless charging eliminates plugs. Per-mile cost below $0.20 — cheaper than owning a bicycle when amortized. Its butterfly doors and glass roof transform the urban experience.',
+   prereqs:['fsd','cybertruck'], x:840, y:235},
+
+  {id:'optimus3',      era:'ai_supremacy', year:2028, name:'Optimus Gen 3 (Factory)',icon:'robot',
+   desc:'Optimus runs entire manufacturing lines autonomously at scale',
+   quote:'"One billion humanoid robots working alongside humans changes everything."',
+   detail:'Gen 3 achieves superhuman dexterity for 99.7% of manufacturing tasks. At 24/7 operation, each unit replaces 3 human shifts with zero fatigue. Tesla\'s Fremont plant becomes Earth\'s first fully autonomous car factory.',
+   prereqs:['optimus2','dojo'], x:840, y:415},
+
+  {id:'ai6chip',       era:'ai_supremacy', year:2028, name:'AI6 Chip',              icon:'cpu',
+   desc:'Custom 3nm inference chip delivering 2,000 TOPS per watt',
+   quote:'"We now make the most efficient AI silicon on the planet, in-house."',
+   detail:'Fabricated on TSMC 3nm process, the AI6 achieves 10× the power efficiency of the AI4. Every Optimus robot and Cybercab runs AI6 natively — real-time world modeling at milliwatt power budgets.',
+   prereqs:['dojo','grok4'], x:840, y:595},
+
+  {id:'orbital_refuel',era:'ai_supremacy', year:2027, name:'Orbital Refueling',     icon:'zap',
+   desc:'Starship-to-Starship propellant transfer enables deep space missions',
+   quote:'"Orbital refueling is the master key to the entire solar system."',
+   detail:'SpaceX demonstrates cryogenic methane and LOX transfer between two Starships in LEO with <0.1% boiloff. This single capability transforms Earth-to-Mars missions from marginal to routine.',
+   prereqs:['starship_catch'], x:840, y:775},
+
+  // ── ORBITAL ──
+  {id:'optimus_home',  era:'orbital',      year:2029, name:'Optimus Home',          icon:'home',
+   desc:'Consumer Optimus handles housework, elder care, and cooking',
+   quote:'"For $20,000 you get a robot that does everything you hate doing."',
+   detail:'Home Optimus learns your household routines in one week via imitation learning. It manages groceries, cooks 500+ meals, provides elder companion care, and maintains homes indefinitely — changing what human time is spent on.',
+   prereqs:['optimus3'], x:1220, y:75},
+
+  {id:'grok_agi',      era:'orbital',      year:2030, name:'Grok AGI',              icon:'brain',
+   desc:'Artificial General Intelligence that surpasses cumulative human expertise',
+   quote:'"AGI is the most transformative invention in the history of our species."',
+   detail:'Grok AGI autonomously conducts scientific research, writes and verifies its own code, and proposes novel AI architectures. xAI\'s Memphis cluster runs 300,000 AI6-equivalent chips. The slope of human progress goes vertical.',
+   prereqs:['ai6chip','grok4'], x:1220, y:255, milestone:true},
+
+  {id:'starlink_v3',   era:'orbital',      year:2027, name:'Starlink V3',           icon:'satellite',
+   desc:'Laser-mesh constellation delivering 1 Tbps to any point on Earth',
+   quote:'"We will provide the best internet to every human being on the planet."',
+   detail:'Starlink V3 satellites form an optical inter-satellite mesh with <20ms latency everywhere on Earth. Each satellite delivers 100× more bandwidth than V1. The digital divide ends.',
+   prereqs:['starship_catch','orbital_refuel'], x:1220, y:575},
+
+  {id:'lunar_base',    era:'orbital',      year:2031, name:'Lunar Base',            icon:'moon',
+   desc:'Permanent 12-person Moon base with ISRU water and propellant extraction',
+   quote:'"The Moon is a waypoint. It teaches us everything we need for Mars."',
+   detail:'Artemis Base Camp on the lunar South Pole hosts 12 astronauts and 60 Optimus robots. Water ice from permanently shadowed craters is electrolyzed into hydrogen and oxygen — turning the Moon into Earth\'s refueling depot.',
+   prereqs:['orbital_refuel','starlink_v3'], x:1220, y:775},
+
+  // ── MARS COLONY ──
+  {id:'neural_lace',   era:'mars',         year:2031, name:'Neural Lace Interface', icon:'link2',
+   desc:'Injectable brain-AI interface — 10,000× bandwidth over Neuralink V1',
+   quote:'"The merger of human and artificial intelligence is inevitable. Better to lead it."',
+   detail:'Polymer mesh electrodes injected via a syringe self-assemble across 10,000 neurons. Users experience direct access to Grok AGI\'s knowledge at thought speed — questions answered before they are fully formed.',
+   prereqs:['grok_agi'], x:1600, y:75},
+
+  {id:'crewed_mars',   era:'mars',         year:2033, name:'Crewed Mars Landing',   icon:'rocket',
+   desc:'First humans set foot on Mars — humanity becomes multiplanetary',
+   quote:'"This is the most consequential moment in human history since we left Africa."',
+   detail:'Six astronauts touch down at Arcadia Planitia where 40 Optimus robots, 200 Megapacks, and pre-inflated hab modules have waited for them. The colony is viable before human boots touch Martian soil.',
+   prereqs:['orbital_refuel','uncrewed_mars','optimus3'], x:1600, y:375, milestone:true},
+
+  {id:'auto_mining',   era:'mars',         year:2032, name:'Autonomous Mining',     icon:'shovel',
+   desc:'Optimus-led robot fleets extract rare earths at 1/10th current cost',
+   quote:'"Robots do the dangerous work. Humans do the meaningful work."',
+   detail:'Fully autonomous mining runs in the world\'s most hazardous environments — underwater, underground, and eventually on Mars. Optimus fleets extract lithium, copper, and rare earths at costs that make green manufacturing universal.',
+   prereqs:['optimus3','grok_agi'], x:1600, y:655},
+
+  // ── MULTIPLANETARY ──
+  {id:'mars_city1',    era:'multiplanetary',year:2037,name:'Mars City Phase 1',     icon:'city',
+   desc:"1,000 inhabitants, closed-loop life support, first Martian economy",
+   quote:'"A self-sustaining city on Mars is the greatest engineering achievement conceivable."',
+   detail:'Pressurized tunnels bored by autonomous Boring Company machines house 1,000 residents. Sabatier reactors synthesize water and oxygen from CO2. The first Martian economic transactions happen outside Earth\'s legal jurisdiction.',
+   prereqs:['crewed_mars'], x:2000, y:295},
+
+  {id:'mars_infra',    era:'multiplanetary',year:2036,name:'Mars Infrastructure',   icon:'zap',
+   desc:'10 GW solar farm and nuclear reactors power the colony through dust storms',
+   quote:'"Infrastructure is civilization. Without it, even the bravest pioneers die."',
+   detail:'A 10 km² solar array and Kilopower fission reactors provide reliable power through multi-month Martian dust storms. Underground water pipelines distribute ISRU ice-melt to all colony zones.',
+   prereqs:['crewed_mars','auto_mining'], x:2000, y:545},
+
+  {id:'human_ai_merge',era:'multiplanetary',year:2040,name:'Human-AI Symbiosis',   icon:'users',
+   desc:'Neural Lace mainstreams — cognitive gap between average and genius collapses',
+   quote:'"We are already cyborgs. Neural Lace just removes the bottleneck."',
+   detail:'With Neural Lace in 500 million people, the average human accesses AGI reasoning seamlessly. Scientific papers that took decades now take hours. The collective intelligence of humanity plus AGI goes supercritical.',
+   prereqs:['grok_agi','neural_lace'], x:2000, y:75},
+
+  {id:'interplanetary_net',era:'multiplanetary',year:2038,name:'Interplanetary Internet',icon:'network',
+   desc:'Earth-Mars laser relay constellation — 20-minute latency, 1 Tbps throughput',
+   quote:'"Communication is the nervous system of civilization — even across planets."',
+   detail:'30 relay satellites in Earth-Mars Lagrange points maintain continuous optical links. Mars citizens stream Earth content, collaborate on research, and trade across 56–401 million km with physics-limited latency.',
+   prereqs:['starlink_v3','mars_city1'], x:2000, y:795},
+
+  {id:'self_sustaining',era:'multiplanetary',year:2042,name:'Self-Sustaining Colony',icon:'star',
+   desc:'Mars survives if all contact with Earth is permanently severed',
+   quote:'"The colony must survive if the ships from Earth stop coming. That\'s the test."',
+   detail:'Population 10,000. Local steel smelting, electronics fab, medicine synthesis, and food production operate independently. This is the point of no return — humanity\'s survival is no longer a single-planet bet.',
+   prereqs:['mars_city1','mars_infra','grok_agi'], x:2380, y:415, milestone:true},
+
+  {id:'earth_mars',    era:'multiplanetary',year:2044,name:'Earth-Mars Treaty',     icon:'flag',
+   desc:'First interplanetary governance framework — Mars becomes a free republic',
+   quote:'"Mars must be free. No government of Earth should rule another planet."',
+   detail:'The Earth-Mars Accords establish Mars as a self-governing democratic republic, define space resource property rights, create an interplanetary arbitration court, and enshrine the right of colonies to self-determination.',
+   prereqs:['self_sustaining'], x:2580, y:295},
+
+  {id:'type1_civ',     era:'multiplanetary',year:2046,name:'Type I Civilization',   icon:'star',
+   desc:'Humanity reaches the Kardashev threshold — full solar system energy access',
+   quote:'"We stand at the dawn of a Type I civilization. Our generation will be the one."',
+   detail:'With Mars self-sustaining, the Moon industrialized, AGI-augmented humans driving exponential growth, and interplanetary internet connecting it all — humanity approaches the Kardashev Type I threshold. The universe becomes accessible.',
+   prereqs:['earth_mars','human_ai_merge'], x:2580, y:115, milestone:true},
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const S = {
+  researched: new Set(),
+  researching: null,
+  researchProg: 0,
+  researchTimer: null,
+  simYear: 2025,
+  activeEra: 'all',
+  query: '',
+  hovered: null,
+  accelerating: false,
+  accelTimer: null,
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function eraColor(era){ return ERAS[era]?.color || '#00C8FF'; }
+function nodeState(id){
+  if(S.researched.has(id)) return 'researched';
+  const n=NODES.find(x=>x.id===id);
+  return n.prereqs.every(p=>S.researched.has(p)) ? 'unlocked' : 'locked';
+}
+function unlocks(id){ return NODES.filter(n=>n.prereqs.includes(id)); }
+function icon(name,color,size=26){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${IC[name]||IC.star}</svg>`;
+}
+
+// ─── STARFIELD ───────────────────────────────────────────────────────────────
+(function(){
+  const cv=document.getElementById('starfield'), cx=cv.getContext('2d');
+  let stars=[], shots=[], t=0;
+  function resize(){
+    cv.width=innerWidth; cv.height=innerHeight; stars=[];
+    for(let i=0;i<220;i++) stars.push({
+      x:Math.random()*cv.width, y:Math.random()*cv.height,
+      r:Math.random()*1.1+.2, o:Math.random()*.55+.15,
+      sp:Math.random()*.4+.05, ph:Math.random()*Math.PI*2
+    });
+  }
+  addEventListener('resize',resize); resize();
+  function raf(){
+    cx.clearRect(0,0,cv.width,cv.height); t+=.008;
+    stars.forEach(s=>{
+      const tw=s.o*(.55+.45*Math.sin(t*s.sp+s.ph));
+      cx.beginPath(); cx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(255,255,255,${tw})`; cx.fill();
+    });
+    if(Math.random()<.004) shots.push({x:Math.random()*cv.width*.7,y:Math.random()*cv.height*.35,vx:7+Math.random()*5,vy:2+Math.random()*4,life:1});
+    shots=shots.filter(s=>{
+      s.x+=s.vx; s.y+=s.vy; s.life-=.028;
+      if(s.life<=0) return false;
+      const g=cx.createLinearGradient(s.x-s.vx*9,s.y-s.vy*9,s.x,s.y);
+      g.addColorStop(0,'rgba(255,255,255,0)'); g.addColorStop(1,`rgba(255,255,255,${s.life*.75})`);
+      cx.beginPath(); cx.moveTo(s.x-s.vx*9,s.y-s.vy*9); cx.lineTo(s.x,s.y);
+      cx.strokeStyle=g; cx.lineWidth=1.4; cx.stroke(); return true;
+    });
+    requestAnimationFrame(raf);
+  } raf();
+})();
+
+// ─── PARTICLES ───────────────────────────────────────────────────────────────
+const pCv=document.getElementById('particles'), pCx=pCv.getContext('2d');
+let pArr=[];
+function resizePc(){ pCv.width=innerWidth; pCv.height=innerHeight; }
+addEventListener('resize',resizePc); resizePc();
+function burst(x,y,big=false){
+  const count=big?60:28;
+  for(let i=0;i<count;i++){
+    const a=Math.random()*Math.PI*2, sp=Math.random()*(big?6:3.5)+1;
+    pArr.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,life:1,r:Math.random()*(big?3.5:2.5)+1,
+      col:Math.random()>.45?'0,200,255':Math.random()>.5?'255,215,0':'227,6,19'});
+  }
+}
+(function rafP(){
+  pCx.clearRect(0,0,pCv.width,pCv.height);
+  pArr=pArr.filter(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=.04; p.life-=.022;
+    if(p.life<=0) return false;
+    pCx.beginPath(); pCx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    pCx.fillStyle=`rgba(${p.col},${p.life})`; pCx.fill(); return true;
+  });
+  requestAnimationFrame(rafP);
+})();
+
+// ─── ERA LABELS + SEPARATORS ─────────────────────────────────────────────────
+function renderEraUI(){
+  const layer=document.getElementById('nodes-layer');
+  const elines=document.getElementById('era-lines');
+  elines.innerHTML='';
+  Object.entries(ERAS).forEach(([key,era],i)=>{
+    // Label
+    const lbl=document.createElement('div');
+    lbl.style.cssText=`position:absolute;left:${era.colX}px;top:14px;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:${era.color};opacity:.7;white-space:nowrap`;
+    lbl.innerHTML=`${era.name} <span style="opacity:.5;font-weight:400">${era.range}</span>`;
+    layer.appendChild(lbl);
+    // Separator
+    if(i>0){
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',era.colX-22); line.setAttribute('y1',8);
+      line.setAttribute('x2',era.colX-22); line.setAttribute('y2',1050);
+      line.setAttribute('stroke',era.color+'22'); line.setAttribute('stroke-width','1');
+      line.setAttribute('stroke-dasharray','3 7');
+      elines.appendChild(line);
+    }
+  });
+}
+
+// ─── RENDER CONNECTIONS ───────────────────────────────────────────────────────
+function renderConns(){
+  const g=document.getElementById('conn-lines');
+  g.innerHTML='';
+  NODES.forEach(node=>{
+    node.prereqs.forEach(pid=>{
+      const pre=NODES.find(n=>n.id===pid); if(!pre) return;
+      const fx=pre.x+198, fy=pre.y+75;
+      const tx=node.x,    ty=node.y+75;
+      const mid=(tx-fx)*.48;
+      const d=`M${fx} ${fy} C${fx+mid} ${fy},${tx-mid} ${ty},${tx} ${ty}`;
+      const preDone=S.researched.has(pid);
+      const nodeDone=S.researched.has(node.id);
+      const active=preDone;
+      const hov=S.hovered===node.id||S.hovered===pid;
+      const isHovConn=hov&&(S.hovered===node.id||S.hovered===pid);
+
+      // Base dim line
+      const base=document.createElementNS('http://www.w3.org/2000/svg','path');
+      base.setAttribute('d',d); base.setAttribute('fill','none');
+      base.setAttribute('stroke','rgba(255,255,255,0.055)');
+      base.setAttribute('stroke-width','1.5');
+      base.setAttribute('stroke-dasharray','4 5');
+      g.appendChild(base);
+
+      if(active){
+        const gline=document.createElementNS('http://www.w3.org/2000/svg','path');
+        gline.setAttribute('d',d); gline.setAttribute('fill','none');
+        const col=nodeDone?'#FFD700':'#00C8FF';
+        gline.setAttribute('stroke',isHovConn?'#FFD700':col);
+        gline.setAttribute('stroke-width',isHovConn?'2.5':'1.5');
+        gline.setAttribute('opacity',isHovConn?'.9':'.38');
+        gline.setAttribute('filter','url(#gf)');
+        g.appendChild(gline);
+      }
+    });
+  });
+}
+
+// ─── RENDER NODES ────────────────────────────────────────────────────────────
+function renderNodes(){
+  const layer=document.getElementById('nodes-layer');
+  // Remove old node cards but not era labels
+  layer.querySelectorAll('.nc').forEach(el=>el.remove());
+
+  NODES.forEach(node=>{
+    const ns=nodeState(node.id);
+    const col=eraColor(node.era);
+    const isRes=S.researching===node.id;
+    const matchSearch=!S.query||node.name.toLowerCase().includes(S.query)||node.desc.toLowerCase().includes(S.query);
+    const matchEra=S.activeEra==='all'||node.era===S.activeEra;
+    const dim=!matchSearch||!matchEra;
+
+    const el=document.createElement('div');
+    el.className=`nc ${ns}${isRes?' researching':''}${dim?' dimmed':''}`;
+    el.id=`nc-${node.id}`;
+
+    // Styles per state
+    let borderCol='rgba(255,255,255,0.07)';
+    let bgCol='rgba(255,255,255,0.025)';
+    let shadow='0 4px 16px rgba(0,0,0,0.4)';
+    if(ns==='researched'){ borderCol=col+'44'; bgCol=col+'10'; shadow=`0 0 20px ${col}22,0 4px 20px rgba(0,0,0,0.5)`; }
+    else if(ns==='unlocked'){ borderCol=col+'30'; bgCol=col+'07'; }
+
+    el.style.cssText=`left:${node.x}px;top:${node.y}px;border-color:${borderCol};background:${bgCol};box-shadow:${shadow};`;
+
+    // Progress ring
+    const R=13, C=2*Math.PI*R;
+    const prog=ns==='researched'?1:isRes?S.researchProg:0;
+    const dashOff=C*(1-prog);
+
+    el.innerHTML=`
+      <div class="nc-icon">
+        <div class="nc-icon-box" style="background:${col}18">${icon(node.icon,col)}</div>
+        <div style="position:relative;width:30px;height:30px;flex-shrink:0">
+          <svg width="30" height="30" class="pring" viewBox="0 0 30 30">
+            <circle cx="15" cy="15" r="${R}" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="2"/>
+            <circle cx="15" cy="15" r="${R}" fill="none" stroke="${col}" stroke-width="2"
+              stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${dashOff.toFixed(1)}"
+              style="transition:stroke-dashoffset .08s;filter:drop-shadow(0 0 3px ${col})"/>
+          </svg>
+          ${ns==='researched'?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>`:''}
+        </div>
+      </div>
+      <div class="nc-title" style="color:rgba(255,255,255,${ns==='locked'?.4:.92})">${node.name}</div>
+      <div class="nc-desc">${node.desc}</div>
+      <div class="nc-foot">
+        <span class="nc-year" style="color:${col};background:${col}18">${node.year}</span>
+        ${ns==='locked'?`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`:''}
+        ${node.milestone&&ns==='researched'?`<span style="font-size:9px;color:#FFD700;letter-spacing:.08em">★ MILESTONE</span>`:''}
+      </div>`;
+
+    if(ns!=='locked'){
+      el.addEventListener('click',()=>clickNode(node.id));
+    }
+    el.addEventListener('mouseenter',()=>hoverNode(node.id));
+    el.addEventListener('mouseleave',()=>hoverNode(null));
+    layer.appendChild(el);
+  });
+
+  renderConns();
+  updateProg();
+}
+
+// ─── PROGRESS ────────────────────────────────────────────────────────────────
+function updateProg(){
+  const pct=Math.round(S.researched.size/NODES.length*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct;
+}
+
+// ─── HOVER ───────────────────────────────────────────────────────────────────
+function hoverNode(id){
+  S.hovered=id;
+  renderConns();
+  NODES.forEach(n=>{
+    const el=document.getElementById(`nc-${n.id}`); if(!el) return;
+    if(!id){ el.style.filter=''; return; }
+    const hn=NODES.find(x=>x.id===id);
+    const connected=n.id===id||hn?.prereqs.includes(n.id)||n.prereqs.includes(id)||
+      unlocks(id).some(u=>u.id===n.id)||NODES.filter(x=>x.prereqs.includes(n.id)).some(x=>x.id===id);
+    el.style.filter=connected?'brightness(1.15)':'brightness(0.5)';
+  });
+}
+
+// ─── CLICK NODE ──────────────────────────────────────────────────────────────
+function clickNode(id){
+  const ns=nodeState(id);
+  if(ns==='locked') return;
+  if(ns==='researched'){ openModal(id); return; }
+  if(S.researching) return;
+  startResearch(id);
+}
+
+function startResearch(id){
+  S.researching=id; S.researchProg=0;
+  renderNodes();
+  clearInterval(S.researchTimer);
+  S.researchTimer=setInterval(()=>{
+    S.researchProg=Math.min(1,S.researchProg+0.038);
+    // Update ring only
+    const el=document.getElementById(`nc-${id}`);
+    if(el){
+      const circles=el.querySelectorAll('svg.pring circle');
+      if(circles[1]){
+        const R=13,C=2*Math.PI*R;
+        circles[1].setAttribute('stroke-dashoffset',(C*(1-S.researchProg)).toFixed(1));
+      }
+    }
+    if(S.researchProg>=1){ clearInterval(S.researchTimer); finishResearch(id); }
+  },45);
+}
+
+function finishResearch(id){
+  S.researched.add(id); S.researching=null; S.researchProg=0;
+  const el=document.getElementById(`nc-${id}`);
+  if(el){ const r=el.getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2); }
+  const node=NODES.find(n=>n.id===id);
+  if(node?.milestone) showMilestone(node);
+  renderNodes();
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(id){
+  const node=NODES.find(n=>n.id===id); if(!node) return;
+  const col=eraColor(node.era);
+  const pres=node.prereqs.map(p=>NODES.find(n=>n.id===p)).filter(Boolean);
+  const unl=unlocks(id);
+
+  document.getElementById('modal-body').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="padding:11px;background:${col}1e;border-radius:12px">${icon(node.icon,col,30)}</div>
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:${col};margin-bottom:3px">${ERAS[node.era]?.name} · ${node.year}</div>
+          <h2 style="font-size:20px;font-weight:800;letter-spacing:-.03em">${node.name}</h2>
+        </div>
+      </div>
+      <button onclick="closeModal()" style="padding:7px;background:rgba(255,255,255,0.07);border-radius:8px;border:none;cursor:pointer;color:rgba(255,255,255,0.5)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="background:linear-gradient(135deg,${col}12,rgba(0,200,255,0.06));border:1px solid ${col}22;border-radius:12px;padding:15px 18px;margin-bottom:18px">
+      <p style="font-style:italic;color:rgba(255,255,255,0.75);font-size:13.5px;line-height:1.6">${node.quote}</p>
+    </div>
+    <p style="color:rgba(255,255,255,0.58);font-size:13px;line-height:1.75;margin-bottom:22px">${node.detail}</p>
+    ${unl.length?`<div style="margin-bottom:18px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:rgba(255,255,255,0.35);margin-bottom:9px">Unlocks</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">${unl.map(n=>`
+        <div style="display:flex;align-items:center;gap:6px;background:${eraColor(n.era)}14;border:1px solid ${eraColor(n.era)}28;border-radius:8px;padding:5px 10px">
+          ${icon(n.icon,eraColor(n.era),13)}<span style="font-size:12px;color:rgba(255,255,255,0.8)">${n.name}</span>
+        </div>`).join('')}
+      </div></div>`:''}
+    ${pres.length?`<div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:rgba(255,255,255,0.35);margin-bottom:9px">Requires</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">${pres.map(n=>`
+        <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:5px 10px">
+          ${icon(n.icon,eraColor(n.era),13)}<span style="font-size:12px;color:rgba(255,255,255,0.65)">${n.name}</span>
+          ${S.researched.has(n.id)?`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#00C8FF" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`:''}
+        </div>`).join('')}
+      </div></div>`:''}`;
+
+  const wrap=document.getElementById('modal-wrap');
+  wrap.style.display='flex';
+  requestAnimationFrame(()=>wrap.classList.add('open'));
+}
+function closeModal(){
+  const wrap=document.getElementById('modal-wrap');
+  wrap.classList.remove('open');
+  setTimeout(()=>{ wrap.style.display='none'; },400);
+}
+
+// ─── MILESTONE TOAST ─────────────────────────────────────────────────────────
+function showMilestone(node){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<div style="font-size:22px;margin-bottom:3px">🚀</div><div style="font-weight:700;color:#FFD700;font-size:14px;margin-bottom:3px">Milestone Reached</div><div style="font-size:12px;color:rgba(255,255,255,0.65)">${node.name}</div>`;
+  t.style.display='block';
+  t.className=''; void t.offsetWidth; t.className='toast-anim';
+  setTimeout(()=>{ t.style.display='none'; t.className=''; },3500);
+  burst(innerWidth/2, 120, true);
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+document.getElementById('search-input').addEventListener('input',e=>{
+  S.query=e.target.value.toLowerCase().trim();
+  renderNodes();
+});
+
+// ─── ERA TABS ────────────────────────────────────────────────────────────────
+document.querySelectorAll('.era-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.era-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    S.activeEra=tab.dataset.era;
+    renderNodes();
+    if(S.activeEra!=='all'&&ERAS[S.activeEra]){
+      document.getElementById('tree-wrap').scrollTo({left:Math.max(0,ERAS[S.activeEra].colX-40),behavior:'smooth'});
+    }
+  });
+});
+
+// ─── ACCELERATE ──────────────────────────────────────────────────────────────
+const YEARS=[2025,2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,2042,2043,2044,2045,2046];
+
+function autoResearchUpTo(year){
+  let changed=true;
+  while(changed){
+    changed=false;
+    NODES.forEach(n=>{
+      if(n.year<=year&&!S.researched.has(n.id)&&n.prereqs.every(p=>S.researched.has(p))){
+        S.researched.add(n.id); changed=true;
+      }
+    });
+  }
+}
+
+document.getElementById('accel-btn').addEventListener('click',()=>{
+  if(S.accelerating){
+    S.accelerating=false; clearTimeout(S.accelTimer);
+    document.getElementById('accel-btn').classList.remove('active');
+    return;
+  }
+  if(S.researching){ clearInterval(S.researchTimer); S.researching=null; S.researchProg=0; }
+  S.accelerating=true;
+  document.getElementById('accel-btn').classList.add('active');
+
+  function step(){
+    if(!S.accelerating) return;
+    const idx=YEARS.indexOf(S.simYear);
+    if(idx>=YEARS.length-1){ S.accelerating=false; document.getElementById('accel-btn').classList.remove('active'); return; }
+    S.simYear=YEARS[idx+1];
+    document.getElementById('sim-year-val').textContent=S.simYear;
+
+    // Find newly researchable nodes this year
+    const before=new Set(S.researched);
+    autoResearchUpTo(S.simYear);
+    const newOnes=[...S.researched].filter(id=>!before.has(id));
+    if(newOnes.length>0){
+      renderNodes();
+      newOnes.forEach((id,i)=>{
+        setTimeout(()=>{
+          const el=document.getElementById(`nc-${id}`);
+          if(el){ const r=el.getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2); }
+          const node=NODES.find(n=>n.id===id);
+          if(node?.milestone) showMilestone(node);
+        },i*180);
+      });
+    }
+    S.accelTimer=setTimeout(step,900);
+  }
+  step();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderEraUI();
+renderNodes();
+setTimeout(()=>{ document.getElementById('tree-wrap').scrollTop=60; },80);
+</script>
+</body>
+</html>
