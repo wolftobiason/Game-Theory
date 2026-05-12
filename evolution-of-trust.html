@@ -368,8 +368,23 @@ footer{
   <!-- TOURNAMENT -->
   <div class="tab-panel" id="tab-tourney">
     <div class="controls">
-      <button class="btn btn-primary" id="tourneyBtn" onclick="runTournament()">▶ Run Full Tournament</button>
-      <span style="color:var(--muted);font-size:.85rem">Each pair plays 50 rounds · round-robin</span>
+      <button class="btn btn-primary" id="tourneyBtn" onclick="runTournament()">▶ Run Tournament</button>
+      <span style="color:var(--muted);font-size:.85rem">50 rounds · round-robin</span>
+    </div>
+    <div class="noise-ctrl" style="margin-bottom:8px">
+      <span>Tournament noise:</span>
+      <input type="range" id="tNoiseSlider" min="0" max="20" value="0" step="1">
+      <span id="tNoiseVal">0%</span>
+      <span style="margin-left:8px;font-size:.8rem;color:var(--muted)">← try 5–10% to see forgiveness shine</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>💜 Forgiveness rate:</span>
+      <input type="range" id="forgSlider" min="0" max="50" value="10" step="1">
+      <span id="forgVal">10%</span>
+      <span style="margin-left:8px;font-size:.8rem;color:var(--muted)">chance TFT+F cooperates despite defection</span>
+    </div>
+    <div class="highlight" style="margin-top:16px;margin-bottom:20px">
+      <p><strong>Why does forgiveness lose at 0% noise?</strong> With no miscommunications, forgiveness randomly hands free points to defectors — it's a pure cost with no benefit. The payoff only comes in noisy environments, where it breaks mutual-retaliation spirals that pure TFT gets trapped in. Try noise 8–12% to see TFT+Forgiveness take the lead. The optimal forgiveness rate tracks the noise rate.</p>
     </div>
     <div id="tourneyResults"></div>
   </div>
@@ -386,10 +401,15 @@ footer{
       <input type="range" id="noiseSlider" min="0" max="20" value="5" step="1">
       <span id="noiseVal">5%</span>
     </div>
+    <div class="noise-ctrl" style="margin-top:6px">
+      <span>💜 Forgiveness rate (shared):</span>
+      <input type="range" id="forgSlider2" min="0" max="50" value="10" step="1">
+      <span id="forgVal2">10%</span>
+    </div>
     <canvas id="evoCanvas"></canvas>
     <div class="legend" id="evoLegend"></div>
     <div class="highlight" style="margin-top:24px">
-      <p><strong>Watch what happens:</strong> Cheaters spike when cooperators are abundant — then collapse as victims dry up. TFT-with-Forgiveness dominates long-term, <em>especially</em> when noise is high. Try sliding noise to 0% vs 15% and compare!</p>
+      <p><strong>Watch what happens:</strong> Cheaters spike when cooperators are abundant — then collapse as victims dry up. At <strong>0% noise</strong>, TFT and Grudger tend to win; TFT+Forgiveness wastes goodwill. At <strong>5–15% noise</strong>, TFT gets trapped in retaliation spirals while TFT+Forgiveness recovers them — and dominates. The optimal forgiveness rate roughly matches the noise rate.</p>
     </div>
   </div>
 </div>
@@ -501,6 +521,9 @@ footer{
 <footer>The Evolution of Trust · Inspired by Robert Axelrod &amp; Nicky Case · Pure HTML/CSS/JS</footer>
 
 <script>
+// ── GLOBAL PARAMS ─────────────────────────────────────────────────────────────
+let FORGIVENESS_RATE = 0.10; // adjustable via slider
+
 // ── STRATEGIES ────────────────────────────────────────────────────────────────
 const STRATEGIES = [
   {
@@ -529,12 +552,12 @@ const STRATEGIES = [
   },
   {
     id:'tftf', name:'TFT + Forgiveness', emoji:'💜',
-    color:'#a855f7', tag:'★ Optimal',
-    desc:'Like Tit for Tat, but occasionally forgives a defection (10% chance). Breaks spiral traps caused by noise or misunderstanding.',
-    rule:'decide() → TFT, but 10% chance to forgive D',
+    color:'#a855f7', tag:'★ Noise-Optimal',
+    desc:'Like Tit for Tat, but occasionally forgives a defection. Breaks retaliation spirals caused by noise. <em>Loses to TFT at 0% noise; wins when mistakes happen.</em>',
+    rule:'decide() → TFT, but FORGIVENESS_RATE% chance to cooperate despite D',
     decide:(mH,tH)=>{
       if(tH.length===0)return'C';
-      if(tH[tH.length-1]==='D'&&Math.random()>0.1)return'D';
+      if(tH[tH.length-1]==='D'&&Math.random()>=FORGIVENESS_RATE)return'D';
       return'C';
     }
   },
@@ -681,15 +704,37 @@ async function runMatch(){
   document.getElementById('matchBtn').disabled=false;
 }
 
+// ── SLIDER WIRING ─────────────────────────────────────────────────────────────
+document.getElementById('tNoiseSlider').addEventListener('input',function(){
+  document.getElementById('tNoiseVal').textContent=this.value+'%';
+});
+
+function setForgiveness(pct){
+  FORGIVENESS_RATE=pct/100;
+  document.getElementById('forgSlider').value=pct;
+  document.getElementById('forgVal').textContent=pct+'%';
+  document.getElementById('forgSlider2').value=pct;
+  document.getElementById('forgVal2').textContent=pct+'%';
+  // Update live rule label on strategy card
+  document.querySelectorAll('.strat-rule').forEach((el,i)=>{
+    if(i<STRATEGIES.length&&STRATEGIES[i].id==='tftf'){
+      el.textContent=`decide() → TFT, but ${pct}% chance to cooperate despite D`;
+    }
+  });
+}
+document.getElementById('forgSlider').addEventListener('input',function(){setForgiveness(+this.value)});
+document.getElementById('forgSlider2').addEventListener('input',function(){setForgiveness(+this.value)});
+
 // ── TOURNAMENT ────────────────────────────────────────────────────────────────
 function runTournament(){
   const ROUNDS=50,n=STRATEGIES.length;
+  const noise=+document.getElementById('tNoiseSlider').value;
   const totals=new Array(n).fill(0);
   const matrix=Array.from({length:n},()=>new Array(n).fill(0));
 
   for(let i=0;i<n;i++){
     for(let j=0;j<n;j++){
-      const r=playMatch(i,j,ROUNDS);
+      const r=playMatch(i,j,ROUNDS,noise);
       totals[i]+=r.score1;
       matrix[i][j]=r.score1;
     }
