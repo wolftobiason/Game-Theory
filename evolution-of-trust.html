@@ -258,7 +258,7 @@ footer{
 <!-- HEADER -->
 <header>
   <h1>The Evolution of Trust</h1>
-  <p>An interactive simulation of cooperation, betrayal, reputation — and why <em>nice but not naive</em> wins.</p>
+  <p>Based on the landmark tournaments of <strong style="-webkit-text-fill-color:initial;color:#c084fc">Robert Axelrod</strong> — an interactive simulation of cooperation, betrayal, reputation, and why <em>nice but not naive</em> wins.</p>
 </header>
 
 <!-- HOW TO PLAY -->
@@ -369,7 +369,7 @@ footer{
   <div class="tab-panel" id="tab-tourney">
     <div class="controls">
       <button class="btn btn-primary" id="tourneyBtn" onclick="runTournament()">▶ Run Tournament</button>
-      <span style="color:var(--muted);font-size:.85rem">50 rounds · round-robin</span>
+      <span style="color:var(--muted);font-size:.85rem">50 rounds · round-robin · mirroring Axelrod's methodology</span>
     </div>
     <div class="noise-ctrl" style="margin-bottom:8px">
       <span>Tournament noise:</span>
@@ -514,7 +514,7 @@ footer{
   </ul>
 
   <div class="highlight">
-    <p><strong>The deeper truth:</strong> The evolution of trust isn't just a game theory curiosity — it describes how cooperation evolved in nature, how it's maintained in societies, and why institutions that make defection costly and reputation visible are among the most important technologies humans have ever built. You are always playing this game. The question is which strategy you're running — and whether you've chosen it consciously.</p>
+    <p><strong>The deeper truth:</strong> The evolution of trust isn't just a game theory curiosity — it describes how cooperation evolved in nature, how it's maintained in societies, and why institutions that make defection costly and reputation visible are among the most important technologies humans have ever built. Robert Axelrod's <em>The Evolution of Cooperation</em> (1984) remains the definitive account. You are always playing this game. The question is which strategy you're running — and whether you've chosen it consciously.</p>
   </div>
 </div>
 
@@ -543,7 +543,7 @@ const STRATEGIES = [
   {
     id:'tft', name:'Tit for Tat', emoji:'🤝',
     color:'#3b82f6', tag:'Reciprocal',
-    desc:'Cooperates first, then copies the opponent\'s last move. Nice, provokable, forgiving — but fragile to noise.',
+    desc:'Cooperates first, then copies the opponent\'s last move. Submitted by Anatol Rapoport — it won <em>both</em> of Axelrod\'s tournaments. Nice, provokable, forgiving — but fragile to noise.',
     rule:'decide() → C on round 1, else copy their last move',
     decide:(mH,tH)=>{
       if(tH.length===0)return'C';
