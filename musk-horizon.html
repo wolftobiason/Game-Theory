@@ -167,13 +167,13 @@ const NODES = [
   {id:'cybertruck',    era:'foundation',   year:2025, name:'Cybertruck',            icon:'truck',
    desc:'Stainless steel electric pickup redefines American utility',
    quote:'"The Cybertruck will be the best truck ever built — period."',
-   detail:'Tesla\'s angular masterpiece in 30X cold-rolled stainless steel proved electric could dominate the toughest segments. Its exoskeleton and range of 500+ miles set the stage for a new era of American manufacturing.',
+   detail:'Tesla\'s angular masterpiece in 30X cold-rolled stainless steel proved electric could dominate the toughest segments. Its exoskeleton, 340-mile standard range (470 miles with the optional range extender), and near-indestructible body set the stage for a new era of American manufacturing.',
    prereqs:[], x:80, y:75},
 
   {id:'megapack',      era:'foundation',   year:2025, name:'Megapack V2',           icon:'battery',
    desc:'Grid-scale energy storage enabling 100% renewable grids',
    quote:'"Energy storage is the bridge between renewable generation and civilization."',
-   detail:'Each Megapack V2 stores 3.9 MWh, enough to power 3,600 homes for an hour. Terafactories produce them at a rate that makes fossil fuel grids economically obsolete by 2028.',
+   detail:'Each Megapack V2 stores 3.9 MWh — enough to power roughly 3,900 average homes for an hour. Tesla\'s Gigafactories churn them out at a pace that makes fossil-fuel grid economics increasingly uncompetitive.',
    prereqs:[], x:80, y:255},
 
   {id:'starship',      era:'foundation',   year:2025, name:'Starship Flights',      icon:'rocket',
@@ -191,7 +191,7 @@ const NODES = [
   {id:'dojo',          era:'foundation',   year:2026, name:'AI4 Chip',              icon:'cpu',
    desc:"Tesla's custom AI inference chip — purpose-built for autonomous vision",
    quote:'"We design our own silicon because no one else builds what we actually need."',
-   detail:'The AI4 delivers 400 TOPS of neural network inference at a fraction of the power draw of GPU alternatives. Embedded in every new Tesla, it processes 8 camera streams in real time — the silicon backbone of Full Self-Driving.',
+   detail:'The AI4 (HW4) delivers over 500 TOPS of neural network inference — a major leap over the 144 TOPS of HW3. Embedded in every new Tesla, it processes 8 camera streams simultaneously in real time, providing the silicon backbone for Full Self-Driving.',
    prereqs:[], x:80, y:795},
 
   // ── AUTONOMY ──
@@ -282,10 +282,10 @@ const NODES = [
    detail:'Polymer mesh electrodes injected via a syringe self-assemble across 10,000 neurons. Users experience direct access to Grok AGI\'s knowledge at thought speed — questions answered before they are fully formed.',
    prereqs:['grok_agi'], x:1600, y:75},
 
-  {id:'crewed_mars',   era:'mars',         year:2028, name:'Crewed Mars Landing',   icon:'rocket',
+  {id:'crewed_mars',   era:'mars',         year:2033, name:'Crewed Mars Landing',   icon:'rocket',
    desc:'First humans set foot on Mars — humanity becomes multiplanetary',
    quote:'"This is the most consequential moment in human history since we left Africa."',
-   detail:'Six astronauts touch down at Arcadia Planitia where 40 Optimus robots, 200 Megapacks, and pre-inflated hab modules have waited for them. The colony is viable before human boots touch Martian soil.',
+   detail:'Six astronauts touch down at Arcadia Planitia, where the 2028 uncrewed mission left 40 Optimus robots, 200 Megapacks, and pre-inflated hab modules waiting. The Mars 2033 launch window provides the trajectory. The colony is fully operational before human boots touch Martian soil.',
    prereqs:['orbital_refuel','uncrewed_mars','optimus3'], x:1600, y:375, milestone:true},
 
   {id:'auto_mining',   era:'mars',         year:2032, name:'Autonomous Mining',     icon:'shovel',
