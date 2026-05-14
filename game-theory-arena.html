@@ -176,8 +176,13 @@ body {
 .player-panel .avatar { font-size: 2.8rem; margin-bottom: 8px; }
 .player-panel .pname { font-size: 1rem; font-weight: 700; margin-bottom: 2px; }
 .player-panel .score-label { font-size: 0.75rem; color: var(--text-dim); }
-.player-panel .score { font-size: 2.2rem; font-weight: 800; color: var(--accent2); margin: 2px 0 8px; }
+.player-panel .score { font-size: 2.2rem; font-weight: 800; color: var(--accent2); margin: 2px 0 2px; }
 .player-panel.opp .score { color: var(--accent); }
+.round-delta { font-size: 0.8rem; font-weight: 700; min-height: 1.2em; margin-bottom: 6px; opacity: 0; transition: opacity 0.2s; }
+.round-delta.show { opacity: 1; }
+.round-delta.pos { color: var(--green); }
+.round-delta.neg { color: var(--red); }
+.round-delta.zero { color: var(--text-dim); }
 .choice-display { min-height: 40px; display: flex; align-items: center; justify-content: center; }
 .choice-badge {
   padding: 5px 14px; border-radius: 20px; font-size: 0.8rem;
@@ -400,8 +405,9 @@ body {
     <div class="player-panel">
       <div class="avatar">🧑</div>
       <div class="pname">You</div>
-      <div class="score-label">Points</div>
+      <div class="score-label">Total Points</div>
       <div class="score" id="player-score">0</div>
+      <div class="round-delta" id="player-delta"></div>
       <div class="choice-display" id="player-choice-display">
         <div class="choice-badge pending">Deciding...</div>
       </div>
@@ -410,8 +416,9 @@ body {
     <div class="player-panel opp">
       <div class="avatar" id="opp-avatar">🤖</div>
       <div class="pname" id="opp-name-game">Opponent</div>
-      <div class="score-label">Points</div>
+      <div class="score-label">Total Points</div>
       <div class="score" id="opp-score">0</div>
+      <div class="round-delta" id="opp-delta"></div>
       <div class="choice-display" id="opp-choice-display">
         <div class="choice-badge pending">Thinking...</div>
       </div>
@@ -651,6 +658,10 @@ function startMatch(oppId) {
   state.playerScore = 0;
   state.oppScore = 0;
   state.history = [];
+  ['player-delta','opp-delta'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.className = 'round-delta'; el.textContent = ''; }
+  });
 
   const g = GAMES[state.currentGame];
   const p = g.payoffs;
@@ -734,6 +745,13 @@ function makeMove(pm) {
     state.oppScore += payoffs[1];
     document.getElementById('player-score').textContent = state.playerScore;
     document.getElementById('opp-score').textContent = state.oppScore;
+    function showDelta(id, val) {
+      const el = document.getElementById(id);
+      el.className = 'round-delta show ' + (val > 0 ? 'pos' : val < 0 ? 'neg' : 'zero');
+      el.textContent = (val > 0 ? '+' : '') + val + ' this round';
+    }
+    showDelta('player-delta', payoffs[0]);
+    showDelta('opp-delta', payoffs[1]);
     state.history.push({playerMove:pm, oppMove:om, pGain:payoffs[0], oGain:payoffs[1]});
     renderMatrix(key);
     setTimeout(() => showRoundResult(pm, om, payoffs, key), 400);
