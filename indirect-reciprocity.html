@@ -556,8 +556,8 @@ footer{
   <!-- TOURNAMENT -->
   <div class="tab-panel" id="tab-tourney">
     <div class="controls">
-      <button class="btn btn-primary" id="tourneyBtn" onclick="runTournament()">▶ Run Tournament</button>
-      <span style="color:var(--muted);font-size:.85rem">All 12 k-threshold strategies · full mixed population · paper parameters</span>
+      <button class="btn btn-primary" id="tourneyBtn" onclick="runTournament()">▶ Run Trials</button>
+      <button class="btn btn-sec" id="tourneyResetBtn" onclick="resetTourney()">↺ Reset</button>
     </div>
     <div class="noise-ctrl">
       <span>q (gossip quality):</span>
@@ -569,8 +569,13 @@ footer{
       <input type="range" id="tB" min="2" max="20" value="10" step="1">
       <span class="val" id="tBVal">10 &nbsp;(c/b = 0.10)</span>
     </div>
+    <div class="noise-ctrl">
+      <span>Trials:</span>
+      <input type="range" id="tTrials" min="5" max="50" value="20" step="5">
+      <span class="val" id="tTrialsVal">20</span>
+    </div>
     <div class="highlight" style="margin-top:8px;margin-bottom:20px">
-      <p><strong>All 12 k-threshold strategies</strong> (k = −5 to +6) compete simultaneously in one shared community. Each strategy's payoff depends on the image scores it accumulates and how many donations it receives from others. Default parameters match Nowak &amp; Sigmund (1998): q = 1.0 (perfect information), b = 10, c = 1 (c/b = 0.10).</p>
+      <p><strong>Replicating Nowak &amp; Sigmund Fig. 1:</strong> Each trial starts with a random distribution of all 12 k-threshold strategies — exactly as the paper does. No mutation. Evolutionary dynamics run until one strategy reaches fixation (≥ 95% of the population). The bar chart tallies how often each strategy wins across all trials. Under the paper's parameters (q = 1.0, c/b = 0.10), k = 0 should dominate.</p>
     </div>
     <div id="tourneyResults"></div>
   </div>
@@ -640,8 +645,8 @@ footer{
     </div>
     <div class="info-card">
       <div class="info-icon">🎭</div>
-      <div class="info-title">The Reputation Farmer Problem</div>
-      <div class="info-text">The Reputation Farmer strategy — cooperate to build image score, then exploit — maps directly onto predatory behavior in real markets. A company or individual can accumulate goodwill through genuine cooperation, then cash it out through defection. The model predicts this fails long-term if q is high and memory is long. It succeeds when q is low or reputation resets.</div>
+      <div class="info-title">The Reciprocity Feigner</div>
+      <div class="info-text">Cooperate visibly to build image score, then exploit the accumulated goodwill — this pattern maps directly onto predatory behavior in real markets. A company or individual can feign genuine reciprocity long enough to build trust, then cash it out through defection. The model predicts this fails long-term if q is high and memory is long. It succeeds when q is low or reputation resets.</div>
     </div>
     <div class="info-card">
       <div class="info-icon">🧬</div>
@@ -680,8 +685,8 @@ footer{
     <li>
       <div class="tip-num">4</div>
       <div class="tip-content">
-        <h4>Beware Reputation Farmers</h4>
-        <p>Watch for patterns like: high initial generosity, then escalating extraction. This is the Reputation Farmer strategy in action — cashing out accumulated image score. One signal: they cooperate very visibly with powerful people (audience-building) while quietly defecting on less visible interactions.</p>
+        <h4>Beware Exploiters</h4>
+        <p>Watch for patterns like: high initial generosity, then escalating extraction. This is the Exploiter strategy in action — cashing out accumulated image score. One signal: they cooperate very visibly with powerful people (audience-building) while quietly defecting on less visible interactions.</p>
       </div>
     </li>
     <li>
@@ -1008,69 +1013,137 @@ document.getElementById('speedSlider').addEventListener('input',function(){
 
 resetLive();
 
-// ── TOURNAMENT ────────────────────────────────────────────────────────────────
-function runTournament(){
+// ── TOURNAMENT (Fixation Analysis — replicates Nowak & Sigmund Fig. 1) ────────
+let tourneyRunning=false;
+
+async function runTournament(){
+  if(tourneyRunning)return;
+  tourneyRunning=true;
+  document.getElementById('tourneyBtn').disabled=true;
+  document.getElementById('tourneyResetBtn').disabled=true;
+
   const q=+document.getElementById('tQ').value/100;
   const b=+document.getElementById('tB').value;
-  const POP_PER_STRAT=10; // 10 × 12 strategies = 120 agents total
-  const ROUNDS=12000;     // ~100 donor turns per agent
+  const TRIALS=+document.getElementById('tTrials').value;
+  const MAX_GENS=150;
+  const TRIAL_ROUNDS=6000;
+  const FIXATION=0.95;
   const n=EVO_STRATS.length;
 
-  // Build one full mixed population — all 12 k-threshold strategies present simultaneously
-  const agents=[];
-  EVO_STRATS.forEach((_,si)=>{
-    for(let j=0;j<POP_PER_STRAT;j++) agents.push({si,img:0,payoff:0});
-  });
-  const N=agents.length;
+  const wins=new Array(n).fill(0);
+  let inconclusive=0;
+  drawFixationChart(wins,0,TRIALS,inconclusive,false);
 
-  // Run all interactions within this single shared community
-  for(let r=0;r<ROUNDS;r++){
-    const di=Math.floor(Math.random()*N);
-    let ri;
-    do{ri=Math.floor(Math.random()*N)}while(ri===di);
-    const donor=agents[di];
-    const rcpt=agents[ri];
-    const known=Math.random()<q;
-    const coop=EVO_STRATS[donor.si].decide(rcpt.img,known);
-    if(coop){
-      donor.payoff-=C;
-      rcpt.payoff+=b;
-      donor.img=clamp(donor.img+1,-EVO_IMG_CAP,EVO_IMG_CAP);
-    } else {
-      donor.img=clamp(donor.img-1,-EVO_IMG_CAP,EVO_IMG_CAP);
+  for(let t=0;t<TRIALS;t++){
+    let pop=new Array(n).fill(0);
+    for(let i=0;i<EVO_POP;i++) pop[Math.floor(Math.random()*n)]++;
+
+    let winner=null;
+
+    for(let g=0;g<MAX_GENS&&winner===null;g++){
+      const agents=[];
+      EVO_STRATS.forEach((_,si)=>{
+        for(let j=0;j<pop[si];j++) agents.push({si,img:0,payoff:0});
+      });
+      const N=agents.length;
+
+      for(let r=0;r<TRIAL_ROUNDS;r++){
+        const di=Math.floor(Math.random()*N);
+        let ri;
+        do{ri=Math.floor(Math.random()*N)}while(ri===di);
+        const donor=agents[di];
+        const rcpt=agents[ri];
+        const known=Math.random()<q;
+        const coop=EVO_STRATS[donor.si].decide(rcpt.img,known);
+        if(coop){
+          donor.payoff-=C;
+          rcpt.payoff+=b;
+          donor.img=clamp(donor.img+1,-EVO_IMG_CAP,EVO_IMG_CAP);
+        } else {
+          donor.img=clamp(donor.img-1,-EVO_IMG_CAP,EVO_IMG_CAP);
+        }
+      }
+
+      const fitness=EVO_STRATS.map((_,si)=>{
+        const ag=agents.filter(a=>a.si===si);
+        if(!ag.length)return null;
+        return ag.reduce((s,a)=>s+a.payoff,0)/ag.length;
+      });
+      const presentFit=fitness.filter(f=>f!==null);
+      const minF=presentFit.length?Math.min(...presentFit):0;
+      const shifted=fitness.map((f,si)=>pop[si]>0?Math.max(0,f-minF):0);
+      const sumS=shifted.reduce((a,v)=>a+v,0);
+      pop=sumS===0?pop.slice():shifted.map(s=>Math.round((s/sumS)*EVO_POP));
+      pop=pop.map(v=>Math.max(0,v));
+      let sum=pop.reduce((a,v)=>a+v,0);
+      if(sum!==EVO_POP){const mx=pop.indexOf(Math.max(...pop));pop[mx]+=EVO_POP-sum;}
+
+      const maxP=Math.max(...pop);
+      if(maxP>=EVO_POP*FIXATION) winner=pop.indexOf(maxP);
     }
+
+    if(winner!==null) wins[winner]++;
+    else inconclusive++;
+
+    drawFixationChart(wins,t+1,TRIALS,inconclusive,false);
+    await sleep(20);
   }
 
-  // Summarise per strategy
-  const stats=EVO_STRATS.map((_,si)=>{
-    const ag=agents.filter(a=>a.si===si);
-    const avgPayoff=ag.reduce((s,a)=>s+a.payoff,0)/ag.length;
-    const avgImg=ag.reduce((s,a)=>s+a.img,0)/ag.length;
-    return{avgPayoff,avgImg};
-  });
+  drawFixationChart(wins,TRIALS,TRIALS,inconclusive,true);
+  tourneyRunning=false;
+  document.getElementById('tourneyBtn').disabled=false;
+  document.getElementById('tourneyResetBtn').disabled=false;
+}
 
-  const ranked=EVO_STRATS.map((s,i)=>({s,i,...stats[i]}))
-    .sort((a,b2)=>b2.avgPayoff-a.avgPayoff);
+function resetTourney(){
+  if(tourneyRunning)return;
+  document.getElementById('tourneyResults').innerHTML='';
+}
 
-  let html=`<table class="t-table">
-    <thead><tr><th>Rank</th><th>Strategy</th><th>Avg Payoff</th><th>Avg Image Score</th></tr></thead>
-    <tbody>`;
-  ranked.forEach(({s,avgPayoff,avgImg},ri)=>{
-    const rc=['r1','r2','r3','rN'][Math.min(ri,3)];
-    const imgColor=avgImg>0?'#4ade80':avgImg<0?'#f87171':'#7777aa';
+function drawFixationChart(wins,done,total,inconclusive,complete){
+  const maxW=Math.max(1,...wins);
+  const ranked=EVO_STRATS.map((s,i)=>({s,i,w:wins[i]})).sort((a,b)=>b.w-a.w);
+
+  let html=`<div style="margin-bottom:16px;color:var(--muted);font-size:.85rem">
+    ${done===0?'Starting…':'Trial '+done+' / '+total+(inconclusive>0?' · '+inconclusive+' reached max generations without fixation':'')}
+  </div><div style="display:flex;flex-direction:column;gap:10px">`;
+
+  ranked.forEach(({s,w},ri)=>{
+    const pct=total>0?w/total*100:0;
+    const barW=w/maxW*100;
     const star=s.k===0?' ★':'';
-    html+=`<tr>
-      <td><span class="rank-badge ${rc}">${ri+1}</span></td>
-      <td><span class="mini-circle" style="background:${s.color}"></span>${s.name}${star} <span style="color:var(--muted);font-size:.78rem">${s.label}</span></td>
-      <td style="font-weight:700;font-size:1.05rem">${avgPayoff.toFixed(1)}</td>
-      <td style="font-weight:700;color:${imgColor}">${avgImg>=0?'+':''}${avgImg.toFixed(1)}</td>
-    </tr>`;
+    const highlight=ri===0&&w>0;
+    html+=`<div style="display:flex;align-items:center;gap:12px">
+      <div style="width:210px;font-size:.84rem;flex-shrink:0;display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+        <span style="${highlight?'font-weight:700':'color:var(--muted)'}">${s.name}${star}</span>
+        <span style="color:var(--muted);font-size:.72rem">${s.label}</span>
+      </div>
+      <div style="flex:1;background:var(--border);border-radius:4px;height:22px;overflow:hidden">
+        <div style="width:${barW.toFixed(1)}%;background:${s.color};opacity:${w>0?0.85:0};height:100%;border-radius:4px;transition:width .4s"></div>
+      </div>
+      <div style="width:70px;text-align:right;font-size:.85rem;font-family:monospace;font-weight:700;color:${highlight?s.color:'var(--text)'}">
+        ${w>0?w+' / '+total:'—'}
+      </div>
+      <div style="width:44px;text-align:right;font-size:.8rem;color:var(--muted);font-family:monospace">
+        ${w>0?pct.toFixed(0)+'%':''}
+      </div>
+    </div>`;
   });
-  html+='</tbody></table>';
+  html+='</div>';
 
-  html+=`<div style="margin-top:16px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:14px 18px;font-size:.85rem;color:#c4b5fd">
-    <strong>How this works:</strong> All 12 k-threshold strategies compete simultaneously in one shared community of ${N} agents (${POP_PER_STRAT} each). Over ${ROUNDS.toLocaleString()} random interactions, donors check the recipient's image score (known with probability q=${q.toFixed(2)}), decide whether to donate based on their threshold k, and image scores update. <strong>Avg Payoff</strong> = donations received (×${b}) minus donations given (×${C}). <strong>Avg Image Score</strong> shows accumulated reputation, which determines how often others donate to each strategy. ★ marks the k=0 Discriminator that Nowak &amp; Sigmund (1998) show wins under these parameters.
-  </div>`;
+  if(complete){
+    const topI=wins.indexOf(Math.max(...wins));
+    const top=EVO_STRATS[topI];
+    const papermatch=top.k===0;
+    html+=`<div style="margin-top:20px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:14px 18px;font-size:.85rem;color:#c4b5fd">
+      <strong>${top.name} (${top.label})</strong> reached fixation in ${wins[topI]} of ${total} trials (${(wins[topI]/total*100).toFixed(0)}%).
+      ${papermatch
+        ? "This matches Nowak &amp; Sigmund's (1998) prediction: under q &gt; c/b, k = 0 is the unique evolutionary attractor — the only strategy that can invade any resident and resist invasion itself."
+        : "Try setting q = 1.00 and b = 10 (c/b = 0.10) to replicate the paper's conditions where k = 0 dominates."}
+      ${inconclusive>0?' '+inconclusive+' trial(s) did not reach fixation within 150 generations.':''}
+    </div>`;
+  }
 
   document.getElementById('tourneyResults').innerHTML=html;
 }
@@ -1080,7 +1153,10 @@ document.getElementById('tQ').addEventListener('input',function(){
 });
 document.getElementById('tB').addEventListener('input',function(){
   const b=+this.value;
-  document.getElementById('tBVal').textContent=b+'  (c/b = '+(1/b).toFixed(2)+')';
+  document.getElementById('tBVal').textContent=b+'  (c/b = '+(1/b).toFixed(2)+')';
+});
+document.getElementById('tTrials').addEventListener('input',function(){
+  document.getElementById('tTrialsVal').textContent=this.value;
 });
 
 // ── EVOLUTION ─────────────────────────────────────────────────────────────────
