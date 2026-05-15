@@ -557,20 +557,20 @@ footer{
   <div class="tab-panel" id="tab-tourney">
     <div class="controls">
       <button class="btn btn-primary" id="tourneyBtn" onclick="runTournament()">▶ Run Tournament</button>
-      <span style="color:var(--muted);font-size:.85rem">1000 interactions per strategy pair · full mixed population</span>
+      <span style="color:var(--muted);font-size:.85rem">All 12 k-threshold strategies · full mixed population · paper parameters</span>
     </div>
     <div class="noise-ctrl">
       <span>q (gossip quality):</span>
-      <input type="range" id="tQ" min="0" max="100" value="70" step="1">
-      <span class="val" id="tQVal">0.70</span>
+      <input type="range" id="tQ" min="0" max="100" value="100" step="1">
+      <span class="val" id="tQVal">1.00</span>
     </div>
     <div class="noise-ctrl">
       <span>Benefit b (cost c = 1, so c/b = 1/b):</span>
-      <input type="range" id="tB" min="2" max="10" value="3" step="1">
-      <span class="val" id="tBVal">3 &nbsp;(c/b = 0.33)</span>
+      <input type="range" id="tB" min="2" max="20" value="10" step="1">
+      <span class="val" id="tBVal">10 &nbsp;(c/b = 0.10)</span>
     </div>
     <div class="highlight" style="margin-top:8px;margin-bottom:20px">
-      <p><strong>In indirect reciprocity,</strong> fitness isn't measured by head-to-head scores. Each strategy's payoff depends on its image score within a mixed population — who it receives donations from, and what it costs to donate. The matrix below shows average payoff when strategy A is embedded in a population with equal numbers of strategy B.</p>
+      <p><strong>All 12 k-threshold strategies</strong> (k = −5 to +6) compete simultaneously in one shared community. Each strategy's payoff depends on the image scores it accumulates and how many donations it receives from others. Default parameters match Nowak &amp; Sigmund (1998): q = 1.0 (perfect information), b = 10, c = 1 (c/b = 0.10).</p>
     </div>
     <div id="tourneyResults"></div>
   </div>
@@ -584,20 +584,26 @@ footer{
     </div>
     <div class="noise-ctrl">
       <span>q (gossip quality):</span>
-      <input type="range" id="evoQ" min="0" max="100" value="70" step="1">
-      <span class="val" id="evoQVal">0.70</span>
-      <span style="margin-left:12px;font-size:.8rem">← drag left to see defectors dominate</span>
+      <input type="range" id="evoQ" min="0" max="100" value="100" step="1">
+      <span class="val" id="evoQVal">1.00</span>
+      <span style="margin-left:12px;font-size:.8rem">← paper uses q=1.0 (Fig. 1 &amp; 2)</span>
     </div>
     <div class="noise-ctrl">
-      <span>Benefit b:</span>
-      <input type="range" id="evoB" min="2" max="10" value="3" step="1">
-      <span class="val" id="evoBVal">3</span>
+      <span>Benefit b (cost c = 1):</span>
+      <input type="range" id="evoB" min="2" max="20" value="10" step="1">
+      <span class="val" id="evoBVal">10</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>Mutation rate:</span>
+      <input type="range" id="evoMu" min="0" max="20" value="1" step="1">
+      <span class="val" id="evoMuVal">0.001</span>
+      <span style="margin-left:12px;font-size:.8rem">← 0.001 matches the paper (Fig. 2)</span>
     </div>
     <canvas id="evoCanvas"></canvas>
     <div class="legend" id="evoLegend"></div>
 
     <div class="highlight" style="margin-top:24px">
-      <p><strong>Watch what happens:</strong> With high q, the Discriminator (⚖️) and Forgiver (🤗) strategies dominate — they maintain good image scores and receive plentiful donations. Exploiters (😈) spike briefly when cooperators are abundant, then collapse as their image score tanks. At <strong>low q</strong> (poor gossip), exploiters can hide and defection wins. The transition point is exactly q = c/b.</p>
+      <p><strong>Watch what happens:</strong> Without mutation (Fig. 1), k=0 drives all other strategies to extinction — lenient strategies (k&lt;0) are exploited, strict ones (k&gt;0) leave too many cooperative opportunities on the table. With mutation at 0.001 (Fig. 2), extinct strategies keep trickling back in, producing the endless cycles the paper describes: k=0 dominates, then lenient strategies invade and let exploiters flourish, who are then displaced by k=0 again. Default parameters match the paper: q=1.0, b=10, c=1 (c/b=0.10).</p>
     </div>
   </div>
 </div>
@@ -705,14 +711,37 @@ footer{
 // ── CONSTANTS ─────────────────────────────────────────────────────────────────
 const B_DEFAULT = 3;
 const C = 1;
-const IMG_CAP = 12;
+const IMG_CAP = 12;       // live population tab
+const EVO_IMG_CAP = 5;    // evolution & tournament — scores bounded [-5,+5] to match k range
+
+// ── EVOLUTION STRATEGY SPACE (Nowak & Sigmund 1998: k ∈ {−5,…,+6}) ──────────
+function kColor(k){
+  const p=['#14b8a6','#22d3ee','#60a5fa','#818cf8','#a78bfa','#a855f7',
+           '#d946ef','#f59e0b','#fb923c','#f87171','#ef4444','#dc2626'];
+  return p[k+5];
+}
+const EVO_STRAT_NAMES={
+  '-5':'Altruist','-4':'Generous','-3':'Forgiving','-2':'Lenient','-1':'Easy-going',
+  '0':'Discriminator','1':'Cautious','2':'Selective','3':'Demanding','4':'Strict','5':'Harsh','6':'Purist'
+};
+// `let k` in a for-loop creates a fresh binding per iteration — closures capture correctly
+const EVO_STRATS=[];
+for(let k=-5;k<=6;k++){
+  EVO_STRATS.push({
+    k,
+    name:EVO_STRAT_NAMES[String(k)],
+    label:`k=${k>=0?'+':''}${k}`,
+    color:kColor(k),
+    decide:(score,known)=>{const s=known?score:0;return s>=k;}
+  });
+}
 
 // ── STRATEGIES ────────────────────────────────────────────────────────────────
 // decide(recipScore|null, known, myScore) → true=cooperate
 const STRATEGIES = [
   {
-    id:'allC', name:'Altruist', emoji:'😇', color:'#4ecdc4', tag:'Unconditional k=−∞',
-    desc:'Donates to everyone, always. Builds a perfect image score — but exploited heavily by parasites.',
+    id:'allC', name:'Altruist', emoji:'😇', color:'#4ecdc4', tag:'Unconditional k=−5',
+    desc:'Donates to everyone, always. Builds a perfect image score — but exploited heavily by exploiters.',
     rule:'donate → always true',
     decide:(score,known,my)=>true
   },
@@ -983,14 +1012,14 @@ resetLive();
 function runTournament(){
   const q=+document.getElementById('tQ').value/100;
   const b=+document.getElementById('tB').value;
-  const POP_PER_STRAT=50; // equal share of each strategy
-  const ROUNDS=5000;      // random interactions across the full community
-  const n=STRATEGIES.length;
+  const POP_PER_STRAT=10; // 10 × 12 strategies = 120 agents total
+  const ROUNDS=12000;     // ~100 donor turns per agent
+  const n=EVO_STRATS.length;
 
-  // Build one full mixed population — all strategies present simultaneously
+  // Build one full mixed population — all 12 k-threshold strategies present simultaneously
   const agents=[];
-  STRATEGIES.forEach((_,si)=>{
-    for(let k=0;k<POP_PER_STRAT;k++) agents.push(makeAgent(si));
+  EVO_STRATS.forEach((_,si)=>{
+    for(let j=0;j<POP_PER_STRAT;j++) agents.push({si,img:0,payoff:0});
   });
   const N=agents.length;
 
@@ -1002,26 +1031,25 @@ function runTournament(){
     const donor=agents[di];
     const rcpt=agents[ri];
     const known=Math.random()<q;
-    const score=known?rcpt.img:null;
-    const coop=STRATEGIES[donor.si].decide(score,known,donor.img);
+    const coop=EVO_STRATS[donor.si].decide(rcpt.img,known);
     if(coop){
       donor.payoff-=C;
       rcpt.payoff+=b;
-      donor.img=clamp(donor.img+1,-IMG_CAP,IMG_CAP);
+      donor.img=clamp(donor.img+1,-EVO_IMG_CAP,EVO_IMG_CAP);
     } else {
-      donor.img=clamp(donor.img-1,-IMG_CAP,IMG_CAP);
+      donor.img=clamp(donor.img-1,-EVO_IMG_CAP,EVO_IMG_CAP);
     }
   }
 
   // Summarise per strategy
-  const stats=STRATEGIES.map((_,si)=>{
+  const stats=EVO_STRATS.map((_,si)=>{
     const ag=agents.filter(a=>a.si===si);
     const avgPayoff=ag.reduce((s,a)=>s+a.payoff,0)/ag.length;
     const avgImg=ag.reduce((s,a)=>s+a.img,0)/ag.length;
     return{avgPayoff,avgImg};
   });
 
-  const ranked=STRATEGIES.map((s,i)=>({s,i,...stats[i]}))
+  const ranked=EVO_STRATS.map((s,i)=>({s,i,...stats[i]}))
     .sort((a,b2)=>b2.avgPayoff-a.avgPayoff);
 
   let html=`<table class="t-table">
@@ -1030,9 +1058,10 @@ function runTournament(){
   ranked.forEach(({s,avgPayoff,avgImg},ri)=>{
     const rc=['r1','r2','r3','rN'][Math.min(ri,3)];
     const imgColor=avgImg>0?'#4ade80':avgImg<0?'#f87171':'#7777aa';
+    const star=s.k===0?' ★':'';
     html+=`<tr>
       <td><span class="rank-badge ${rc}">${ri+1}</span></td>
-      <td><span class="mini-circle" style="background:${s.color}"></span>${s.emoji} ${s.name}</td>
+      <td><span class="mini-circle" style="background:${s.color}"></span>${s.name}${star} <span style="color:var(--muted);font-size:.78rem">${s.label}</span></td>
       <td style="font-weight:700;font-size:1.05rem">${avgPayoff.toFixed(1)}</td>
       <td style="font-weight:700;color:${imgColor}">${avgImg>=0?'+':''}${avgImg.toFixed(1)}</td>
     </tr>`;
@@ -1040,7 +1069,7 @@ function runTournament(){
   html+='</tbody></table>';
 
   html+=`<div style="margin-top:16px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:14px 18px;font-size:.85rem;color:#c4b5fd">
-    <strong>How this works:</strong> All six strategies compete simultaneously in one shared community of ${N} agents (${POP_PER_STRAT} of each). Over ${ROUNDS.toLocaleString()} random interactions, donors check the recipient's image score (known with probability q), decide whether to donate, and image scores update accordingly. <strong>Avg Payoff</strong> is net coins earned per agent — donations received (×${b}) minus donations given (×${C}). <strong>Avg Image Score</strong> shows the reputation each strategy accumulates, which directly determines how often others will donate to them. This is the same structure Nowak &amp; Sigmund used.
+    <strong>How this works:</strong> All 12 k-threshold strategies compete simultaneously in one shared community of ${N} agents (${POP_PER_STRAT} each). Over ${ROUNDS.toLocaleString()} random interactions, donors check the recipient's image score (known with probability q=${q.toFixed(2)}), decide whether to donate based on their threshold k, and image scores update. <strong>Avg Payoff</strong> = donations received (×${b}) minus donations given (×${C}). <strong>Avg Image Score</strong> shows accumulated reputation, which determines how often others donate to each strategy. ★ marks the k=0 Discriminator that Nowak &amp; Sigmund (1998) show wins under these parameters.
   </div>`;
 
   document.getElementById('tourneyResults').innerHTML=html;
@@ -1055,9 +1084,9 @@ document.getElementById('tB').addEventListener('input',function(){
 });
 
 // ── EVOLUTION ─────────────────────────────────────────────────────────────────
-const EVO_POP=240; // 40 per strategy
-const EVO_ROUNDS_PER_GEN=800;
-const TOTAL_GENS=60;
+const EVO_POP=120;
+const EVO_ROUNDS_PER_GEN=12000; // ~100 donor turns per agent, matching paper's m=300 density
+const TOTAL_GENS=200;
 let evoHistory=null,evoRunning=false;
 
 document.getElementById('evoQ').addEventListener('input',function(){
@@ -1065,6 +1094,10 @@ document.getElementById('evoQ').addEventListener('input',function(){
 });
 document.getElementById('evoB').addEventListener('input',function(){
   document.getElementById('evoBVal').textContent=this.value;
+});
+document.getElementById('evoMu').addEventListener('input',function(){
+  const v=+this.value;
+  document.getElementById('evoMuVal').textContent=(v/1000).toFixed(3);
 });
 
 function resetEvo(){
@@ -1075,13 +1108,14 @@ function resetEvo(){
   drawEvo([]);
 }
 
-// Build evolution legend
+// Build evolution legend for all 12 k-threshold strategies
 (function(){
   const leg=document.getElementById('evoLegend');
-  STRATEGIES.forEach(s=>{
+  EVO_STRATS.forEach(s=>{
     const d=document.createElement('div');
     d.className='leg-item';
-    d.innerHTML=`<div class="leg-dot" style="background:${s.color}"></div>${s.emoji} ${s.name}`;
+    const star=s.k===0?' ★':'';
+    d.innerHTML=`<div class="leg-dot" style="background:${s.color}"></div>${s.name}${star} <span style="color:var(--muted);font-size:.75rem">${s.label}</span>`;
     leg.appendChild(d);
   });
 })();
@@ -1093,23 +1127,25 @@ async function runEvolution(){
 
   const q=+document.getElementById('evoQ').value/100;
   const b=+document.getElementById('evoB').value;
-  const perStrat=Math.floor(EVO_POP/STRATEGIES.length);
-  let pop=STRATEGIES.map(()=>perStrat);
+  const mu=+document.getElementById('evoMu').value/1000;
+  const n=EVO_STRATS.length;
+
+  // Random starting distribution — each agent independently assigned (matches paper)
+  let pop=new Array(n).fill(0);
+  for(let i=0;i<EVO_POP;i++) pop[Math.floor(Math.random()*n)]++;
   const hist=[pop.slice()];
 
   for(let g=0;g<TOTAL_GENS;g++){
     const total=pop.reduce((a,v)=>a+v,0);
     if(total===0)break;
 
-    // Create agents proportional to pop
+    // Build agents from current population counts
     const agents=[];
-    STRATEGIES.forEach((_,si)=>{
-      for(let k=0;k<pop[si];k++) agents.push(makeAgent(si));
+    EVO_STRATS.forEach((_,si)=>{
+      for(let j=0;j<pop[si];j++) agents.push({si,img:0,payoff:0});
     });
-    // Reset image scores and payoffs
-    agents.forEach(a=>{a.img=0;a.payoff=0;});
 
-    // Run interactions
+    // Run interactions — each round picks a random donor/recipient pair
     const N=agents.length;
     for(let r=0;r<EVO_ROUNDS_PER_GEN;r++){
       const di=Math.floor(Math.random()*N);
@@ -1118,34 +1154,59 @@ async function runEvolution(){
       const donor=agents[di];
       const rcpt=agents[ri];
       const known=Math.random()<q;
-      const score=known?rcpt.img:null;
-      const coop=STRATEGIES[donor.si].decide(score,known,donor.img);
+      const coop=EVO_STRATS[donor.si].decide(rcpt.img,known);
       if(coop){
         donor.payoff-=C;
         rcpt.payoff+=b;
-        donor.img=clamp(donor.img+1,-IMG_CAP,IMG_CAP);
+        donor.img=clamp(donor.img+1,-EVO_IMG_CAP,EVO_IMG_CAP);
       } else {
-        donor.img=clamp(donor.img-1,-IMG_CAP,IMG_CAP);
+        donor.img=clamp(donor.img-1,-EVO_IMG_CAP,EVO_IMG_CAP);
       }
     }
 
-    // Fitness per strategy (avg payoff)
-    const fitness=STRATEGIES.map((_,si)=>{
+    // Fitness per strategy (avg payoff among present agents only)
+    const fitness=EVO_STRATS.map((_,si)=>{
       const ag=agents.filter(a=>a.si===si);
-      if(!ag.length)return 0;
+      if(!ag.length)return null; // absent strategy
       return ag.reduce((s,a)=>s+a.payoff,0)/ag.length;
     });
 
-    // Shift positive and reproduce
-    const minF=Math.min(...fitness);
-    const shifted=fitness.map(f=>Math.max(0,f-minF+0.01));
+    // Proportional reproduction — shift by min of PRESENT strategies to allow true extinction
+    const presentFit=fitness.filter(f=>f!==null);
+    const minF=presentFit.length?Math.min(...presentFit):0;
+    // Absent strategies always get 0 share; present ones compete on shifted fitness
+    const shifted=fitness.map((f,si)=>pop[si]>0?Math.max(0,f-minF):0);
     const sumS=shifted.reduce((a,v)=>a+v,0);
-    pop=shifted.map(s=>Math.round((s/sumS)*EVO_POP));
 
-    // Fix rounding
+    if(sumS===0){
+      // All present strategies tied — keep current proportions unchanged
+      pop=pop.slice();
+    } else {
+      pop=shifted.map(s=>Math.round((s/sumS)*EVO_POP));
+    }
+    pop=pop.map(v=>Math.max(0,v));
+
+    // Fix rounding drift — add/remove from most populous strategy
     let sum=pop.reduce((a,v)=>a+v,0);
-    const maxI=pop.indexOf(Math.max(...pop));
-    pop[maxI]+=EVO_POP-sum;
+    if(sum!==EVO_POP){
+      const maxI=pop.indexOf(Math.max(...pop));
+      pop[maxI]+=EVO_POP-sum;
+    }
+
+    // Mutations: each agent has probability mu of adopting a random strategy
+    // Matches Nowak & Sigmund Fig. 2: mutation rate 0.001
+    if(mu>0){
+      const newPop=pop.slice();
+      for(let si=0;si<n;si++){
+        for(let j=0;j<pop[si];j++){
+          if(Math.random()<mu){
+            newPop[si]--;
+            newPop[Math.floor(Math.random()*n)]++;
+          }
+        }
+      }
+      pop=newPop.map(v=>Math.max(0,v));
+    }
 
     hist.push(pop.slice());
     document.getElementById('genLabel').textContent='Generation '+(g+1);
@@ -1200,11 +1261,11 @@ function drawEvo(hist){
   });
 
   const cum=hist.map(snap=>{
-    let c=0;return STRATEGIES.map((_,si)=>{c+=snap[si];return c});
+    let c=0;return EVO_STRATS.map((_,si)=>{c+=snap[si];return c});
   });
 
-  STRATEGIES.forEach((_,si)=>{
-    const s=STRATEGIES[si];
+  EVO_STRATS.forEach((_,si)=>{
+    const s=EVO_STRATS[si];
     ctx.beginPath();
     if(si===0){
       ctx.moveTo(xS(0),yS(0));
@@ -1221,9 +1282,9 @@ function drawEvo(hist){
     ctx.fillStyle=grad;ctx.fill();
   });
 
-  STRATEGIES.forEach((_,si)=>{
+  EVO_STRATS.forEach((_,si)=>{
     ctx.beginPath();
-    ctx.strokeStyle=STRATEGIES[si].color;ctx.lineWidth=1.5;
+    ctx.strokeStyle=EVO_STRATS[si].color;ctx.lineWidth=1.5;
     for(let i=0;i<G;i++){
       const y=yS(cum[i][si]);
       if(i===0)ctx.moveTo(xS(i),y);else ctx.lineTo(xS(i),y);
