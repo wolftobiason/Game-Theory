@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Reputation Economy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#05050f;
+  --panel:#0d0d20;
+  --card:#11112a;
+  --border:#1c1c3a;
+  --text:#eaeaf8;
+  --muted:#7777aa;
+  --purple:#a855f7;
+  --gold:#f59e0b;
+  --green:#4ade80;
+  --red:#f87171;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Segoe UI',system-ui,sans-serif;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+
+/* HEADER */
+header{
+  text-align:center;
+  padding:90px 24px 70px;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,#1a0a2e,var(--bg));
+  border-bottom:1px solid var(--border);
+}
+header h1{
+  font-size:clamp(2.4rem,6vw,4.5rem);
+  font-weight:800;letter-spacing:-0.03em;
+  background:linear-gradient(135deg,#c084fc,#818cf8,#67e8f9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:14px;
+}
+header p{color:var(--muted);font-size:1.15rem;max-width:620px;margin:0 auto}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:64px 24px}
+.section-head{margin-bottom:40px}
+.section-head h2{font-size:1.9rem;font-weight:700;margin-bottom:6px}
+.section-head p{color:var(--muted);font-size:1rem}
+hr.divider{border:none;border-top:1px solid var(--border);margin:0}
+
+/* HIGHLIGHT BOX */
+.highlight{
+  background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(99,102,241,.1));
+  border:1px solid rgba(168,85,247,.3);
+  border-radius:12px;padding:20px 24px;margin:24px 0;
+}
+.highlight p{color:#c4b5fd}
+.highlight.green-hl{
+  background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(34,197,94,.05));
+  border-color:rgba(74,222,128,.3);
+}
+.highlight.green-hl p{color:#86efac}
+.highlight.red-hl{
+  background:linear-gradient(135deg,rgba(248,113,113,.08),rgba(239,68,68,.05));
+  border-color:rgba(248,113,113,.3);
+}
+.highlight.red-hl p{color:#fca5a5}
+
+/* COMPARE GRID */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+.compare-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:14px;padding:24px;
+}
+.compare-card h3{font-size:1rem;font-weight:700;margin-bottom:10px}
+.compare-card.dim h3{color:var(--muted)}
+.compare-card ul{list-style:none;padding:0}
+.compare-card ul li{
+  padding:4px 0;font-size:.88rem;color:var(--muted);
+  border-bottom:1px solid var(--border);
+}
+.compare-card ul li:last-child{border-bottom:none}
+.compare-card ul li strong{color:var(--text)}
+
+/* IMAGE SCORE EXPLAINER */
+.score-flow{
+  display:flex;align-items:center;gap:12px;
+  flex-wrap:wrap;justify-content:center;
+  margin:24px 0;
+}
+.score-node{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;padding:14px 20px;text-align:center;
+  min-width:120px;
+}
+.score-node .label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.score-node .value{font-size:1.5rem;font-weight:800}
+.score-arrow{color:var(--muted);font-size:1.4rem;flex-shrink:0}
+.score-pos{color:var(--green)}.score-neg{color:var(--red)}.score-neu{color:var(--muted)}
+
+/* CONDITION BLOCK */
+.condition-wrap{margin:24px 0}
+.condition-sliders{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;
+}
+.condition-sl-block label{
+  display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px;font-weight:600;
+}
+.condition-sl-block input[type=range]{
+  width:100%;accent-color:var(--purple);
+}
+.condition-sl-block .sl-val{
+  font-size:1.4rem;font-weight:800;font-family:monospace;display:block;margin-top:4px;
+}
+.condition-display{
+  background:var(--panel);border:2px solid var(--border);
+  border-radius:16px;padding:28px;text-align:center;
+  transition:border-color .3s,background .3s;
+}
+.condition-display.satisfied{
+  border-color:rgba(74,222,128,.6);
+  background:rgba(74,222,128,.04);
+}
+.condition-display.failed{
+  border-color:rgba(248,113,113,.6);
+  background:rgba(248,113,113,.04);
+}
+.condition-formula{
+  font-family:monospace;font-size:2rem;font-weight:800;margin:8px 0;
+}
+.condition-status{
+  font-size:1rem;font-weight:700;margin-top:8px;
+}
+.condition-status.ok{color:var(--green)}.condition-status.fail{color:var(--red)}
+
+/* STRATEGY CARDS */
+.strategies-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+  gap:18px;margin-top:24px;
+}
+.strat-card{
+  background:var(--panel);border:2px solid var(--border);
+  border-radius:16px;padding:22px;transition:all .25s;
+  position:relative;overflow:hidden;
+}
+.strat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--sc);
+}
+.strat-card:hover{
+  border-color:var(--sc);transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+.strat-header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.strat-circle{
+  width:52px;height:52px;border-radius:50%;background:var(--sc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;flex-shrink:0;
+  box-shadow:0 0 18px var(--sc),0 0 35px color-mix(in srgb,var(--sc) 30%,transparent);
+}
+.strat-name{font-weight:700;font-size:1rem;margin-bottom:2px}
+.strat-badge{
+  font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;font-weight:700;
+  padding:2px 8px;border-radius:999px;
+  background:color-mix(in srgb,var(--sc) 20%,transparent);
+  color:var(--sc);
+}
+.strat-desc{color:var(--muted);font-size:.88rem;margin-bottom:12px}
+.strat-rule{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:9px 13px;
+  font-family:monospace;font-size:.82rem;color:#a0a0cc;
+}
+
+/* TABS */
+.tabs{
+  display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:4px;
+  margin-bottom:28px;border:1px solid var(--border);width:fit-content;
+}
+.tab{
+  padding:8px 22px;border-radius:7px;border:none;
+  background:transparent;color:var(--muted);
+  cursor:pointer;font-size:.9rem;font-weight:500;transition:all .2s;
+}
+.tab.active{background:var(--bg);color:var(--text);font-weight:700}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.btn{
+  padding:10px 24px;border-radius:8px;border:none;
+  cursor:pointer;font-size:.9rem;font-weight:700;transition:all .2s;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#7c3aed,var(--purple));
+  color:#fff;box-shadow:0 4px 18px rgba(168,85,247,.35);
+}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 24px rgba(168,85,247,.5)}
+.btn-primary:active{transform:translateY(0)}
+.btn-sec{background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:#4444bb}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+.noise-ctrl{
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+  font-size:.85rem;color:var(--muted);
+}
+.noise-ctrl input[type=range]{accent-color:var(--purple)}
+.noise-ctrl span.val{color:var(--text);font-weight:700;min-width:36px}
+
+/* AGENT GRID */
+.live-layout{display:grid;grid-template-columns:1fr 320px;gap:24px}
+.agent-grid-wrap{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:16px;padding:20px;
+}
+.agent-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  gap:8px;
+}
+.agent-cell{
+  text-align:center;cursor:default;
+  --sc:#555;
+}
+.agent-circle{
+  width:52px;height:52px;border-radius:50%;
+  background:color-mix(in srgb,var(--sc) 35%,#111);
+  border:2px solid var(--sc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;margin:0 auto 4px;
+  transition:box-shadow .15s,transform .15s,border-color .15s;
+  box-shadow:0 0 8px color-mix(in srgb,var(--sc) 30%,transparent);
+}
+.agent-cell.is-donor .agent-circle{
+  border-color:#fbbf24;transform:scale(1.14);
+  box-shadow:0 0 22px #fbbf24,0 0 44px rgba(251,191,36,.4);
+}
+.agent-cell.is-recipient .agent-circle{
+  border-color:#94a3b8;transform:scale(1.07);
+  box-shadow:0 0 14px #94a3b8;
+}
+.agent-cell.did-coop .agent-circle{
+  border-color:var(--green);
+  box-shadow:0 0 26px var(--green),0 0 52px rgba(74,222,128,.45);
+}
+.agent-cell.did-defect .agent-circle{
+  border-color:var(--red);
+  box-shadow:0 0 26px var(--red),0 0 52px rgba(248,113,113,.45);
+}
+.agent-score{
+  font-size:.72rem;font-weight:800;font-family:monospace;
+  transition:color .2s;color:var(--muted);
+}
+.agent-score.pos{color:var(--green)}.agent-score.neg{color:var(--red)}
+
+/* LIVE STATS PANEL */
+.live-stats{
+  display:flex;flex-direction:column;gap:12px;
+}
+.live-log-box{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:12px;height:200px;overflow-y:auto;
+  font-size:.78rem;color:var(--muted);font-family:monospace;flex-shrink:0;
+}
+.log-line{padding:1px 0}
+.ev-C{color:var(--green)}.ev-D{color:var(--red)}
+.stat-bar-block{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;
+  flex:1;overflow-y:auto;
+}
+.stat-row{margin-bottom:10px}
+.stat-row:last-child{margin-bottom:0}
+.stat-label{display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:4px}
+.stat-label .sname{font-weight:600}
+.stat-label .sval{color:var(--muted);font-family:monospace}
+.stat-bar-outer{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.stat-bar-inner{height:100%;border-radius:3px;transition:width .4s}
+
+/* TOURNAMENT */
+.t-table{width:100%;border-collapse:collapse}
+.t-table th{
+  text-align:left;padding:12px 14px;border-bottom:2px solid var(--border);
+  color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;
+}
+.t-table td{padding:12px 14px;border-bottom:1px solid var(--border)}
+.t-table tr:hover td{background:var(--panel)}
+.rank-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;font-weight:800;font-size:.8rem;
+}
+.r1{background:#fbbf24;color:#000}.r2{background:#94a3b8;color:#000}
+.r3{background:#b45309;color:#fff}.rN{background:var(--border);color:var(--muted)}
+.mini-circle{
+  display:inline-block;width:14px;height:14px;
+  border-radius:50%;vertical-align:middle;margin-right:6px;
+}
+
+/* EVOLUTION CHART */
+#evoCanvas{width:100%;height:280px;border-radius:12px;display:block;cursor:crosshair}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:.82rem}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.gen-label{margin-left:auto;color:var(--muted);font-size:.85rem}
+
+/* INFO GRID */
+.info-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
+  gap:16px;margin-top:24px;
+}
+.info-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:14px;padding:22px;
+}
+.info-icon{font-size:2.2rem;margin-bottom:10px}
+.info-title{font-weight:700;font-size:1rem;margin-bottom:6px}
+.info-text{color:var(--muted);font-size:.88rem}
+
+/* TIPS */
+.tips-list{list-style:none;margin-top:24px}
+.tips-list li{
+  display:flex;gap:16px;padding:18px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;margin-bottom:10px;
+}
+.tip-num{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#7c3aed,var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.8rem;
+}
+.tip-content h4{font-weight:700;margin-bottom:3px}
+.tip-content p{color:var(--muted);font-size:.87rem}
+
+footer{
+  text-align:center;padding:40px;color:var(--muted);
+  font-size:.82rem;border-top:1px solid var(--border);
+}
+@media(max-width:760px){
+  .live-layout{grid-template-columns:1fr}
+  .compare-grid{grid-template-columns:1fr}
+  .condition-sliders{grid-template-columns:1fr}
+  .agent-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1>The Reputation Economy</h1>
+  <p>Based on Nowak &amp; Sigmund's 1998 paper on how <strong style="-webkit-text-fill-color:initial;color:#c084fc">image scores</strong>, gossip, and indirect reciprocity explain large-scale human cooperation without requiring you to ever meet the same person twice.</p>
+</header>
+
+<!-- THE BIG SHIFT -->
+<div class="container">
+  <div class="section-head">
+    <h2>⚡ Two Roads to Cooperation</h2>
+    <p>Axelrod showed trust can evolve <em>between two people</em> who keep meeting. Nowak &amp; Sigmund show how it can evolve <em>across an entire society</em>.</p>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card" style="border-color:rgba(34,211,238,.4)">
+      <h3 style="color:#22d3ee">Axelrod (1981) — Direct Reciprocity</h3>
+      <ul>
+        <li><strong>Mechanism:</strong> You help those who helped <em>you</em></li>
+        <li><strong>Memory:</strong> Personal — your history with that person</li>
+        <li><strong>Scale:</strong> Pairs, small stable groups</li>
+        <li><strong>Requirement:</strong> Repeated encounters with the same individual</li>
+        <li><strong>Condition:</strong> w &gt; c/b (shadow of the future)</li>
+        <li><strong>Winner:</strong> Tit-for-Tat</li>
+      </ul>
+    </div>
+    <div class="compare-card" style="border-color:rgba(168,85,247,.4)">
+      <h3 style="color:#c084fc">Nowak &amp; Sigmund (1998) — Indirect Reciprocity</h3>
+      <ul>
+        <li><strong>Mechanism:</strong> You help those who helped <em>others</em></li>
+        <li><strong>Memory:</strong> Public — the whole community's image scores</li>
+        <li><strong>Scale:</strong> Large anonymous societies</li>
+        <li><strong>Requirement:</strong> Only that reputation information flows</li>
+        <li><strong>Condition:</strong> q &gt; c/b (gossip quality)</li>
+        <li><strong>Winner:</strong> Discriminator (k = 0)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <p><strong>The key insight:</strong> You don't need to ever interact with the same person again. As long as you can observe — or hear about — how they've treated <em>others</em>, that's enough for cooperation to evolve. This is why language, gossip, reviews, and reputation systems are among the most powerful cooperative technologies humans have ever developed.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- HOW IMAGE SCORE WORKS -->
+<div class="container">
+  <div class="section-head">
+    <h2>🏷️ How the Image Score Works</h2>
+    <p>Every person carries a single public number — their <strong>image score</strong>. It's updated every time they act as a potential donor.</p>
+  </div>
+
+  <div class="score-flow">
+    <div class="score-node">
+      <div class="label">Before</div>
+      <div class="value score-neu" id="score-demo">0</div>
+    </div>
+    <div class="score-arrow">→</div>
+    <div class="score-node" style="border-color:rgba(74,222,128,.3)">
+      <div class="label">Chose to donate</div>
+      <div class="value score-pos">+1</div>
+    </div>
+    <div class="score-arrow">→</div>
+    <div class="score-node">
+      <div class="label">Image score</div>
+      <div class="value score-pos">+1</div>
+    </div>
+  </div>
+  <div class="score-flow">
+    <div class="score-node">
+      <div class="label">Before</div>
+      <div class="value score-neu">0</div>
+    </div>
+    <div class="score-arrow">→</div>
+    <div class="score-node" style="border-color:rgba(248,113,113,.3)">
+      <div class="label">Refused to donate</div>
+      <div class="value score-neg">−1</div>
+    </div>
+    <div class="score-arrow">→</div>
+    <div class="score-node">
+      <div class="label">Image score</div>
+      <div class="value score-neg">−1</div>
+    </div>
+  </div>
+
+  <div class="highlight" style="margin-top:8px">
+    <p><strong>The recipient's score never changes</strong> — only the donor's. Refusing to help someone is a public signal. Helping someone is a public signal. Everyone in the community can see your running total.</p>
+  </div>
+
+  <div style="margin-top:32px">
+    <div class="section-head" style="margin-bottom:20px">
+      <h2 style="font-size:1.4rem">The k-Threshold Strategy</h2>
+      <p>Each player follows one simple rule: <em>donate if the recipient's image score is at least k.</em></p>
+    </div>
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:24px">
+      <div style="font-family:monospace;font-size:1rem;margin-bottom:16px;color:#c4b5fd">
+        cooperate → (score not known) OR (recipient.imageScore ≥ k)
+      </div>
+      <p style="color:var(--muted);font-size:.9rem">When you don't know someone's reputation (probability 1 − q), you cooperate by default — giving the benefit of the doubt. When you do know, you apply your threshold. The simulation tracks what happens across many rounds as strategies with different k values compete for survival.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- KEY CONDITION -->
+<div class="container">
+  <div class="section-head">
+    <h2>🔑 The Key Condition: q &gt; c/b</h2>
+    <p>Cooperation through indirect reciprocity can evolve if and only if the quality of reputation information exceeds the cost-to-benefit ratio of helping.</p>
+  </div>
+
+  <div class="condition-wrap">
+    <div class="condition-sliders">
+      <div class="condition-sl-block">
+        <label>q — Gossip quality (probability you know someone's image score)</label>
+        <input type="range" id="qSlider" min="0" max="100" value="70" step="1">
+        <span class="sl-val" id="qVal" style="color:#a855f7">0.70</span>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">High q = tight-knit community, reliable gossip, visible reputation. Low q = large anonymous population, information doesn't travel.</p>
+      </div>
+      <div class="condition-sl-block">
+        <label>c/b — Cost-to-benefit ratio of donating (cost c = 1, you set benefit b)</label>
+        <input type="range" id="cbSlider" min="10" max="90" value="33" step="1">
+        <span class="sl-val" id="cbVal" style="color:#f59e0b">0.33</span>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">Low c/b = cheap to help, big benefit (e.g. giving directions). High c/b = costly help relative to gain (e.g. large sacrifice).</p>
+      </div>
+    </div>
+    <div class="condition-display" id="condDisplay">
+      <div style="color:var(--muted);font-size:.85rem;margin-bottom:4px">For indirect reciprocity to evolve:</div>
+      <div class="condition-formula" id="condFormula">q &gt; c/b</div>
+      <div style="color:var(--muted);font-size:.85rem;margin-bottom:8px" id="condNumbers"></div>
+      <div class="condition-status" id="condStatus"></div>
+    </div>
+  </div>
+
+  <div class="highlight" style="margin-top:4px">
+    <p><strong>The analogy to Hamilton's Rule:</strong> In kin selection, relatedness (r) replaces q. You help relatives because r &gt; c/b. Nowak &amp; Sigmund show that reputation tracking is the functional equivalent of relatedness — "reputational acquaintanceship" plays the role that genes play in kin selection.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- STRATEGIES -->
+<div class="container">
+  <div class="section-head">
+    <h2>🎯 Meet the Strategies</h2>
+    <p>Six philosophies of reputation. Each encodes a different answer to: <em>"Who deserves my help?"</em></p>
+  </div>
+  <div class="strategies-grid" id="stratGrid"></div>
+</div>
+
+<hr class="divider">
+
+<!-- SIMULATION -->
+<div class="container">
+  <div class="section-head">
+    <h2>🔬 The Simulation</h2>
+    <p>Watch image scores accumulate, see who gets helped and who gets frozen out, and evolve an entire population over generations.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('live',this)">Live Population</button>
+    <button class="tab" onclick="switchTab('tourney',this)">Tournament</button>
+    <button class="tab" onclick="switchTab('evolve',this)">Evolution</button>
+  </div>
+
+  <!-- LIVE POPULATION -->
+  <div class="tab-panel active" id="tab-live">
+    <div class="controls">
+      <button class="btn btn-primary" id="stepBtn" onclick="stepLive()">⏭ Step</button>
+      <button class="btn btn-primary" id="autoBtn" onclick="toggleAuto()">▶ Auto</button>
+      <button class="btn btn-sec" onclick="resetLive()">↺ Reset</button>
+      <span style="color:var(--muted);font-size:.85rem" id="roundLabel">Round 0</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>q (gossip quality):</span>
+      <input type="range" id="liveQ" min="0" max="100" value="70" step="1">
+      <span class="val" id="liveQVal">0.70</span>
+      <span style="margin-left:12px;font-size:.8rem">← try low q to watch defectors thrive</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>Speed:</span>
+      <input type="range" id="speedSlider" min="50" max="800" value="300" step="50">
+      <span class="val" id="speedVal">300ms</span>
+    </div>
+
+    <div class="live-layout">
+      <div class="agent-grid-wrap">
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em">
+          Population — 24 agents (4 per strategy) · image score shown below each
+        </div>
+        <div class="agent-grid" id="agentGrid"></div>
+      </div>
+      <div class="live-stats">
+        <div class="stat-bar-block" id="statBlock">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px">Avg Image Score by Strategy</div>
+        </div>
+        <div class="live-log-box" id="liveLog">
+          <div style="color:var(--muted)">Click Step or Auto to begin.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top:20px">
+      <p><strong>Watch for:</strong> Parasites (😈) start fine but their image score collapses — soon almost no one donates to them. Discriminators (⚖️) stay positive and keep receiving. At <strong>low q</strong>, discriminators can't identify parasites and cooperation degrades. At <strong>high q</strong>, bad actors are exposed fast.</p>
+    </div>
+  </div>
+
+  <!-- TOURNAMENT -->
+  <div class="tab-panel" id="tab-tourney">
+    <div class="controls">
+      <button class="btn btn-primary" id="tourneyBtn" onclick="runTournament()">▶ Run Tournament</button>
+      <span style="color:var(--muted);font-size:.85rem">1000 interactions per strategy pair · full mixed population</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>q (gossip quality):</span>
+      <input type="range" id="tQ" min="0" max="100" value="70" step="1">
+      <span class="val" id="tQVal">0.70</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>Benefit b (cost c = 1, so c/b = 1/b):</span>
+      <input type="range" id="tB" min="2" max="10" value="3" step="1">
+      <span class="val" id="tBVal">3 &nbsp;(c/b = 0.33)</span>
+    </div>
+    <div class="highlight" style="margin-top:8px;margin-bottom:20px">
+      <p><strong>In indirect reciprocity,</strong> fitness isn't measured by head-to-head scores. Each strategy's payoff depends on its image score within a mixed population — who it receives donations from, and what it costs to donate. The matrix below shows average payoff when strategy A is embedded in a population with equal numbers of strategy B.</p>
+    </div>
+    <div id="tourneyResults"></div>
+  </div>
+
+  <!-- EVOLUTION -->
+  <div class="tab-panel" id="tab-evolve">
+    <div class="controls">
+      <button class="btn btn-primary" id="evoBtn" onclick="runEvolution()">▶ Evolve Population</button>
+      <button class="btn btn-sec" onclick="resetEvo()">↺ Reset</button>
+      <span class="gen-label" id="genLabel">Generation 0</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>q (gossip quality):</span>
+      <input type="range" id="evoQ" min="0" max="100" value="70" step="1">
+      <span class="val" id="evoQVal">0.70</span>
+      <span style="margin-left:12px;font-size:.8rem">← drag left to see defectors dominate</span>
+    </div>
+    <div class="noise-ctrl">
+      <span>Benefit b:</span>
+      <input type="range" id="evoB" min="2" max="10" value="3" step="1">
+      <span class="val" id="evoBVal">3</span>
+    </div>
+    <canvas id="evoCanvas"></canvas>
+    <div class="legend" id="evoLegend"></div>
+
+    <div class="highlight" style="margin-top:24px">
+      <p><strong>Watch what happens:</strong> With high q, the Discriminator (⚖️) and Lenient (🤗) strategies dominate — they maintain good image scores and receive plentiful donations. Parasites (😈) spike briefly when cooperators are abundant, then collapse as their image score tanks. At <strong>low q</strong> (poor gossip), parasites can hide and defection wins. The transition point is exactly q = c/b.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- REAL WORLD -->
+<div class="container">
+  <div class="section-head">
+    <h2>🌍 Reputation in the Real World</h2>
+    <p>The math maps directly onto human institutions. Everywhere you see reputation infrastructure, you're looking at a mechanism that raises q.</p>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-icon">🗣️</div>
+      <div class="info-title">Gossip is a Cooperation Technology</div>
+      <div class="info-text">Gossip has a bad reputation, but the model shows it's functionally essential. Without information flow (low q), discriminators can't protect themselves from parasites. Gossip networks, village talk, and "whisper networks" all raise q — making cooperation possible at larger scales than direct observation allows.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">⭐</div>
+      <div class="info-title">Review Systems are Image Score Machines</div>
+      <div class="info-text">Yelp, Uber, Amazon, Airbnb, GitHub stars — these are all engineered image-score systems. They make reputation visible and sticky in anonymous markets. The model predicts that cooperation collapses in their absence (Craigslist vs. eBay is a natural experiment). The condition q &gt; c/b holds whenever the platform scales reputation effectively.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">⚖️</div>
+      <div class="info-title">Law as Reputation Infrastructure</div>
+      <div class="info-text">Laws, courts, credit scores, business registrations — all make defection visible and its consequences durable. They're state-level gossip systems with memory. The rule of law essentially raises q toward 1 for high-stakes transactions, which is why legal systems correlate so strongly with economic development and large-scale cooperation.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🦠</div>
+      <div class="info-title">Why Cities Feel Less Cooperative</div>
+      <div class="info-text">Anonymous urban environments have low q — strangers don't know your reputation. This is exactly why cities feel less cooperative than villages. It's not that city dwellers are less moral; it's that the game-theoretic condition for indirect reciprocity (q &gt; c/b) fails in settings where reputation doesn't travel. Institutions compensate.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🎭</div>
+      <div class="info-title">The Reputation Farmer Problem</div>
+      <div class="info-text">The Reputation Farmer strategy — cooperate to build image score, then exploit — maps directly onto predatory behavior in real markets. A company or individual can accumulate goodwill through genuine cooperation, then cash it out through defection. The model predicts this fails long-term if q is high and memory is long. It succeeds when q is low or reputation resets.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🧬</div>
+      <div class="info-title">The Bridge to Morality</div>
+      <div class="info-text">Nowak &amp; Sigmund argue that indirect reciprocity — enforced by image scores and community gossip — was "a decisive step" in human evolution. It scales cooperation beyond kin and direct acquaintance. They suggest it co-evolved with language (the gossip tool) and moral intuitions (the image-score algorithm), explaining why moral judgments feel so universally intuitive.</div>
+    </div>
+  </div>
+
+  <div class="section-head" style="margin-top:48px;margin-bottom:0">
+    <h2>🧭 How to Navigate a Reputation Economy</h2>
+    <p>The model implies clear strategies for building trust and protecting yourself in reputation-based environments.</p>
+  </div>
+
+  <ul class="tips-list">
+    <li>
+      <div class="tip-num">1</div>
+      <div class="tip-content">
+        <h4>Cooperate publicly, not just privately</h4>
+        <p>In direct reciprocity, private favors are enough. In indirect reciprocity, visibility matters — your image score only rises when others can observe your cooperation. Helping quietly is virtuous; helping visibly is strategically essential for reputation to work as a cooperative mechanism.</p>
+      </div>
+    </li>
+    <li>
+      <div class="tip-num">2</div>
+      <div class="tip-content">
+        <h4>Discriminate based on reputation, not feelings</h4>
+        <p>The Discriminator wins because it applies consistent, information-based criteria — not because it's kind or harsh. In practice: check track records, ask references, read reviews. Don't let charm substitute for reputation data. And don't let personal dislike substitute for it either.</p>
+      </div>
+    </li>
+    <li>
+      <div class="tip-num">3</div>
+      <div class="tip-content">
+        <h4>Know the q of your environment</h4>
+        <p>If you're in a small, tight-knit industry (law, academia, a specific tech niche), q is very high. Your reputation travels everywhere, forever. If you're in an anonymous market, q is low. Calibrate how much you invest in reputation accordingly — and be more cautious about defectors in low-q settings, since the community can't automatically punish them.</p>
+      </div>
+    </li>
+    <li>
+      <div class="tip-num">4</div>
+      <div class="tip-content">
+        <h4>Beware Reputation Farmers</h4>
+        <p>Watch for patterns like: high initial generosity, then escalating extraction. This is the Reputation Farmer strategy in action — cashing out accumulated image score. One signal: they cooperate very visibly with powerful people (audience-building) while quietly defecting on less visible interactions.</p>
+      </div>
+    </li>
+    <li>
+      <div class="tip-num">5</div>
+      <div class="tip-content">
+        <h4>Invest in reputation infrastructure around you</h4>
+        <p>In teams, communities, and companies: build systems that make cooperation and defection visible. Feedback loops, transparent accountability, peer recognition, post-mortems. These raise q for your group and make the Discriminator strategy viable for everyone — dramatically increasing collective cooperation without requiring individual vigilance.</p>
+      </div>
+    </li>
+    <li>
+      <div class="tip-num">6</div>
+      <div class="tip-content">
+        <h4>Recover proactively from reputation damage</h4>
+        <p>Image scores can be rebuilt. The model shows that even agents who defect and drop below 0 can recover by cooperating consistently. In real life: public acknowledgment, sustained changed behavior, and giving even where not observed. The key is raising your score above the k threshold of the discriminators whose help you need.</p>
+      </div>
+    </li>
+  </ul>
+
+  <div class="highlight">
+    <p><strong>The deeper truth:</strong> The Nowak &amp; Sigmund model explains something Axelrod's couldn't — how cooperation scales to cities, markets, and nations where you never meet the same stranger twice. The answer isn't altruism or law or culture alone. It's that those institutions are all, at bottom, mechanisms for tracking and broadcasting image scores. <em>You are always being scored. You are always scoring others.</em> The question is whether the system around you is honest enough, and information-rich enough, to make that scoring matter. — Nowak &amp; Sigmund, <em>Nature</em> 1998.</p>
+  </div>
+</div>
+
+<footer>The Reputation Economy · Based on Nowak &amp; Sigmund (1998) · Companion to <a href="evolution-of-trust.html" style="color:var(--purple);text-decoration:none">Evolution of Trust</a> · Pure HTML/CSS/JS</footer>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const B_DEFAULT = 3;
+const C = 1;
+const IMG_CAP = 12;
+
+// ── STRATEGIES ────────────────────────────────────────────────────────────────
+// decide(recipScore|null, known, myScore) → true=cooperate
+const STRATEGIES = [
+  {
+    id:'allC', name:'Altruist', emoji:'😇', color:'#4ecdc4', tag:'Unconditional k=−∞',
+    desc:'Donates to everyone, always. Builds a perfect image score — but exploited heavily by parasites.',
+    rule:'donate → always true',
+    decide:(score,known,my)=>true
+  },
+  {
+    id:'lenient', name:'Forgiver', emoji:'🤗', color:'#22d3ee', tag:'Lenient k=−2',
+    desc:'Donates to anyone not deeply disgraced (image score ≥ −2). Nearly as exploitable as the Altruist.',
+    rule:'donate → !known OR score ≥ −2',
+    decide:(score,known,my)=>!known||score>=-2
+  },
+  {
+    id:'disc0', name:'Discriminator', emoji:'⚖️', color:'#a855f7', tag:'★ Optimal k=0',
+    desc:'Donates to anyone with a non-negative image score. The strategy Nowak & Sigmund\'s 1998 simulations show wins.',
+    rule:'donate → !known OR score ≥ 0',
+    decide:(score,known,my)=>!known||score>=0
+  },
+  {
+    id:'strict', name:'Gatekeeper', emoji:'🔒', color:'#3b82f6', tag:'Strict k=2',
+    desc:'Only donates to those with clearly positive reputations (score ≥ 2). Too selective — good people get turned away.',
+    rule:'donate → !known OR score ≥ 2',
+    decide:(score,known,my)=>!known||score>=2
+  },
+  {
+    id:'allD', name:'Exploiter', emoji:'😈', color:'#ff4757', tag:'Never k=∞',
+    desc:'Never donates. Image score collapses — eventually the community stops helping them entirely.',
+    rule:'donate → always false',
+    decide:(score,known,my)=>false
+  },
+  {
+    id:'mod', name:'Skeptic', emoji:'🧐', color:'#f59e0b', tag:'Moderate k=1',
+    desc:'Donates only to those with a clearly positive reputation (score ≥ 1). Slightly more demanding than the Discriminator — misses some worthy recipients.',
+    rule:'donate → !known OR score ≥ 1',
+    decide:(score,known,my)=>!known||score>=1
+  }
+];
+
+// ── STRATEGY CARDS ────────────────────────────────────────────────────────────
+(function(){
+  const grid=document.getElementById('stratGrid');
+  STRATEGIES.forEach(s=>{
+    const c=document.createElement('div');
+    c.className='strat-card';
+    c.style.setProperty('--sc',s.color);
+    c.innerHTML=`
+      <div class="strat-header">
+        <div class="strat-circle" style="--sc:${s.color}">${s.emoji}</div>
+        <div>
+          <div class="strat-name">${s.name}</div>
+          <span class="strat-badge" style="--sc:${s.color}">${s.tag}</span>
+        </div>
+      </div>
+      <div class="strat-desc">${s.desc}</div>
+      <div class="strat-rule">${s.rule}</div>`;
+    grid.appendChild(c);
+  });
+})();
+
+// ── CONDITION SLIDERS ─────────────────────────────────────────────────────────
+function updateCondition(){
+  const q=+document.getElementById('qSlider').value/100;
+  const cb=+document.getElementById('cbSlider').value/100;
+  document.getElementById('qVal').textContent=q.toFixed(2);
+  document.getElementById('cbVal').textContent=cb.toFixed(2);
+  const disp=document.getElementById('condDisplay');
+  const nums=document.getElementById('condNumbers');
+  const stat=document.getElementById('condStatus');
+  nums.textContent=`${q.toFixed(2)} vs ${cb.toFixed(2)}`;
+  if(q>cb){
+    disp.className='condition-display satisfied';
+    stat.className='condition-status ok';
+    stat.textContent='✓ Condition met — indirect reciprocity can evolve';
+  } else {
+    disp.className='condition-display failed';
+    stat.className='condition-status fail';
+    stat.textContent='✗ Condition fails — defectors will dominate';
+  }
+}
+document.getElementById('qSlider').addEventListener('input',updateCondition);
+document.getElementById('cbSlider').addEventListener('input',updateCondition);
+updateCondition();
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+}
+
+// ── AGENT SIMULATION CORE ─────────────────────────────────────────────────────
+function makeAgent(si){
+  return{si,img:0,payoff:0};
+}
+
+function agentDecide(agent,recipient,q){
+  const known=Math.random()<q;
+  const score=known?recipient.img:null;
+  const s=STRATEGIES[agent.si];
+  return s.decide(score,known,agent.img);
+}
+
+function runInteraction(donor,recipient,q){
+  const coop=agentDecide(donor,recipient,q);
+  if(coop){
+    donor.payoff-=C;
+    recipient.payoff+=/* b */ liveB();
+    donor.img=clamp(donor.img+1,-IMG_CAP,IMG_CAP);
+  } else {
+    donor.img=clamp(donor.img-1,-IMG_CAP,IMG_CAP);
+  }
+  return coop;
+}
+
+function liveB(){return 3} // live pop always uses b=3
+
+// ── LIVE POPULATION ───────────────────────────────────────────────────────────
+let liveAgents=[];
+let liveRound=0;
+let autoTimer=null;
+
+function resetLive(){
+  stopAuto();
+  liveAgents=[];
+  STRATEGIES.forEach((_,si)=>{
+    for(let i=0;i<4;i++) liveAgents.push(makeAgent(si));
+  });
+  shuffle(liveAgents);
+  liveRound=0;
+  document.getElementById('roundLabel').textContent='Round 0';
+  renderAgentGrid();
+  renderLiveStats();
+  document.getElementById('liveLog').innerHTML='<div style="color:var(--muted)">Ready — click Step or Auto.</div>';
+  document.getElementById('autoBtn').textContent='▶ Auto';
+}
+
+function renderAgentGrid(){
+  const grid=document.getElementById('agentGrid');
+  grid.innerHTML='';
+  liveAgents.forEach((a,i)=>{
+    const s=STRATEGIES[a.si];
+    const div=document.createElement('div');
+    div.className='agent-cell';
+    div.id='ag-'+i;
+    div.style.setProperty('--sc',s.color);
+    div.title=s.name+' | img: '+(a.img>=0?'+':'')+a.img;
+    div.innerHTML=`
+      <div class="agent-circle">${s.emoji}</div>
+      <div class="agent-score ${a.img>0?'pos':a.img<0?'neg':''}">${a.img>0?'+':''}${a.img}</div>`;
+    grid.appendChild(div);
+  });
+}
+
+function refreshAgentCell(i){
+  const a=liveAgents[i];
+  const s=STRATEGIES[a.si];
+  const cell=document.getElementById('ag-'+i);
+  if(!cell)return;
+  const sc=cell.querySelector('.agent-score');
+  sc.textContent=(a.img>0?'+':'')+a.img;
+  sc.className='agent-score '+(a.img>0?'pos':a.img<0?'neg':'');
+  cell.title=s.name+' | img: '+sc.textContent;
+}
+
+function renderLiveStats(){
+  const block=document.getElementById('statBlock');
+  const scores=STRATEGIES.map((_,si)=>{
+    const agents=liveAgents.filter(a=>a.si===si);
+    if(!agents.length)return 0;
+    return agents.reduce((s,a)=>s+a.img,0)/agents.length;
+  });
+  const maxAbs=Math.max(1,...scores.map(Math.abs));
+  block.innerHTML='<div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px">Avg Image Score by Strategy</div>';
+  STRATEGIES.forEach((s,si)=>{
+    const v=scores[si];
+    const pct=((v+maxAbs)/(2*maxAbs)*100).toFixed(1);
+    block.innerHTML+=`
+      <div class="stat-row">
+        <div class="stat-label">
+          <span class="sname">${s.emoji} ${s.name}</span>
+          <span class="sval">${v>=0?'+':''}${v.toFixed(1)}</span>
+        </div>
+        <div class="stat-bar-outer">
+          <div class="stat-bar-inner" style="width:${pct}%;background:${s.color}"></div>
+        </div>
+      </div>`;
+  });
+}
+
+async function stepLive(){
+  if(!liveAgents.length)resetLive();
+  const q=+document.getElementById('liveQ').value/100;
+
+  const di=Math.floor(Math.random()*liveAgents.length);
+  let ri;
+  do{ri=Math.floor(Math.random()*liveAgents.length)}while(ri===di);
+
+  const donor=liveAgents[di];
+  const recipient=liveAgents[ri];
+  const sd=STRATEGIES[donor.si];
+  const sr=STRATEGIES[recipient.si];
+
+  // Clear old highlights
+  document.querySelectorAll('.agent-cell').forEach(c=>{
+    c.classList.remove('is-donor','is-recipient','did-coop','did-defect');
+  });
+
+  document.getElementById('ag-'+di).classList.add('is-donor');
+  document.getElementById('ag-'+ri).classList.add('is-recipient');
+
+  await sleep(80);
+
+  const coop=runInteraction(donor,recipient,q);
+  liveRound++;
+
+  document.getElementById('ag-'+di).classList.add(coop?'did-coop':'did-defect');
+  refreshAgentCell(di);
+  refreshAgentCell(ri);
+
+  document.getElementById('roundLabel').textContent='Round '+liveRound;
+  renderLiveStats();
+
+  const log=document.getElementById('liveLog');
+  const line=document.createElement('div');
+  line.className='log-line';
+  const act=coop
+    ?`<span class="ev-C">donated (+${liveB()} to recip, img ${donor.img})</span>`
+    :`<span class="ev-D">refused (img ${donor.img})</span>`;
+  line.innerHTML=`R${liveRound}: ${sd.emoji} ${sd.name} → ${sr.emoji} ${sr.name}: ${act}`;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
+  if(log.children.length>60){log.removeChild(log.firstChild)}
+}
+
+function toggleAuto(){
+  if(autoTimer){
+    stopAuto();
+  } else {
+    document.getElementById('autoBtn').textContent='⏸ Pause';
+    scheduleAuto();
+  }
+}
+
+function scheduleAuto(){
+  const spd=+document.getElementById('speedSlider').value;
+  autoTimer=setTimeout(async()=>{
+    await stepLive();
+    if(autoTimer!==null) scheduleAuto();
+  },spd);
+}
+
+function stopAuto(){
+  clearTimeout(autoTimer);
+  autoTimer=null;
+  document.getElementById('autoBtn').textContent='▶ Auto';
+}
+
+document.getElementById('liveQ').addEventListener('input',function(){
+  document.getElementById('liveQVal').textContent=(+this.value/100).toFixed(2);
+});
+document.getElementById('speedSlider').addEventListener('input',function(){
+  document.getElementById('speedVal').textContent=this.value+'ms';
+});
+
+resetLive();
+
+// ── TOURNAMENT ────────────────────────────────────────────────────────────────
+function runTournament(){
+  const q=+document.getElementById('tQ').value/100;
+  const b=+document.getElementById('tB').value;
+  const POP_PER_STRAT=50; // equal share of each strategy
+  const ROUNDS=5000;      // random interactions across the full community
+  const n=STRATEGIES.length;
+
+  // Build one full mixed population — all strategies present simultaneously
+  const agents=[];
+  STRATEGIES.forEach((_,si)=>{
+    for(let k=0;k<POP_PER_STRAT;k++) agents.push(makeAgent(si));
+  });
+  const N=agents.length;
+
+  // Run all interactions within this single shared community
+  for(let r=0;r<ROUNDS;r++){
+    const di=Math.floor(Math.random()*N);
+    let ri;
+    do{ri=Math.floor(Math.random()*N)}while(ri===di);
+    const donor=agents[di];
+    const rcpt=agents[ri];
+    const known=Math.random()<q;
+    const score=known?rcpt.img:null;
+    const coop=STRATEGIES[donor.si].decide(score,known,donor.img);
+    if(coop){
+      donor.payoff-=C;
+      rcpt.payoff+=b;
+      donor.img=clamp(donor.img+1,-IMG_CAP,IMG_CAP);
+    } else {
+      donor.img=clamp(donor.img-1,-IMG_CAP,IMG_CAP);
+    }
+  }
+
+  // Summarise per strategy
+  const stats=STRATEGIES.map((_,si)=>{
+    const ag=agents.filter(a=>a.si===si);
+    const avgPayoff=ag.reduce((s,a)=>s+a.payoff,0)/ag.length;
+    const avgImg=ag.reduce((s,a)=>s+a.img,0)/ag.length;
+    return{avgPayoff,avgImg};
+  });
+
+  const ranked=STRATEGIES.map((s,i)=>({s,i,...stats[i]}))
+    .sort((a,b2)=>b2.avgPayoff-a.avgPayoff);
+
+  let html=`<table class="t-table">
+    <thead><tr><th>Rank</th><th>Strategy</th><th>Avg Payoff</th><th>Avg Image Score</th></tr></thead>
+    <tbody>`;
+  ranked.forEach(({s,avgPayoff,avgImg},ri)=>{
+    const rc=['r1','r2','r3','rN'][Math.min(ri,3)];
+    const imgColor=avgImg>0?'#4ade80':avgImg<0?'#f87171':'#7777aa';
+    html+=`<tr>
+      <td><span class="rank-badge ${rc}">${ri+1}</span></td>
+      <td><span class="mini-circle" style="background:${s.color}"></span>${s.emoji} ${s.name}</td>
+      <td style="font-weight:700;font-size:1.05rem">${avgPayoff.toFixed(1)}</td>
+      <td style="font-weight:700;color:${imgColor}">${avgImg>=0?'+':''}${avgImg.toFixed(1)}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+
+  html+=`<div style="margin-top:16px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:14px 18px;font-size:.85rem;color:#c4b5fd">
+    <strong>How this works:</strong> All six strategies compete simultaneously in one shared community of ${N} agents (${POP_PER_STRAT} of each). Over ${ROUNDS.toLocaleString()} random interactions, donors check the recipient's image score (known with probability q), decide whether to donate, and image scores update accordingly. <strong>Avg Payoff</strong> is net coins earned per agent — donations received (×${b}) minus donations given (×${C}). <strong>Avg Image Score</strong> shows the reputation each strategy accumulates, which directly determines how often others will donate to them. This is the same structure Nowak &amp; Sigmund used.
+  </div>`;
+
+  document.getElementById('tourneyResults').innerHTML=html;
+}
+
+document.getElementById('tQ').addEventListener('input',function(){
+  document.getElementById('tQVal').textContent=(+this.value/100).toFixed(2);
+});
+document.getElementById('tB').addEventListener('input',function(){
+  const b=+this.value;
+  document.getElementById('tBVal').textContent=b+'  (c/b = '+(1/b).toFixed(2)+')';
+});
+
+// ── EVOLUTION ─────────────────────────────────────────────────────────────────
+const EVO_POP=240; // 40 per strategy
+const EVO_ROUNDS_PER_GEN=800;
+const TOTAL_GENS=60;
+let evoHistory=null,evoRunning=false;
+
+document.getElementById('evoQ').addEventListener('input',function(){
+  document.getElementById('evoQVal').textContent=(+this.value/100).toFixed(2);
+});
+document.getElementById('evoB').addEventListener('input',function(){
+  document.getElementById('evoBVal').textContent=this.value;
+});
+
+function resetEvo(){
+  evoHistory=null;
+  document.getElementById('genLabel').textContent='Generation 0';
+  document.getElementById('evoBtn').disabled=false;
+  evoRunning=false;
+  drawEvo([]);
+}
+
+// Build evolution legend
+(function(){
+  const leg=document.getElementById('evoLegend');
+  STRATEGIES.forEach(s=>{
+    const d=document.createElement('div');
+    d.className='leg-item';
+    d.innerHTML=`<div class="leg-dot" style="background:${s.color}"></div>${s.emoji} ${s.name}`;
+    leg.appendChild(d);
+  });
+})();
+
+async function runEvolution(){
+  if(evoRunning)return;
+  evoRunning=true;
+  document.getElementById('evoBtn').disabled=true;
+
+  const q=+document.getElementById('evoQ').value/100;
+  const b=+document.getElementById('evoB').value;
+  const perStrat=Math.floor(EVO_POP/STRATEGIES.length);
+  let pop=STRATEGIES.map(()=>perStrat);
+  const hist=[pop.slice()];
+
+  for(let g=0;g<TOTAL_GENS;g++){
+    const total=pop.reduce((a,v)=>a+v,0);
+    if(total===0)break;
+
+    // Create agents proportional to pop
+    const agents=[];
+    STRATEGIES.forEach((_,si)=>{
+      for(let k=0;k<pop[si];k++) agents.push(makeAgent(si));
+    });
+    // Reset image scores and payoffs
+    agents.forEach(a=>{a.img=0;a.payoff=0;});
+
+    // Run interactions
+    const N=agents.length;
+    for(let r=0;r<EVO_ROUNDS_PER_GEN;r++){
+      const di=Math.floor(Math.random()*N);
+      let ri;
+      do{ri=Math.floor(Math.random()*N)}while(ri===di);
+      const donor=agents[di];
+      const rcpt=agents[ri];
+      const known=Math.random()<q;
+      const score=known?rcpt.img:null;
+      const coop=STRATEGIES[donor.si].decide(score,known,donor.img);
+      if(coop){
+        donor.payoff-=C;
+        rcpt.payoff+=b;
+        donor.img=clamp(donor.img+1,-IMG_CAP,IMG_CAP);
+      } else {
+        donor.img=clamp(donor.img-1,-IMG_CAP,IMG_CAP);
+      }
+    }
+
+    // Fitness per strategy (avg payoff)
+    const fitness=STRATEGIES.map((_,si)=>{
+      const ag=agents.filter(a=>a.si===si);
+      if(!ag.length)return 0;
+      return ag.reduce((s,a)=>s+a.payoff,0)/ag.length;
+    });
+
+    // Shift positive and reproduce
+    const minF=Math.min(...fitness);
+    const shifted=fitness.map(f=>Math.max(0,f-minF+0.01));
+    const sumS=shifted.reduce((a,v)=>a+v,0);
+    pop=shifted.map(s=>Math.round((s/sumS)*EVO_POP));
+
+    // Fix rounding
+    let sum=pop.reduce((a,v)=>a+v,0);
+    const maxI=pop.indexOf(Math.max(...pop));
+    pop[maxI]+=EVO_POP-sum;
+
+    hist.push(pop.slice());
+    document.getElementById('genLabel').textContent='Generation '+(g+1);
+    drawEvo(hist);
+    await sleep(55);
+  }
+
+  evoHistory=hist;
+  evoRunning=false;
+  document.getElementById('evoBtn').disabled=false;
+}
+
+function drawEvo(hist){
+  const canvas=document.getElementById('evoCanvas');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr;
+  canvas.height=rect.height*dpr;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height;
+  const PAD={t:16,r:16,b:38,l:48};
+  const IW=W-PAD.l-PAD.r,IH=H-PAD.t-PAD.b;
+
+  ctx.fillStyle='#0d0d20';
+  ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(0,0,W,H,12);
+  else ctx.rect(0,0,W,H);
+  ctx.fill();
+
+  if(hist.length<2){
+    ctx.fillStyle='#3333aa';
+    ctx.font='14px system-ui';ctx.textAlign='center';
+    ctx.fillText('Click "Evolve Population" to start',W/2,H/2);
+    return;
+  }
+
+  const G=hist.length;
+  const xS=i=>PAD.l+(i/(G-1))*IW;
+  const yS=v=>PAD.t+IH-(v/EVO_POP)*IH;
+
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  [0,25,50,75,100].forEach(pct=>{
+    const y=PAD.t+(1-pct/100)*IH;
+    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(PAD.l+IW,y);ctx.stroke();
+    ctx.fillStyle='#3a3a6a';ctx.font='10px system-ui';ctx.textAlign='right';
+    ctx.fillText(pct+'%',PAD.l-6,y+4);
+  });
+  ctx.fillStyle='#3a3a6a';ctx.textAlign='center';
+  [0,Math.floor(G/4),Math.floor(G/2),Math.floor(3*G/4),G-1].forEach(i=>{
+    if(i<G)ctx.fillText('Gen '+i,xS(i),H-PAD.b+14);
+  });
+
+  const cum=hist.map(snap=>{
+    let c=0;return STRATEGIES.map((_,si)=>{c+=snap[si];return c});
+  });
+
+  STRATEGIES.forEach((_,si)=>{
+    const s=STRATEGIES[si];
+    ctx.beginPath();
+    if(si===0){
+      ctx.moveTo(xS(0),yS(0));
+      for(let i=1;i<G;i++)ctx.lineTo(xS(i),yS(0));
+    } else {
+      ctx.moveTo(xS(0),yS(cum[0][si-1]));
+      for(let i=1;i<G;i++)ctx.lineTo(xS(i),yS(cum[i][si-1]));
+    }
+    for(let i=G-1;i>=0;i--)ctx.lineTo(xS(i),yS(cum[i][si]));
+    ctx.closePath();
+    const grad=ctx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0,s.color+'88');
+    grad.addColorStop(1,s.color+'cc');
+    ctx.fillStyle=grad;ctx.fill();
+  });
+
+  STRATEGIES.forEach((_,si)=>{
+    ctx.beginPath();
+    ctx.strokeStyle=STRATEGIES[si].color;ctx.lineWidth=1.5;
+    for(let i=0;i<G;i++){
+      const y=yS(cum[i][si]);
+      if(i===0)ctx.moveTo(xS(i),y);else ctx.lineTo(xS(i),y);
+    }
+    ctx.stroke();
+  });
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='evolve')drawEvo(evoHistory||[]);
+  if(name==='live')stopAuto();
+}
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('tab-evolve').classList.contains('active'))
+    drawEvo(evoHistory||[]);
+});
+
+drawEvo([]);
+</script>
+</body>
+</html>
