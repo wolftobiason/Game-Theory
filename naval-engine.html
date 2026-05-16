@@ -199,115 +199,90 @@
   textarea:focus, input:focus { border-color: var(--gold); }
 
   /* ── LEVERAGE AUDIT ── */
-  .leverage-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+  .lev-primary-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-bottom: 16px;
   }
-  @media (max-width: 600px) { .leverage-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .lev-primary-row { grid-template-columns: 1fr; } }
+
   .lev-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 4px; padding: 28px;
-    transition: border-color 0.2s;
   }
-  .lev-card.permissionless { border-top: 2px solid var(--green); }
-  .lev-card.permissioned { border-top: 2px solid var(--muted); }
-  .lev-type {
+  .lev-card.primary { border-top: 2px solid var(--green); }
+  .lev-card.secondary {
+    border-top: 2px solid var(--border);
+    margin-bottom: 16px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 28px; align-items: center;
+  }
+  @media (max-width: 600px) { .lev-card.secondary { grid-template-columns: 1fr; } }
+
+  .lev-badge {
     font-family: 'Courier New', monospace;
-    font-size: 10px; letter-spacing: 2px;
-    text-transform: uppercase; margin-bottom: 8px;
+    font-size: 9px; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 10px;
   }
-  .lev-card.permissionless .lev-type { color: var(--green); }
-  .lev-card.permissioned .lev-type { color: var(--muted); }
-  .lev-name { font-size: 20px; margin-bottom: 8px; }
+  .lev-card.primary .lev-badge { color: var(--green); }
+  .lev-card.secondary .lev-badge { color: var(--muted); }
+
+  .lev-name { font-size: 22px; margin-bottom: 10px; }
   .lev-desc {
     font-family: 'Courier New', monospace;
-    font-size: 11px; color: var(--muted);
-    line-height: 1.6; margin-bottom: 20px;
+    font-size: 12px; color: var(--muted);
+    line-height: 1.7; margin-bottom: 24px;
   }
-  .slider-wrap { position: relative; }
-  .slider-val {
-    position: absolute; right: 0; top: -24px;
-    font-family: 'Courier New', monospace;
-    font-size: 13px; color: var(--gold);
-  }
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%; height: 2px;
-    background: var(--border); border-radius: 2px;
-    outline: none; cursor: pointer;
-    padding: 0;
-    border: none;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px; height: 14px;
-    background: var(--gold); border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
-  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+  .lev-card.secondary .lev-desc { margin-bottom: 0; }
 
-  /* ── SCORE ── */
-  .score-panel {
+  .status-group {
+    display: flex; gap: 6px;
+  }
+  .status-btn {
+    flex: 1; padding: 8px 4px; text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    border: 1px solid var(--border); border-radius: 2px;
+    background: transparent; color: var(--muted);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .status-btn:hover { border-color: var(--muted); color: var(--text); }
+  .status-btn.active-none   { border-color: var(--border); color: var(--muted); background: var(--bg); }
+  .status-btn.active-building { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+  .status-btn.active-active  { border-color: var(--green); color: var(--green); background: rgba(62,207,142,0.1); }
+
+  .lev-labor-note {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 0 3px 3px 0;
+    padding: 20px 24px; margin-bottom: 32px;
+  }
+  .lev-labor-note .lev-badge { color: var(--muted); margin-bottom: 8px; }
+  .lev-labor-quote {
+    font-style: italic; font-size: 14px;
+    color: var(--muted); line-height: 1.7;
+  }
+  .lev-labor-quote cite {
+    display: block; margin-top: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; font-style: normal;
+    color: var(--border);
+  }
+
+  .lev-verdict {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 4px; padding: 40px;
-    text-align: center;
-    position: relative; overflow: hidden;
-  }
-  .score-panel::before {
-    content: '';
-    position: absolute; top: -40px; left: 50%;
-    transform: translateX(-50%);
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .score-ring {
-    width: 160px; height: 160px;
-    margin: 0 auto 32px;
-    position: relative;
-  }
-  .score-ring svg { transform: rotate(-90deg); }
-  .score-ring-bg { stroke: var(--border); fill: none; stroke-width: 6; }
-  .score-ring-fill {
-    fill: none; stroke-width: 6;
-    stroke: var(--gold);
-    stroke-linecap: round;
-    stroke-dasharray: 440;
-    stroke-dashoffset: 440;
-    transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1);
-    filter: drop-shadow(0 0 6px rgba(201,168,76,0.5));
-  }
-  .score-num {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 40px; font-weight: 400;
-    color: var(--gold);
+    border-radius: 4px; padding: 28px;
     font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    line-height: 1.9;
   }
-  .score-label {
-    font-family: 'Courier New', monospace;
-    font-size: 11px; letter-spacing: 3px;
-    color: var(--muted); text-transform: uppercase;
-    margin-bottom: 24px;
-  }
-  .score-breakdown {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 16px; margin-top: 32px;
-  }
-  .score-item { text-align: center; }
-  .score-item-val {
-    font-family: 'Courier New', monospace;
-    font-size: 22px; color: var(--text);
-    margin-bottom: 4px;
-  }
-  .score-item-key {
-    font-family: 'Courier New', monospace;
-    font-size: 10px; color: var(--muted);
-    letter-spacing: 1px; text-transform: uppercase;
+  .lev-verdict strong { color: var(--text); font-style: normal; }
+  .lev-verdict-label {
+    font-size: 9px; letter-spacing: 3px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 12px; display: block;
   }
 
   /* ── BUTTONS ── */
@@ -736,74 +711,44 @@
   <p class="section-desc">Leverage is what turns your specific knowledge into wealth. Code and content are permissionless — no one can stop you from using them. Rate your current leverage honestly.</p>
   <div class="divider"></div>
 
-  <div class="leverage-grid">
-    <div class="lev-card permissionless">
-      <div class="lev-type">Permissionless ·</div>
+  <!-- Primary: Code + Media -->
+  <div class="lev-primary-row">
+    <div class="lev-card primary">
+      <div class="lev-badge">Permissionless · Start here</div>
       <div class="lev-name">Code</div>
-      <div class="lev-desc">Software works for you 24/7. A single function, deployed once, can serve millions. The highest leverage tool in history.</div>
-      <div class="slider-wrap" style="padding-top:28px">
-        <div class="slider-val" id="valCode">0</div>
-        <input type="range" min="0" max="10" value="0" id="levCode" oninput="updateSlider('Code', this.value)">
-      </div>
+      <div class="lev-desc">Software works while you sleep. A function deployed once can serve millions. No one can revoke your access to this lever.</div>
+      <div class="status-group" id="statusCode"></div>
     </div>
-
-    <div class="lev-card permissionless">
-      <div class="lev-type">Permissionless ·</div>
+    <div class="lev-card primary">
+      <div class="lev-badge">Permissionless · Start here</div>
       <div class="lev-name">Media</div>
-      <div class="lev-desc">Writing, podcasts, video. One piece of content can influence a million people while you sleep. Zero marginal cost to replicate.</div>
-      <div class="slider-wrap" style="padding-top:28px">
-        <div class="slider-val" id="valMedia">0</div>
-        <input type="range" min="0" max="10" value="0" id="levMedia" oninput="updateSlider('Media', this.value)">
-      </div>
-    </div>
-
-    <div class="lev-card permissioned">
-      <div class="lev-type">Permissioned ·</div>
-      <div class="lev-name">Capital</div>
-      <div class="lev-desc">Money that works for you. Requires trust to deploy. Amplifies everything — but only after you've built the other levers.</div>
-      <div class="slider-wrap" style="padding-top:28px">
-        <div class="slider-val" id="valCapital">0</div>
-        <input type="range" min="0" max="10" value="0" id="levCapital" oninput="updateSlider('Capital', this.value)">
-      </div>
-    </div>
-
-    <div class="lev-card permissioned">
-      <div class="lev-type">Permissioned ·</div>
-      <div class="lev-name">Labor</div>
-      <div class="lev-desc">People working for you. The oldest leverage, but requires managing, motivating, and retaining humans. High cost, high risk.</div>
-      <div class="slider-wrap" style="padding-top:28px">
-        <div class="slider-val" id="valLabor">0</div>
-        <input type="range" min="0" max="10" value="0" id="levLabor" oninput="updateSlider('Labor', this.value)">
-      </div>
+      <div class="lev-desc">Writing, audio, video. One piece of content can reach a million people at zero marginal cost. No one can stop you from publishing.</div>
+      <div class="status-group" id="statusMedia"></div>
     </div>
   </div>
 
-  <div style="margin-top: 40px;">
-    <div class="score-panel">
-      <div class="score-ring">
-        <svg width="160" height="160" viewBox="0 0 160 160">
-          <circle class="score-ring-bg" cx="80" cy="80" r="70"/>
-          <circle class="score-ring-fill" id="scoreRingFill" cx="80" cy="80" r="70"/>
-        </svg>
-        <div class="score-num" id="scoreNum">0</div>
-      </div>
-      <div class="score-label">Leverage Score</div>
-      <div id="scoreVerdict" style="font-family:'Courier New',monospace;font-size:13px;color:var(--muted);max-width:400px;margin:0 auto;line-height:1.7;"></div>
-      <div class="score-breakdown">
-        <div class="score-item">
-          <div class="score-item-val" id="permScore">0</div>
-          <div class="score-item-key">Permissionless</div>
-        </div>
-        <div class="score-item">
-          <div class="score-item-val" id="permScorePct">0%</div>
-          <div class="score-item-key">Mix</div>
-        </div>
-        <div class="score-item">
-          <div class="score-item-val" id="topLev">—</div>
-          <div class="score-item-key">Top Lever</div>
-        </div>
-      </div>
+  <!-- Secondary: Capital -->
+  <div class="lev-card secondary">
+    <div>
+      <div class="lev-badge">Permissioned · Build this second</div>
+      <div class="lev-name">Capital</div>
+      <div class="lev-desc">Money working for you. Requires someone to trust you with it first. Amplifies everything — but only after the permissionless levers are in place.</div>
     </div>
+    <div class="status-group" id="statusCapital"></div>
+  </div>
+
+  <!-- Labor: note only -->
+  <div class="lev-labor-note">
+    <div class="lev-badge">Labor · Oldest leverage</div>
+    <p class="lev-labor-quote">"Managing people is incredibly hard. It's the oldest form of leverage — but when you use it, you're essentially operating through other people's time, not your own ideas. I would probably caution you away from it early on."
+      <cite>— Naval Ravikant</cite>
+    </p>
+  </div>
+
+  <!-- Verdict -->
+  <div class="lev-verdict">
+    <span class="lev-verdict-label">Your leverage position</span>
+    <span id="levVerdictText">Select your status above to see where you stand.</span>
   </div>
 </section>
 
@@ -904,7 +849,6 @@ const THEMES = [...new Set(QUOTES.map(q => q.theme))];
 let directiveIdx = Math.floor(Math.random() * DIRECTIVES.length);
 let activeTheme = 'all';
 let savedQuotes = new Set();
-let leverageVals = { Code: 0, Media: 0, Capital: 0, Labor: 0 };
 
 // ── TICKER ────────────────────────────────────────────────────────────────
 function buildTicker() {
@@ -1131,44 +1075,60 @@ function generateSKProfile() {
 }
 
 // ── LEVERAGE AUDIT ────────────────────────────────────────────────────────
-function updateSlider(name, val) {
-  val = parseInt(val);
-  leverageVals[name] = val;
-  document.getElementById('val' + name).textContent = val;
-  renderScore();
+const LEVERS = ['Code', 'Media', 'Capital'];
+const STATUS_CYCLE = ['none', 'building', 'active'];
+const STATUS_LABELS = { none: 'None', building: 'Building', active: 'Active' };
+let levStatus = { Code: 'none', Media: 'none', Capital: 'none' };
+
+function buildLevButtons(lever) {
+  const wrap = document.getElementById('status' + lever);
+  wrap.innerHTML = '';
+  STATUS_CYCLE.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'status-btn';
+    btn.textContent = STATUS_LABELS[s];
+    btn.onclick = () => { levStatus[lever] = s; renderLevButtons(); renderLevVerdict(); };
+    wrap.appendChild(btn);
+  });
 }
 
-function renderScore() {
-  const { Code, Media, Capital, Labor } = leverageVals;
-  const total = Code + Media + Capital + Labor;
-  const perm = Code + Media;
-  const score = Math.round(total * 2.5); // 0–100
-  const permPct = total > 0 ? Math.round((perm / total) * 100) : 0;
+function renderLevButtons() {
+  LEVERS.forEach(lever => {
+    const wrap = document.getElementById('status' + lever);
+    const btns = wrap.querySelectorAll('.status-btn');
+    STATUS_CYCLE.forEach((s, i) => {
+      btns[i].className = 'status-btn' + (levStatus[lever] === s ? ' active-' + s : '');
+    });
+  });
+}
 
-  document.getElementById('scoreNum').textContent = score;
-  document.getElementById('permScore').textContent = perm;
-  document.getElementById('permScorePct').textContent = permPct + '%';
+function renderLevVerdict() {
+  const c = levStatus.Code, m = levStatus.Media, cap = levStatus.Capital;
+  const verdicts = {
+    'active-active':   'Both permissionless levers are live. This is the right foundation. The goal now is to pour your specific knowledge into both — depth compounds faster than breadth.',
+    'active-building': '<strong>Code deployed, media in progress.</strong> Finish the second lever. Written work extends your reach to people your code will never find.',
+    'active-none':     '<strong>Code deployed, no media presence.</strong> Your knowledge has no voice. A single well-written essay can reach more people than years of word-of-mouth.',
+    'building-active': '<strong>Media active, code in progress.</strong> You\'re visible — now make something that works without you. Even a small tool ships leverage.',
+    'building-building':'Both levers in progress. Pick one and ship it — an imperfect thing that\'s live compounds. A perfect thing that isn\'t doesn\'t.',
+    'building-none':   '<strong>Code in progress, no media.</strong> Two parallel starts beats none, but finish the code first. Ship, then write about what you built.',
+    'none-active':     '<strong>Media active, no code.</strong> You have an audience and a voice. A tool built on top of that trust is the highest-leverage next move.',
+    'none-building':   'Media in progress — good. Consider running both in parallel. Writing about what you\'re building accelerates both.',
+    'none-none':       'Neither permissionless lever is active yet. This is the most important thing to change. Start with whichever one you can ship something in the next 30 days.',
+  };
+  const key = c + '-' + m;
+  let text = verdicts[key] || 'Select your status above.';
+  if (cap === 'active' && (c === 'active' || m === 'active')) {
+    text += ' Capital is also working for you — that\'s the full permissionless-first stack.';
+  } else if (cap !== 'none' && c === 'none' && m === 'none') {
+    text = 'Capital before permissionless leverage is unusual. Naval\'s view: build code or media first — they give you something worth deploying capital into.';
+  }
+  document.getElementById('levVerdictText').innerHTML = text;
+}
 
-  const top = Object.entries(leverageVals).sort((a,b) => b[1]-a[1])[0];
-  document.getElementById('topLev').textContent = top[1] > 0 ? top[0] : '—';
-
-  // Ring
-  const fill = document.getElementById('scoreRingFill');
-  const circumference = 440;
-  const offset = circumference - (score / 100) * circumference;
-  fill.style.strokeDashoffset = offset;
-
-  // Verdict
-  const verdicts = [
-    [0, "No leverage yet. Your output is capped by your hours. Start with code or writing — one post, one script."],
-    [20, "Early stage. You have some leverage but it's not compounding yet. Focus on the permissionless levers."],
-    [40, "Building momentum. The permissionless levers (code + media) should be your primary focus now."],
-    [60, "Solid leverage stack. Your work is starting to work for you. Now compound — go deeper, not broader."],
-    [80, "Strong. You are in the top tier of leverage users. The goal now is specific knowledge alignment."],
-    [95, "Exceptional. You have built leverage that Naval would recognize. Now guard your time fiercely."],
-  ];
-  const verdict = verdicts.slice().reverse().find(([min]) => score >= min);
-  document.getElementById('scoreVerdict').textContent = verdict[1];
+function initLeverage() {
+  LEVERS.forEach(buildLevButtons);
+  renderLevButtons();
+  renderLevVerdict();
 }
 
 // ── COMPOUND CALCULATOR ───────────────────────────────────────────────────
@@ -1268,7 +1228,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 // ── INIT ──────────────────────────────────────────────────────────────────
 buildTicker();
 renderDirective();
-renderScore();
+initLeverage();
 updateCompound();
 buildQuoteFilter();
 renderQuotes();
