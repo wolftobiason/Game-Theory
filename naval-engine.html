@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Specific Knowledge Engine</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --surface: #111113;
+    --border: #1f1f23;
+    --gold: #c9a84c;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-glow: rgba(201,168,76,0.08);
+    --text: #ede8e2;
+    --muted: #9a9aad;
+    --blue: #4a9eff;
+    --blue-dim: rgba(74,158,255,0.12);
+    --green: #3ecf8e;
+    --green-dim: rgba(62,207,142,0.12);
+    --red: #ff6b6b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(9,9,11,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Georgia', serif;
+    font-size: 14px; letter-spacing: 3px;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex; gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-family: 'Courier New', monospace;
+    font-size: 12px; letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 120px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 4px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero h1 {
+    font-size: clamp(36px, 7vw, 80px);
+    font-weight: 400; line-height: 1.1;
+    text-align: center;
+    max-width: 800px;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero h1 em {
+    font-style: italic; color: var(--gold);
+  }
+  .hero-sub {
+    margin-top: 32px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px; color: var(--muted);
+    text-align: center; max-width: 480px; line-height: 1.7;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .hero-equation {
+    margin-top: 60px;
+    padding: 24px 40px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    letter-spacing: 1px;
+    opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+  }
+  .hero-equation .eq-wealth { color: var(--gold); font-weight: bold; }
+  .hero-equation .eq-sk { color: var(--blue); }
+  .hero-equation .eq-lev { color: var(--green); }
+  .hero-equation .eq-acc { color: #ff9f4a; }
+
+  /* ── QUOTE TICKER ── */
+  .ticker {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 14px 0;
+    overflow: hidden; white-space: nowrap;
+  }
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker 60s linear infinite;
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .ticker-inner span { margin: 0 40px; }
+  .ticker-inner .dot { color: var(--gold); }
+
+  /* ── SECTION WRAPPER ── */
+  section {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 100px 40px;
+  }
+  .section-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 4px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 400; line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .section-desc {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    line-height: 1.8; margin-bottom: 48px;
+    max-width: 540px;
+  }
+  .divider {
+    width: 40px; height: 1px;
+    background: var(--gold);
+    margin: 0 0 48px;
+  }
+
+  /* ── SPECIFIC KNOWLEDGE FORM ── */
+  .sk-form { display: flex; flex-direction: column; gap: 24px; }
+  .sk-question {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .sk-question:focus-within { border-color: var(--gold); }
+  .sk-q-num {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 10px;
+  }
+  .sk-q-text {
+    font-size: 16px; font-weight: 400;
+    margin-bottom: 16px; line-height: 1.5;
+  }
+  .sk-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: var(--muted);
+    margin-bottom: 14px; line-height: 1.6;
+    font-style: italic;
+  }
+  textarea, input[type="text"] {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 2px;
+    color: var(--text); font-family: 'Courier New', monospace;
+    font-size: 13px; padding: 12px 14px;
+    resize: vertical; outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.7;
+  }
+  textarea { min-height: 80px; }
+  textarea:focus, input:focus { border-color: var(--gold); }
+
+  /* ── LEVERAGE AUDIT ── */
+  .leverage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 600px) { .leverage-grid { grid-template-columns: 1fr; } }
+  .lev-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .lev-card.permissionless { border-top: 2px solid var(--green); }
+  .lev-card.permissioned { border-top: 2px solid var(--muted); }
+  .lev-type {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .lev-card.permissionless .lev-type { color: var(--green); }
+  .lev-card.permissioned .lev-type { color: var(--muted); }
+  .lev-name { font-size: 20px; margin-bottom: 8px; }
+  .lev-desc {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: var(--muted);
+    line-height: 1.6; margin-bottom: 20px;
+  }
+  .slider-wrap { position: relative; }
+  .slider-val {
+    position: absolute; right: 0; top: -24px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--gold);
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%; height: 2px;
+    background: var(--border); border-radius: 2px;
+    outline: none; cursor: pointer;
+    padding: 0;
+    border: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--gold); border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  /* ── SCORE ── */
+  .score-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 40px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .score-panel::before {
+    content: '';
+    position: absolute; top: -40px; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .score-ring {
+    width: 160px; height: 160px;
+    margin: 0 auto 32px;
+    position: relative;
+  }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring-bg { stroke: var(--border); fill: none; stroke-width: 6; }
+  .score-ring-fill {
+    fill: none; stroke-width: 6;
+    stroke: var(--gold);
+    stroke-linecap: round;
+    stroke-dasharray: 440;
+    stroke-dashoffset: 440;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1);
+    filter: drop-shadow(0 0 6px rgba(201,168,76,0.5));
+  }
+  .score-num {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px; font-weight: 400;
+    color: var(--gold);
+    font-family: 'Courier New', monospace;
+  }
+  .score-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .score-breakdown {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-top: 32px;
+  }
+  .score-item { text-align: center; }
+  .score-item-val {
+    font-family: 'Courier New', monospace;
+    font-size: 22px; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .score-item-key {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--gold-dim); border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Courier New', monospace;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 14px 28px; border-radius: 2px;
+    cursor: pointer; outline: none;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 32px;
+  }
+  .btn:hover { background: rgba(201,168,76,0.25); }
+  .btn:active { transform: scale(0.98); }
+  .btn-ghost {
+    background: transparent; border-color: var(--border); color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--muted); background: var(--surface); color: var(--text); }
+
+  /* ── QUOTES ── */
+  .quotes-grid {
+    display: grid; gap: 16px;
+  }
+  .quote-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+    padding: 24px 28px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .quote-card:hover {
+    background: var(--gold-glow);
+    border-left-color: var(--gold);
+  }
+  .quote-text {
+    font-size: 16px; line-height: 1.7;
+    font-style: italic; margin-bottom: 12px;
+  }
+  .quote-theme {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .quote-filter {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+  }
+  .filter-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 2px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--gold); color: var(--gold);
+    background: var(--gold-dim);
+  }
+
+  /* ── COMPOUND CALC ── */
+  .compound-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 40px;
+  }
+  .compound-single-input {
+    margin-bottom: 40px;
+  }
+  .compound-single-input label {
+    display: block;
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .compound-single-input .input-readout {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--gold);
+    margin-top: 10px;
+  }
+  .milestone-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 32px;
+  }
+  @media (max-width: 600px) { .milestone-grid { grid-template-columns: repeat(2, 1fr); } }
+  .milestone-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px; padding: 20px 16px;
+    text-align: center;
+  }
+  .milestone-year {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .milestone-sk {
+    font-family: 'Courier New', monospace;
+    font-size: 22px; color: var(--gold);
+    margin-bottom: 6px; font-weight: 400;
+  }
+  .milestone-sal {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .milestone-edge {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 1px;
+    color: var(--green); text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    padding-top: 10px; margin-top: 4px;
+  }
+  .compound-tagline {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    text-align: center; line-height: 1.9;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+  .compound-tagline strong { color: var(--gold); font-size: 15px; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 1px; line-height: 2;
+  }
+  footer strong { color: var(--text); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── DAILY DIRECTIVE ── */
+  .directive-card {
+    background: var(--surface);
+    border: 1px solid var(--gold);
+    border-radius: 4px; padding: 40px;
+    text-align: center;
+    position: relative;
+  }
+  .directive-quote {
+    font-size: clamp(18px, 3vw, 26px);
+    font-style: italic; line-height: 1.6;
+    margin-bottom: 24px; color: var(--text);
+  }
+  .directive-author {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .directive-btns {
+    display: flex; justify-content: center; gap: 12px; margin-top: 24px;
+  }
+
+  /* ── RESULT BOX ── */
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 28px; margin-top: 24px;
+    display: none;
+    animation: fadeUp 0.4s forwards;
+  }
+  .result-box.visible { display: block; }
+  .result-title {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .result-content {
+    font-size: 15px; line-height: 1.8; color: var(--text);
+  }
+  .result-tags {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+  }
+  .tag {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    letter-spacing: 1px; padding: 4px 10px;
+    border: 1px solid var(--gold); color: var(--gold);
+    border-radius: 2px; background: var(--gold-dim);
+    text-transform: uppercase;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    width: 100%; height: 2px;
+    background: var(--border); margin-top: 24px; border-radius: 1px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--gold); border-radius: 1px;
+    transition: width 0.5s ease; width: 0%;
+  }
+  .progress-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 1px; margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  /* ── PROFILE SECTIONS ── */
+  .profile-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-bottom: 16px;
+  }
+  @media (max-width: 600px) { .profile-grid { grid-template-columns: 1fr; } }
+
+  .profile-section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px; padding: 20px;
+    margin-bottom: 16px;
+  }
+  .profile-section-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 3px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .profile-text {
+    font-size: 14px; line-height: 1.75;
+    color: var(--text); margin-top: 12px;
+  }
+  .profile-secondary {
+    font-size: 13px; color: var(--muted);
+    margin-top: 10px; line-height: 1.7;
+  }
+  .profile-muted { color: var(--muted); font-style: italic; }
+
+  .style-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .style-chip {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 1px;
+    padding: 4px 12px; border-radius: 2px;
+    border: 1px solid; text-transform: uppercase;
+    background: transparent;
+  }
+  .domain-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .domain-chip {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 1px;
+    padding: 4px 12px; border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--text); background: var(--surface);
+    text-transform: uppercase;
+  }
+
+  .leverage-rec-lever {
+    font-family: 'Courier New', monospace;
+    font-size: 18px; color: var(--green);
+    letter-spacing: 1px; display: block;
+    margin-bottom: 8px;
+  }
+
+  .profile-gap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    border-radius: 0 3px 3px 0;
+    padding: 20px; margin-bottom: 16px;
+  }
+  .profile-followup-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 3px 3px 0;
+    padding: 20px; margin-bottom: 16px;
+  }
+  .profile-followup-q {
+    font-size: 15px; line-height: 1.75;
+    font-style: italic; color: var(--text);
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Specific Knowledge Engine</div>
+  <ul class="nav-links">
+    <li><a href="#knowledge">Knowledge</a></li>
+    <li><a href="#leverage">Leverage</a></li>
+    <li><a href="#compound">Compound</a></li>
+    <li><a href="#wisdom">Wisdom</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Naval Ravikant · Wealth Framework</div>
+  <h1>Seek <em>wealth,</em><br>not money or status.</h1>
+  <p class="hero-sub">Wealth is assets that earn while you sleep. This tool helps you map your specific knowledge, audit your leverage, and understand the compounding that builds real freedom.</p>
+  <div class="hero-equation">
+    <span class="eq-wealth">WEALTH</span>
+    <span style="color:var(--muted)"> = </span>
+    <span class="eq-sk">Specific Knowledge</span>
+    <span style="color:var(--muted)"> × </span>
+    <span class="eq-lev">Leverage</span>
+    <span style="color:var(--muted)"> × </span>
+    <span class="eq-acc">Accountability</span>
+    <span style="color:var(--muted)"> × </span>
+    <span style="color:#e8a87c">Long-term Thinking</span>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- DAILY DIRECTIVE -->
+<section>
+  <div class="section-label">01 · Today</div>
+  <div class="section-title">Daily Directive</div>
+  <p class="section-desc">One signal to orient your day. Refresh for a new one.</p>
+  <div class="divider"></div>
+
+  <div class="directive-card">
+    <div class="directive-quote" id="directiveQuote">Loading...</div>
+    <div class="directive-author">— Naval Ravikant</div>
+    <div class="directive-btns">
+      <button class="btn btn-ghost" onclick="nextDirective()">↻ &nbsp;New Directive</button>
+    </div>
+  </div>
+</section>
+
+<!-- SPECIFIC KNOWLEDGE -->
+<section id="knowledge">
+  <div class="section-label">02 · Foundation</div>
+  <div class="section-title">Find Your Specific Knowledge</div>
+  <p class="section-desc">Specific knowledge cannot be trained for. It's found by pursuing your genuine curiosity and passion, not what's hot right now. Answer honestly — this is for you.</p>
+  <div class="divider"></div>
+
+  <form class="sk-form" onsubmit="return false;">
+    <div class="sk-question">
+      <div class="sk-q-num">Q 01</div>
+      <div class="sk-q-text">What could you talk about for hours without getting paid, and people would still seek you out for?</div>
+      <div class="sk-hint">Hint: this isn't "coding" or "finance" — go one level deeper. What specifically?</div>
+      <textarea id="q1" placeholder="e.g. 'How distributed systems fail in subtle ways under load...'" rows="3"></textarea>
+    </div>
+
+    <div class="sk-question">
+      <div class="sk-q-num">Q 02</div>
+      <div class="sk-q-text">What do you understand better than most people you know — and why do you think that is?</div>
+      <div class="sk-hint">Hint: think about what others ask YOU for help on, even when you haven't promoted yourself as an expert.</div>
+      <textarea id="q2" placeholder="e.g. 'How people's mental models shape their decisions...'" rows="3"></textarea>
+    </div>
+
+    <div class="sk-question">
+      <div class="sk-q-num">Q 03</div>
+      <div class="sk-q-text">What is the intersection of skills you have that is unusual — even if no individual skill is unique?</div>
+      <div class="sk-hint">Hint: 1-in-100 × 1-in-100 = 1-in-10,000. What's your stack?</div>
+      <textarea id="q3" placeholder="e.g. 'Machine learning + medical domain + ability to explain to executives...'" rows="3"></textarea>
+    </div>
+
+    <div class="sk-question">
+      <div class="sk-q-num">Q 04</div>
+      <div class="sk-q-text">If you had 5 years and no financial pressure, what would you build or research?</div>
+      <div class="sk-hint">Hint: ignore what's "practical." This reveals your actual drive.</div>
+      <textarea id="q4" placeholder="e.g. 'A tool that maps how ideas spread through scientific communities...'" rows="3"></textarea>
+    </div>
+
+    <div class="sk-question">
+      <div class="sk-q-num">Q 05</div>
+      <div class="sk-q-text">What is something you believe that most people in your field would disagree with?</div>
+      <div class="sk-hint">Hint: contrarian views built on real understanding are the seeds of specific knowledge.</div>
+      <textarea id="q5" placeholder="e.g. 'Most software abstractions actually increase long-term complexity...'" rows="3"></textarea>
+    </div>
+  </form>
+
+  <button class="btn" onclick="generateSKProfile()">→ &nbsp;Generate My SK Profile</button>
+
+  <div class="result-box" id="skResult">
+    <div class="result-title">Your Specific Knowledge Signal</div>
+
+    <div class="profile-grid">
+      <div class="profile-section">
+        <div class="profile-section-label">Thinking Style</div>
+        <div id="profileStyleContent"></div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-label">Domain Signal</div>
+        <div id="profileDomainContent"></div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-label">Best Leverage Path</div>
+      <div id="profileLeverageContent"></div>
+    </div>
+
+    <div class="profile-gap">
+      <div class="profile-section-label">The Gap</div>
+      <div id="profileGapContent"></div>
+    </div>
+
+    <div class="profile-followup-box">
+      <div class="profile-section-label">Go Deeper</div>
+      <div id="profileFollowupContent"></div>
+    </div>
+
+    <div class="result-tags" id="skResultTags"></div>
+    <div class="progress-bar"><div class="progress-fill" id="skProgress"></div></div>
+    <div class="progress-label" id="skProgressLabel"></div>
+  </div>
+</section>
+
+<!-- LEVERAGE AUDIT -->
+<section id="leverage">
+  <div class="section-label">03 · Amplification</div>
+  <div class="section-title">Audit Your Leverage Stack</div>
+  <p class="section-desc">Leverage is what turns your specific knowledge into wealth. Code and content are permissionless — no one can stop you from using them. Rate your current leverage honestly.</p>
+  <div class="divider"></div>
+
+  <div class="leverage-grid">
+    <div class="lev-card permissionless">
+      <div class="lev-type">Permissionless ·</div>
+      <div class="lev-name">Code</div>
+      <div class="lev-desc">Software works for you 24/7. A single function, deployed once, can serve millions. The highest leverage tool in history.</div>
+      <div class="slider-wrap" style="padding-top:28px">
+        <div class="slider-val" id="valCode">0</div>
+        <input type="range" min="0" max="10" value="0" id="levCode" oninput="updateSlider('Code', this.value)">
+      </div>
+    </div>
+
+    <div class="lev-card permissionless">
+      <div class="lev-type">Permissionless ·</div>
+      <div class="lev-name">Media</div>
+      <div class="lev-desc">Writing, podcasts, video. One piece of content can influence a million people while you sleep. Zero marginal cost to replicate.</div>
+      <div class="slider-wrap" style="padding-top:28px">
+        <div class="slider-val" id="valMedia">0</div>
+        <input type="range" min="0" max="10" value="0" id="levMedia" oninput="updateSlider('Media', this.value)">
+      </div>
+    </div>
+
+    <div class="lev-card permissioned">
+      <div class="lev-type">Permissioned ·</div>
+      <div class="lev-name">Capital</div>
+      <div class="lev-desc">Money that works for you. Requires trust to deploy. Amplifies everything — but only after you've built the other levers.</div>
+      <div class="slider-wrap" style="padding-top:28px">
+        <div class="slider-val" id="valCapital">0</div>
+        <input type="range" min="0" max="10" value="0" id="levCapital" oninput="updateSlider('Capital', this.value)">
+      </div>
+    </div>
+
+    <div class="lev-card permissioned">
+      <div class="lev-type">Permissioned ·</div>
+      <div class="lev-name">Labor</div>
+      <div class="lev-desc">People working for you. The oldest leverage, but requires managing, motivating, and retaining humans. High cost, high risk.</div>
+      <div class="slider-wrap" style="padding-top:28px">
+        <div class="slider-val" id="valLabor">0</div>
+        <input type="range" min="0" max="10" value="0" id="levLabor" oninput="updateSlider('Labor', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 40px;">
+    <div class="score-panel">
+      <div class="score-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="score-ring-bg" cx="80" cy="80" r="70"/>
+          <circle class="score-ring-fill" id="scoreRingFill" cx="80" cy="80" r="70"/>
+        </svg>
+        <div class="score-num" id="scoreNum">0</div>
+      </div>
+      <div class="score-label">Leverage Score</div>
+      <div id="scoreVerdict" style="font-family:'Courier New',monospace;font-size:13px;color:var(--muted);max-width:400px;margin:0 auto;line-height:1.7;"></div>
+      <div class="score-breakdown">
+        <div class="score-item">
+          <div class="score-item-val" id="permScore">0</div>
+          <div class="score-item-key">Permissionless</div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-val" id="permScorePct">0%</div>
+          <div class="score-item-key">Mix</div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-val" id="topLev">—</div>
+          <div class="score-item-key">Top Lever</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPOUND CALCULATOR -->
+<section id="compound">
+  <div class="section-label">04 · Compounding</div>
+  <div class="section-title">Knowledge Compounds Faster Than Money</div>
+  <p class="section-desc">Naval: "Read 1 hour a day. That's 1 book a week, 50 books a year. In 7 years you'll be a world-class expert in any field." Compare knowledge compounding to linear salary growth.</p>
+  <div class="divider"></div>
+
+  <div class="compound-panel">
+    <div class="compound-single-input">
+      <label>Daily learning hours</label>
+      <input type="range" min="0.25" max="4" step="0.25" value="1" id="hoursInput" oninput="updateCompound()">
+      <div class="input-readout"><span id="hoursVal">1</span>h / day &nbsp;·&nbsp; ~<span id="booksVal">50</span> books / year</div>
+    </div>
+
+    <div class="milestone-grid" id="milestoneGrid"></div>
+
+    <div class="compound-tagline" id="compoundTagline"></div>
+  </div>
+</section>
+
+<!-- WISDOM -->
+<section id="wisdom">
+  <div class="section-label">05 · Mental Models</div>
+  <div class="section-title">The Almanack</div>
+  <p class="section-desc">Naval's sharpest ideas, organized by theme. Click any card to mark it as a principle you're living.</p>
+  <div class="divider"></div>
+
+  <div class="quote-filter" id="quoteFilter"></div>
+  <div class="quotes-grid" id="quotesGrid"></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Specific Knowledge Engine</strong><br>
+  Inspired by the writings and talks of Naval Ravikant.<br>
+  "Arm yourself with specific knowledge, accountability, and leverage." · <em>The Almanack of Naval Ravikant</em>
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+
+const DIRECTIVES = [
+  "You will get rich by giving society what it wants but does not yet know how to get — at scale.",
+  "Productize yourself. Figure out what you're uniquely good at, and apply as much leverage as possible.",
+  "Specific knowledge is found much more by pursuing your innate talents, genuine curiosity, and passion.",
+  "The internet has massively broadened the possible space of careers. Most people haven't figured this out yet.",
+  "Reading is faster than listening. Doing is faster than watching.",
+  "Set and enforce an aspirational personal hourly rate. If fixing a problem will take less than your rate, ignore it.",
+  "You should be too busy to 'do coffee,' while still keeping an uncluttered calendar.",
+  "Forty hour work weeks are a relic of the industrial age. Knowledge workers function like athletes — train and sprint, then rest and reassess.",
+  "Your real résumé is a catalogue of your suffering. Choose wisely.",
+  "Play long-term games with long-term people. All returns in life — money, relationships, knowledge — come from compound interest.",
+  "A calm mind, a fit body, a house full of love. These things cannot be bought — they must be earned.",
+  "If you can't decide, the answer is no.",
+  "The most important skill for getting rich is becoming a perpetual learner.",
+  "Don't partner with cynics and pessimists. Their beliefs are self-fulfilling.",
+  "Earn with your mind, not your time.",
+  "The people who are successful are excited to wake up and do what they do every day.",
+  "Desire is a contract you make with yourself to be unhappy until you get what you want.",
+  "Free time is the most precious thing you have. Guard it fiercely.",
+  "Monks who renounce desire and business people who pursue it — both are seeking peace.",
+  "Long-term thinking is everything. The entire universe is created by long-term thinkers.",
+];
+
+const QUOTES = [
+  { text: "Arm yourself with specific knowledge, accountability, and leverage.", theme: "wealth" },
+  { text: "Code and media are permissionless leverage. They work for you while you sleep.", theme: "leverage" },
+  { text: "Play long-term games with long-term people. All returns in life come from compound interest.", theme: "compound" },
+  { text: "Reading is the foundation. Read everything. It builds the mental models.", theme: "learning" },
+  { text: "Forty hour work weeks are a relic. Knowledge workers train and sprint, then rest.", theme: "work" },
+  { text: "Productize yourself. Apply as much leverage as possible to what you're uniquely good at.", theme: "wealth" },
+  { text: "If you can't decide, the answer is no.", theme: "decisions" },
+  { text: "A calm mind, a fit body, a house full of love — these cannot be bought. They must be earned.", theme: "life" },
+  { text: "The specific knowledge you have will feel like play to you but look like work to others.", theme: "wealth" },
+  { text: "Escape competition through authenticity. No one can compete with you on being you.", theme: "wealth" },
+  { text: "Desire is a contract you make with yourself to be unhappy until you get what you want.", theme: "life" },
+  { text: "1% improvement per day. Don't ask how. Ask: what is 1% better today?", theme: "compound" },
+  { text: "All the returns in life — wealth, relationships, knowledge — come from compound interest.", theme: "compound" },
+  { text: "Free time is the most precious thing. Jealously guard your calendar.", theme: "work" },
+  { text: "Be the best in the world at what you do. Keep redefining what you do until that is true.", theme: "wealth" },
+  { text: "An internet of niches. The internet makes niche interests viable. Go deep, not broad.", theme: "leverage" },
+  { text: "Judgment, especially in novel situations, is the rarest and most valuable skill.", theme: "decisions" },
+  { text: "Your real résumé is a catalogue of your suffering. Choose your path wisely.", theme: "decisions" },
+  { text: "Give away your knowledge. If you're afraid to, it's not that valuable.", theme: "leverage" },
+  { text: "The genuine love for reading itself, when cultivated, is superpower.", theme: "learning" },
+  { text: "Set an aspirational personal hourly rate and aggressively outsource below it.", theme: "work" },
+  { text: "Happiness is not something you achieve. It's a default state when you stop disturbing it.", theme: "life" },
+  { text: "If it doesn't make your life better, stop doing it.", theme: "life" },
+  { text: "The more you know, the less you diversify. The expert goes deep.", theme: "learning" },
+];
+
+const THEMES = [...new Set(QUOTES.map(q => q.theme))];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let directiveIdx = Math.floor(Math.random() * DIRECTIVES.length);
+let activeTheme = 'all';
+let savedQuotes = new Set();
+let leverageVals = { Code: 0, Media: 0, Capital: 0, Labor: 0 };
+
+// ── TICKER ────────────────────────────────────────────────────────────────
+function buildTicker() {
+  const items = DIRECTIVES.slice(0, 8).map(d => `<span>· ${d}</span>`).join('');
+  const el = document.getElementById('tickerInner');
+  el.innerHTML = items + items; // duplicate for seamless loop
+}
+
+// ── DIRECTIVE ─────────────────────────────────────────────────────────────
+function renderDirective() {
+  document.getElementById('directiveQuote').textContent = DIRECTIVES[directiveIdx];
+}
+function nextDirective() {
+  directiveIdx = (directiveIdx + 1) % DIRECTIVES.length;
+  const el = document.getElementById('directiveQuote');
+  el.style.opacity = 0;
+  setTimeout(() => { renderDirective(); el.style.opacity = 1; el.style.transition = 'opacity 0.4s'; }, 200);
+}
+
+// ── SK ANALYSIS DATA ─────────────────────────────────────────────────────
+const STYLE_DEFS = {
+  'Systems': {
+    keywords: ['system', 'complex', 'emergent', 'adaptive', 'feedback', 'network', 'dynamic', 'nonlinear', 'cascade', 'loop', 'interact', 'emergence', 'self-organ', 'second-order', 'second order'],
+    desc: 'You see the world as nested feedback loops. Your instinct is to map causes and effects, find second-order consequences, and notice that what others treat as isolated is actually entangled.',
+    color: 'var(--blue)',
+  },
+  'Probabilistic': {
+    keywords: ['probabilist', 'probability', 'bayesian', 'uncertain', 'distribution', 'statistical', 'predict', 'risk', 'odds', 'likelihood', 'stochastic', 'prior', 'inference'],
+    desc: 'You think in distributions, not certainties. Where others see one outcome, you see a weighted range of possibilities. You distrust confident predictions and prize calibration over conviction.',
+    color: 'var(--green)',
+  },
+  'Builder': {
+    keywords: ['build', 'creat', 'product', 'ship', 'deploy', 'engineer', 'implement', 'launch', 'develop', 'tool', 'make', 'construct', 'prototype', 'architect'],
+    desc: 'Your mind moves toward making things. Theory interests you only when it translates to something deployable. You are restless until an idea becomes tangible and testable.',
+    color: '#ff9f4a',
+  },
+  'Analytical': {
+    keywords: ['analyz', 'analysis', 'data', 'pattern', 'structur', 'logic', 'framework', 'measur', 'quantif', 'research', 'study', 'investigat', 'breakdown', 'first principle'],
+    desc: 'You break things apart to understand how they work. Your natural response to any claim is to ask for evidence. You are suspicious of conclusions that outrun the underlying data.',
+    color: 'var(--gold)',
+  },
+  'Contrarian': {
+    keywords: ['disagree', 'wrong', 'actually', 'contrary', 'unpopular', 'conventional', 'question', 'challenge', 'fundamentally', 'rethink', 'most people', 'believe', 'consensus', 'mainstream'],
+    desc: 'You gravitate toward views that are correct but not yet mainstream. You are energized by productive disagreement and frustrated by consensus that hasn\'t been genuinely earned.',
+    color: 'var(--red)',
+  },
+  'Social': {
+    keywords: ['people', 'behavior', 'psycholog', 'motivat', 'cultur', 'community', 'human', 'emotion', 'relationship', 'societ', 'incentiv', 'cooperat', 'trust', 'coordinat'],
+    desc: 'Your curiosity centers on why people do what they do. You read situations through the lens of motivation, incentive, and social dynamics — the layer most analysts skip.',
+    color: '#c084fc',
+  },
+  'Creative': {
+    keywords: ['design', 'creativ', 'visual', 'art', 'narrativ', 'story', 'aesthetic', 'beautiful', 'craft', 'express', 'imagine', 'intuition', 'metaphor'],
+    desc: 'You process understanding through form and feeling as much as logic. Your edge is synthesis — bringing together disparate ideas into something coherent that others can actually feel.',
+    color: '#f472b6',
+  },
+};
+
+const DOMAIN_DEFS = {
+  'Technology': {
+    keywords: ['software', 'code', 'algorithm', 'machine learning', 'ai', 'crypto', 'compute', 'engineering', 'digital', 'tech', 'internet', 'program', 'infrastructure'],
+    desc: 'technical systems and their construction',
+  },
+  'Biology': {
+    keywords: ['biolog', 'evolution', 'genetic', 'organism', 'cellular', 'brain', 'neural', 'medicine', 'health', 'species', 'ecolog', 'life science', 'protein', 'cell'],
+    desc: 'living systems and their dynamics',
+  },
+  'Economics': {
+    keywords: ['market', 'economic', 'financ', 'incentiv', 'price', 'capital', 'invest', 'trade', 'wealth', 'business', 'startup', 'entrepreneur', 'allocat'],
+    desc: 'markets, incentives, and value creation',
+  },
+  'Philosophy': {
+    keywords: ['truth', 'knowledge', 'belief', 'epistem', 'logic', 'rational', 'conscious', 'meaning', 'ethics', 'moral', 'wisdom', 'metaphys', 'ontolog'],
+    desc: 'foundations of thought and knowledge',
+  },
+  'Science': {
+    keywords: ['physic', 'chemist', 'mathematic', 'theor', 'experiment', 'research', 'hypothesis', 'nature', 'universe', 'quantum', 'scienc', 'empiric'],
+    desc: 'natural phenomena and first principles',
+  },
+  'Social Science': {
+    keywords: ['psycholog', 'sociolog', 'behavior', 'cultur', 'societ', 'politics', 'histor', 'anthropolog', 'cognit', 'decision', 'group dynamic'],
+    desc: 'human behavior and social structures',
+  },
+};
+
+const LEVERAGE_PATHS = {
+  'Builder':       { lever: 'Code',           action: 'Build a small public tool that embodies your thinking. Your edge is in the making. Ship something real — it will teach you what you actually know faster than any essay.' },
+  'Analytical':    { lever: 'Writing',         action: 'Write a framework essay — one that breaks down a complex problem in your domain in a way no one has before. Analytical minds produce their highest-leverage work as structured arguments others can reason from.' },
+  'Probabilistic': { lever: 'Writing',         action: 'Write about the probabilities your field is mispricing. Contrarian probabilistic takes are rare and compound well — publish them before the market corrects itself.' },
+  'Systems':       { lever: 'Writing + Code', action: 'Build models and write essays that map what you see. Simulations, interactive diagrams, or essays on feedback loops — your knowledge becomes leverage when others can experience the system you already see clearly.' },
+  'Contrarian':    { lever: 'Writing',         action: 'Write the essay that directly challenges the dominant view in your domain. Name the thing everyone believes that you think is wrong. The best contrarian takes compound the longest.' },
+  'Social':        { lever: 'Media',           action: 'Build an audience around the human dynamics you understand that others miss. Your leverage is in making the invisible visible to people who lack your lens on motivation and behavior.' },
+  'Creative':      { lever: 'Media',           action: 'Create work that only you could make — combining your creative instinct with your domain. Your moat is aesthetic, not just analytical. Use it.' },
+};
+
+const FOLLOWUP_QUESTIONS = {
+  'Systems':       'What is the most important feedback loop in your domain that people are currently ignoring — and what would happen in 5 years if they kept ignoring it?',
+  'Probabilistic': 'What probability does your field assign to something that you believe is significantly mispriced — and what is your actual evidence?',
+  'Builder':       'What is the smallest thing you could build in the next 30 days that would prove your specific knowledge publicly, even to skeptics?',
+  'Analytical':    'What framework do you use to analyze your domain that you have never seen written down anywhere else — and why haven\'t you written it down?',
+  'Contrarian':    'If you are right and the consensus is wrong — what should you personally be doing differently, starting this week?',
+  'Social':        'Who is the specific person or community that most needs what you understand, and what is the real reason you haven\'t reached them yet?',
+  'Creative':      'What is the piece of work that only you could make — combining your creative instinct with the domain you know best — and what is stopping you?',
+};
+
+// ── SK HELPERS ────────────────────────────────────────────────────────────
+function scoreKeywords(text, keywords) {
+  return keywords.reduce((score, kw) => {
+    const regex = new RegExp(kw.replace(/[-\s]/g, '[-\\s]?'), 'gi');
+    return score + (text.match(regex) || []).length;
+  }, 0);
+}
+
+function detectStyles(text) {
+  return Object.entries(STYLE_DEFS)
+    .map(([name, def]) => ({ name, score: scoreKeywords(text, def.keywords), ...def }))
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score);
+}
+
+function detectDomains(text) {
+  return Object.entries(DOMAIN_DEFS)
+    .map(([name, def]) => ({ name, score: scoreKeywords(text, def.keywords), ...def }))
+    .filter(d => d.score > 0)
+    .sort((a, b) => b.score - a.score);
+}
+
+function extractTags(text) {
+  const stop = new Set(['about','their','which','would','could','should','where','there','other','those','every','because','really','people','think','better','understand','build','things','something','anyone','specific','knowledge','actually','without','someone','myself','others']);
+  return [...new Set(
+    text.split(/\s+/)
+      .map(w => w.toLowerCase().replace(/[^a-z]/g, ''))
+      .filter(w => w.length > 5 && !stop.has(w))
+  )].slice(0, 8);
+}
+
+function getGap(answers, styles, domains) {
+  if (!answers[4] || answers[4].length < 15)
+    return 'Your contrarian view is undefined. This is where specific knowledge crystallizes — the belief you hold that your peers would push back on. Without it, your knowledge may be replicable by anyone willing to read the same books.';
+  if (!answers[2] || answers[2].length < 15)
+    return 'Your skill intersection is still fuzzy. The 1-in-100 × 1-in-100 question is worth sitting with longer. Your edge lives at a crossroads that isn\'t obvious — even to you — which is exactly why it\'s valuable.';
+  if (styles.length > 0 && domains.length === 0)
+    return `Strong ${styles[0].name.toLowerCase()} thinking without a named domain to apply it to is philosophy, not leverage. Name the specific arena — the more specific, the better.`;
+  if (styles.length === 0)
+    return 'No dominant thinking style detected yet. Go deeper — describe not just what you know, but how you arrive at understanding. The method is as important as the content.';
+  const avgLen = answers.filter(a => a).reduce((s, a) => s + a.split(' ').length, 0) / answers.filter(a => a).length;
+  if (avgLen < 15)
+    return 'Your answers are still surface-level. Specific knowledge lives in the specifics — go one layer deeper on each answer. The most valuable insight is usually the one you almost didn\'t write down.';
+  return 'The signal is present. The next risk is staying at the level of ideas — the gap between knowing and publishing is where most specific knowledge quietly dies.';
+}
+
+// ── SK PROFILE ────────────────────────────────────────────────────────────
+function generateSKProfile() {
+  const answers = [
+    document.getElementById('q1').value.trim(),
+    document.getElementById('q2').value.trim(),
+    document.getElementById('q3').value.trim(),
+    document.getElementById('q4').value.trim(),
+    document.getElementById('q5').value.trim(),
+  ];
+  const filled = answers.filter(a => a.length > 0).length;
+  if (filled === 0) { alert('Answer at least one question to generate your profile.'); return; }
+
+  const all = answers.filter(a => a).join(' ').toLowerCase();
+  const styles  = detectStyles(all);
+  const domains = detectDomains(all);
+  const topStyle  = styles[0];
+  const topDomain = domains[0];
+
+  // ── Thinking Style
+  let styleHTML = '';
+  if (styles.length > 0) {
+    styleHTML += `<div class="style-chips">${styles.slice(0,2).map(s =>
+      `<span class="style-chip" style="border-color:${s.color};color:${s.color}">${s.name}</span>`
+    ).join('')}</div>`;
+    styleHTML += `<p class="profile-text">${topStyle.desc}</p>`;
+    if (styles[1]) {
+      styleHTML += `<p class="profile-secondary">Also: <strong style="color:${styles[1].color}">${styles[1].name}</strong> — ${styles[1].desc}</p>`;
+    }
+  } else {
+    styleHTML = '<p class="profile-text profile-muted">No dominant thinking style detected. Describe not just what you know, but how you arrive at understanding.</p>';
+  }
+  document.getElementById('profileStyleContent').innerHTML = styleHTML;
+
+  // ── Domain Signal
+  let domainHTML = '';
+  if (domains.length > 0) {
+    domainHTML += `<div class="domain-chips">${domains.slice(0,2).map(d =>
+      `<span class="domain-chip">${d.name}</span>`
+    ).join('')}</div>`;
+    domainHTML += `<p class="profile-text">Your language gravitates toward <strong>${topDomain.name}</strong> — ${topDomain.desc}. This is the arena where your specific knowledge is taking root.</p>`;
+    if (domains[1]) {
+      domainHTML += `<p class="profile-secondary">Secondary pull toward <strong>${domains[1].name}</strong> — the intersection of the two may be where your real edge lives.</p>`;
+    }
+  } else {
+    domainHTML = '<p class="profile-text profile-muted">Domain unclear. "Technology" is not a domain — "how distributed systems fail under adversarial load" is. Name the specific problem space.</p>';
+  }
+  document.getElementById('profileDomainContent').innerHTML = domainHTML;
+
+  // ── Leverage Path
+  const path = LEVERAGE_PATHS[topStyle?.name] || { lever: 'Writing', action: 'Start by writing what you know. Writing forces clarity, and clarity reveals what your specific knowledge actually is.' };
+  document.getElementById('profileLeverageContent').innerHTML =
+    `<span class="leverage-rec-lever">→ ${path.lever}</span><p class="profile-text">${path.action}</p>`;
+
+  // ── The Gap
+  document.getElementById('profileGapContent').innerHTML =
+    `<p class="profile-text">${getGap(answers, styles, domains)}</p>`;
+
+  // ── Follow-up
+  const followUp = FOLLOWUP_QUESTIONS[topStyle?.name] || 'What do you know that you haven\'t yet written down — and why not?';
+  document.getElementById('profileFollowupContent').innerHTML =
+    `<p class="profile-followup-q">"${followUp}"</p>`;
+
+  // ── Tags + progress
+  const tags = extractTags(all);
+  document.getElementById('skResultTags').innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+  const pct = Math.round((filled / 5) * 100);
+  document.getElementById('skProgress').style.width = pct + '%';
+  document.getElementById('skProgressLabel').textContent = `${filled} of 5 questions answered · ${pct}% complete`;
+
+  const box = document.getElementById('skResult');
+  box.classList.add('visible');
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── LEVERAGE AUDIT ────────────────────────────────────────────────────────
+function updateSlider(name, val) {
+  val = parseInt(val);
+  leverageVals[name] = val;
+  document.getElementById('val' + name).textContent = val;
+  renderScore();
+}
+
+function renderScore() {
+  const { Code, Media, Capital, Labor } = leverageVals;
+  const total = Code + Media + Capital + Labor;
+  const perm = Code + Media;
+  const score = Math.round(total * 2.5); // 0–100
+  const permPct = total > 0 ? Math.round((perm / total) * 100) : 0;
+
+  document.getElementById('scoreNum').textContent = score;
+  document.getElementById('permScore').textContent = perm;
+  document.getElementById('permScorePct').textContent = permPct + '%';
+
+  const top = Object.entries(leverageVals).sort((a,b) => b[1]-a[1])[0];
+  document.getElementById('topLev').textContent = top[1] > 0 ? top[0] : '—';
+
+  // Ring
+  const fill = document.getElementById('scoreRingFill');
+  const circumference = 440;
+  const offset = circumference - (score / 100) * circumference;
+  fill.style.strokeDashoffset = offset;
+
+  // Verdict
+  const verdicts = [
+    [0, "No leverage yet. Your output is capped by your hours. Start with code or writing — one post, one script."],
+    [20, "Early stage. You have some leverage but it's not compounding yet. Focus on the permissionless levers."],
+    [40, "Building momentum. The permissionless levers (code + media) should be your primary focus now."],
+    [60, "Solid leverage stack. Your work is starting to work for you. Now compound — go deeper, not broader."],
+    [80, "Strong. You are in the top tier of leverage users. The goal now is specific knowledge alignment."],
+    [95, "Exceptional. You have built leverage that Naval would recognize. Now guard your time fiercely."],
+  ];
+  const verdict = verdicts.slice().reverse().find(([min]) => score >= min);
+  document.getElementById('scoreVerdict').textContent = verdict[1];
+}
+
+// ── COMPOUND CALCULATOR ───────────────────────────────────────────────────
+function updateCompound() {
+  const hours = parseFloat(document.getElementById('hoursInput').value);
+  document.getElementById('hoursVal').textContent = hours;
+  document.getElementById('booksVal').textContent = Math.round(hours * 50);
+
+  const knowledgeRate = 0.08 + (hours / 4) * 0.12;
+  const salaryRate = 0.03;
+  const milestones = [1, 5, 10, 20];
+
+  const grid = document.getElementById('milestoneGrid');
+  grid.innerHTML = '';
+
+  milestones.forEach(y => {
+    const k = Math.pow(1 + knowledgeRate, y);
+    const s = 1 + salaryRate * y;
+    const edge = (k / s).toFixed(1);
+
+    const card = document.createElement('div');
+    card.className = 'milestone-card';
+    card.innerHTML = `
+      <div class="milestone-year">Year ${y}</div>
+      <div class="milestone-sk">${k.toFixed(1)}×</div>
+      <div class="milestone-sal">${s.toFixed(2)}× salary</div>
+      <div class="milestone-edge">${edge}× ahead</div>`;
+    grid.appendChild(card);
+  });
+
+  const y20k = Math.pow(1 + knowledgeRate, 20).toFixed(0);
+  const y20s = (1 + salaryRate * 20).toFixed(2);
+  document.getElementById('compoundTagline').innerHTML =
+    `At <strong>${hours}h/day</strong>, your knowledge is <strong>${y20k}×</strong> its starting value in 20 years.<br>
+    A salary grows to <strong>${y20s}×</strong>. The gap is not effort — it's the nature of compounding.`;
+}
+
+// ── QUOTES ───────────────────────────────────────────────────────────────
+function buildQuoteFilter() {
+  const wrap = document.getElementById('quoteFilter');
+  wrap.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'filter-btn active';
+  all.textContent = 'All';
+  all.onclick = () => filterQuotes('all', all);
+  wrap.appendChild(all);
+
+  THEMES.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = t;
+    btn.onclick = () => filterQuotes(t, btn);
+    wrap.appendChild(btn);
+  });
+}
+
+function filterQuotes(theme, btn) {
+  activeTheme = theme;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderQuotes();
+}
+
+function renderQuotes() {
+  const filtered = activeTheme === 'all' ? QUOTES : QUOTES.filter(q => q.theme === activeTheme);
+  const grid = document.getElementById('quotesGrid');
+  grid.innerHTML = '';
+  filtered.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'quote-card' + (savedQuotes.has(i) ? ' saved' : '');
+    card.style.borderLeftColor = savedQuotes.has(i) ? 'var(--green)' : 'var(--gold)';
+    card.innerHTML = `
+      <div class="quote-text">"${q.text}"</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="quote-theme">${q.theme}</div>
+        <div style="font-family:'Courier New',monospace;font-size:10px;color:${savedQuotes.has(i)?'var(--green)':'var(--muted)'}">
+          ${savedQuotes.has(i) ? '✓ saved' : 'click to save'}
+        </div>
+      </div>`;
+    card.onclick = () => {
+      if (savedQuotes.has(i)) savedQuotes.delete(i); else savedQuotes.add(i);
+      renderQuotes();
+    };
+    grid.appendChild(card);
+  });
+}
+
+// ── SMOOTH SCROLL NAV ─────────────────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+buildTicker();
+renderDirective();
+renderScore();
+updateCompound();
+buildQuoteFilter();
+renderQuotes();
+</script>
+</body>
+</html>
