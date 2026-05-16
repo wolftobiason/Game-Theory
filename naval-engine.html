@@ -426,6 +426,23 @@
     padding-top: 24px; border-top: 1px solid var(--border);
   }
 
+  /* ── COMPOUND PRINCIPLES ── */
+  .compound-principle {
+    display: flex; gap: 28px; align-items: flex-start;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .compound-principle:last-child { border-bottom: none; }
+  .cp-num {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 2px; padding-top: 3px;
+    flex-shrink: 0; width: 24px;
+  }
+  .cp-text {
+    font-size: 16px; line-height: 1.8; color: var(--text);
+  }
+
   /* ── FOOTER ── */
   footer {
     border-top: 1px solid var(--border);
@@ -769,25 +786,25 @@
   </div>
 </section>
 
-<!-- COMPOUND CALCULATOR -->
+<!-- COMPOUNDING -->
 <section id="compound">
   <div class="section-label">04 · Compounding</div>
-  <div class="section-title">How Reading Builds Mastery</div>
-  <p class="section-desc">"Read 1 hour a day in your field for 7 years and you'll be a world-class expert." — Naval. Adjust your daily hours and see where that reading takes you.</p>
+  <div class="section-title">On Compounding</div>
   <div class="divider"></div>
 
-  <div class="compound-panel">
-    <div class="compound-single-input">
-      <label>Daily reading hours</label>
-      <input type="range" min="0.25" max="4" step="0.25" value="1" id="hoursInput" oninput="updateCompound()">
-      <div class="input-readout"><span id="hoursVal">1</span>h / day &nbsp;·&nbsp; ~<span id="booksVal">50</span> books / year</div>
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="quote-card" style="cursor:default">
+      <div class="quote-text">"Play long-term games with long-term people. All returns in life — whether in wealth, relationships, or knowledge — come from compound interest."</div>
     </div>
-
-    <div class="mastery-header">
-      <span>Year</span><span>Books read</span><span>Mastery level</span>
+    <div class="quote-card" style="cursor:default">
+      <div class="quote-text">"Read 1 hour a day in your field. That's 1 book a week, 50 books a year. After 7 years you'll be a world-class expert."</div>
     </div>
-    <div id="masteryTable"></div>
-    <div class="mastery-note" id="masteryNote"></div>
+    <div class="quote-card" style="cursor:default">
+      <div class="quote-text">"The most important thing to do is to be a continuous learner. If you're not learning, you're stagnating. And everyone else is learning, so you're falling behind."</div>
+    </div>
+    <div class="quote-card" style="cursor:default">
+      <div class="quote-text">"Specific knowledge is at the edge of knowledge. It's not something you can be trained for. It's something that you have to develop by yourself, and it requires reading, thinking, and putting it into practice."</div>
+    </div>
   </div>
 </section>
 
@@ -1150,45 +1167,8 @@ function initLeverage() {
   renderLevVerdict();
 }
 
-// ── COMPOUND CALCULATOR ───────────────────────────────────────────────────
-function getMastery(books) {
-  if (books < 30)  return { label: 'Curious',       color: 'var(--muted)' };
-  if (books < 100) return { label: 'Informed',      color: 'var(--muted)' };
-  if (books < 200) return { label: 'Knowledgeable', color: 'var(--text)' };
-  if (books < 350) return { label: 'Expert',        color: 'var(--gold)' };
-  if (books < 700) return { label: 'World-class',   color: 'var(--green)' };
-  return                  { label: 'Canonical',     color: 'var(--green)' };
-}
-
-function updateCompound() {
-  const hours = parseFloat(document.getElementById('hoursInput').value);
-  const booksPerYear = Math.round(hours * 50);
-  document.getElementById('hoursVal').textContent = hours;
-  document.getElementById('booksVal').textContent = booksPerYear;
-
-  const table = document.getElementById('masteryTable');
-  table.innerHTML = '';
-
-  [1, 3, 5, 7, 10, 20].forEach(y => {
-    const books = booksPerYear * y;
-    const mastery = getMastery(books);
-    const isThreshold = y === 7 && books >= 350;
-
-    const row = document.createElement('div');
-    row.className = 'mastery-row' + (isThreshold ? ' naval-threshold' : '');
-    row.innerHTML = `
-      <div class="mastery-year">Year ${y}</div>
-      <div class="mastery-books">~${books.toLocaleString()} books</div>
-      <div class="mastery-level" style="color:${mastery.color}">${mastery.label}</div>`;
-    table.appendChild(row);
-  });
-
-  const y7books = booksPerYear * 7;
-  const yearsToThreshold = Math.ceil(350 / booksPerYear);
-  document.getElementById('masteryNote').innerHTML = y7books >= 350
-    ? `At this pace you cross Naval's threshold — ~350 books in a domain — by Year 7. After that, there is genuinely no one left to compete with on that terrain.`
-    : `Naval's threshold is ~350 books in a domain. At ${hours}h/day that takes <strong>${yearsToThreshold} years</strong>. The math is simple — the discipline isn't.`;
-}
+// ── READING INVENTORY ─────────────────────────────────────────────────────
+let books = [];
 
 // ── QUOTES ───────────────────────────────────────────────────────────────
 function buildQuoteFilter() {
@@ -1257,7 +1237,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 buildTicker();
 renderDirective();
 initLeverage();
-updateCompound();
 buildQuoteFilter();
 renderQuotes();
 </script>
