@@ -1188,7 +1188,7 @@ function runKelly() {
       const p95  = sorted[Math.floor(n * 0.95)];
       const ruin = sorted.filter(v => v < RUIN_FLOOR).length;
       // geometric mean per flip = exp(mean(log(final/START)) / nF)
-      const logSum = paths.reduce((s, p) => s + Math.log(Math.max(p[nF], RUIN_FLOOR) / START), 0);
+      const logSum = paths.reduce((s, p) => s + Math.log(Math.max(p[nF], 1e-100) / START), 0);
       const geo = Math.exp(logSum / n / nF);
       // percentile paths for chart bands
       const p5path  = paths.slice().sort((a,b) => a[nF]-b[nF])[Math.floor(n*0.05)];
