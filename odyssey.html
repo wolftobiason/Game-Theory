@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ΟΔΥΣΣΕΙΑ — The Long Way Home</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #120c06;
+  color: #e8d5a3;
+  font-family: Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+}
+h1 {
+  font-size: 2.2em;
+  letter-spacing: 0.35em;
+  color: #f0c060;
+  margin-bottom: 4px;
+  text-shadow: 0 0 40px rgba(240,192,96,0.4);
+}
+.subtitle {
+  font-style: italic;
+  color: #806830;
+  margin-bottom: 20px;
+  letter-spacing: 0.12em;
+  font-size: 0.9em;
+}
+#game-wrap { width: 100%; max-width: 940px; }
+canvas {
+  display: block;
+  width: 100%;
+  border: 1px solid #4a3010;
+  box-shadow: 0 4px 50px rgba(0,0,0,0.9);
+}
+#panel {
+  background: #150f07;
+  border: 1px solid #4a3010;
+  border-top: none;
+  padding: 20px 26px 24px;
+}
+#loc-name {
+  font-size: 1.25em;
+  color: #f0c060;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+#stats {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 14px;
+  font-size: 0.8em;
+  color: #806830;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #2a1e0a;
+}
+.sv { color: #f0c060; font-weight: bold; }
+#myth {
+  line-height: 1.8;
+  color: #c4b07a;
+  font-size: 0.92em;
+  margin-bottom: 18px;
+  min-height: 4em;
+}
+.btn {
+  background: transparent;
+  color: #c0a050;
+  border: 1px solid #6a4818;
+  padding: 9px 22px;
+  font-family: Georgia, serif;
+  font-size: 0.88em;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: border-color 0.2s, color 0.2s;
+  margin-right: 12px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+.btn:hover:not(:disabled) { border-color: #f0c060; color: #f0e0a0; }
+.btn:disabled { opacity: 0.3; cursor: default; }
+.btn-gold { border-color: #8a5a18; color: #d8b860; }
+#progress { font-size: 0.72em; color: #4a3818; margin-top: 10px; letter-spacing: 0.05em; }
+#lore {
+  display: none;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #2a1e0a;
+  font-size: 0.78em;
+  color: #7a6640;
+  line-height: 1.7;
+}
+#lore strong { color: #a08040; display: block; margin-bottom: 4px; letter-spacing: 0.08em; font-size: 0.95em; }
+#lore.visible { display: block; }
+#quote {
+  display: none;
+  margin-top: 16px;
+  padding: 12px 18px;
+  border-left: 2px solid #6a4818;
+  background: #1a1206;
+  font-style: italic;
+  font-size: 0.8em;
+  color: #a08848;
+  line-height: 1.75;
+}
+#quote cite {
+  display: block;
+  margin-top: 7px;
+  font-style: normal;
+  font-size: 0.85em;
+  color: #5a4020;
+  letter-spacing: 0.06em;
+}
+#quote.visible { display: block; }
+</style>
+</head>
+<body>
+<h1>ΟΔΥΣΣΕΙΑ</h1>
+<p class="subtitle">The Long Way Home</p>
+<div id="game-wrap">
+  <canvas id="map" width="940" height="470"></canvas>
+  <div id="panel">
+    <div id="loc-name"></div>
+    <div id="stats">
+      <span>Crew: <span class="sv" id="s-crew"></span></span>
+      <span>Ships: <span class="sv" id="s-ships"></span></span>
+      <span>Years from Troy: <span class="sv" id="s-years"></span></span>
+    </div>
+    <div id="myth"></div>
+    <div id="btns"></div>
+    <div id="progress"></div>
+    <div id="quote"></div>
+    <div id="lore"></div>
+  </div>
+</div>
+
+<script>
+const C = document.getElementById('map');
+const cx = C.getContext('2d');
+const W = 940, H = 470;
+
+function pt(lon, lat) {
+  return [(lon + 7) / 44 * W, (47 - lat) / 17 * H];
+}
+
+function poly(pts, fill, stroke) {
+  cx.beginPath();
+  const [sx, sy] = pt(pts[0][0], pts[0][1]);
+  cx.moveTo(sx, sy);
+  for (let i = 1; i < pts.length; i++) {
+    const [x, y] = pt(pts[i][0], pts[i][1]);
+    cx.lineTo(x, y);
+  }
+  cx.closePath();
+  if (fill)  { cx.fillStyle = fill; cx.fill(); }
+  if (stroke){ cx.strokeStyle = stroke; cx.lineWidth = 0.7; cx.stroke(); }
+}
+
+const landmasses = [
+  [[-7,37],[-5.4,36],[-2,36.5],[1.5,38],[3,40.5],[3,43.5],[0,44],[-4,44],[-7,44],[-9,43],[-9,39],[-7,37]],
+  [[3,43.5],[8,44],[14.5,44.5],[14.5,43.8],[10,43.4],[6,43.2],[3,43.5]],
+  [[7.5,44],[14.5,45],[14,44.2],[13.5,43.5],[12,43],[11,41.5],[10.5,40],[10.3,38.5],[11,37.5],[12,37],[15,36.8],[15.5,37.5],[16,38.5],[18,40.5],[17,41.5],[14.5,45]],
+  [[12,37.8],[15.2,38],[16,37.5],[15.5,37],[13,36.8],[12.2,37.2],[12,37.8]],
+  [[8.2,41.2],[9.6,41.2],[9.6,39.4],[8.2,39.4],[8.2,41.2]],
+  [[8.6,43.1],[9.6,43.1],[9.6,41.6],[8.6,42.2],[8.6,43.1]],
+  [[19,42],[22,42.5],[24,42],[26,41.5],[26,40],[25,38.5],[23.5,38],[22,37.5],[21.5,37],[20.5,36.7],[20.8,37.5],[21.5,38.5],[21,39.5],[19.5,40.5],[19,42]],
+  [[23.5,35.7],[26.4,35.7],[26.4,35.1],[23.5,35.1],[23.5,35.7]],
+  [[26,42],[30,42.5],[37,37],[37,36],[34,36],[28,37],[26.5,38],[26,42]],
+  [[32.3,35.6],[34.2,35.6],[34.2,34.9],[32.3,34.9],[32.3,35.6]],
+  [[-7,36],[-7,30],[37,30],[37,32],[28,31],[20,31],[13,33],[7.5,37],[3,37],[-1,36.2],[-7,36]],
+];
+
+const stops = [
+  { name:'Troy — Ilium', lon:26.2, lat:39.9, yearsAdd:0,
+    text:'The war is over. Troy burns. Ten years of fighting, and now your twelve ships carry 600 men and plunder westward. You do not yet know that taunting the blinded Polyphemus will earn you the hatred of his father, Poseidon, who rules every wave you must cross.' },
+  { name:'Ismarus — Cicones', lon:25.6, lat:41.0, crewLost:72, yearsAdd:0.1,
+    text:'Your men raid Ismarus and feast on the beach. You order departure — the Cicones will return with allies. They ignore you. At dawn, six men from every ship die before you flee. Seventy-two dead, and you have not yet left familiar waters. First lesson: soldiers who survive a war become the hardest men to command.' },
+  { name:'Land of the Lotus-Eaters', lon:13.3, lat:33.3, yearsAdd:0.2,
+    text:'Three men eat the lotus and forget Ithaca entirely — they weep when you drag them back. You bind them under the rowing benches. The lotus offers oblivion. You choose suffering and memory.' },
+  { name:'Island of the Cyclopes', lon:15.2, lat:37.6, crewLost:6, yearsAdd:0.2,
+    text:'Polyphemus seals you in his cave and eats six men. You blind him with a sharpened stake. Escaping under his sheep, you shout your name from the ship. He prays to his father Poseidon. This is the moment your ten years truly begin.' },
+  { name:'Aeolia — Island of the Winds', lon:14.8, lat:38.6, yearsAdd:0.3,
+    text:'Aeolus gives you a bag containing every adverse wind. Nine days you sail; Ithaca appears on the horizon. You sleep. Your crew opens the bag. Every wind escapes. The storm drives you back. Aeolus refuses to help a man the gods so clearly hate.' },
+  { name:'Lamos — Laestrygonians', lon:8.4, lat:40.5, shipsLost:11, laestrygonians:true, yearsAdd:0.2,
+    text:'Giant cannibals. You anchor outside the harbor; your captains moor inside. The Laestrygonians hurl boulders and spear men in the water like fish. Eleven ships destroyed. You cut your rope and flee. One ship. Forty-five men.' },
+  { name:'Aeaea — Island of Circe', lon:12.9, lat:41.7, yearsAdd:1.2,
+    text:'Circe transforms your men into pigs. Protected by the herb moly, you threaten her; she reverses the spell. A year passes in her halls. Your men remind you of home. She sends you to the House of Hades to speak with the dead prophet Tiresias.' },
+  { name:'The House of Hades', lon:-1.5, lat:37.0, yearsAdd:0.3,
+    text:'At the edge of the world you pour blood into a trench. The dead swarm up. Tiresias warns you: do not touch the cattle of Helios on Thrinacia. Your mother tells you she died of grief while you were gone. Achilles tells you he would rather be a slave among the living than a king among the dead.' },
+  { name:'The Island of the Sirens', lon:16.1, lat:38.4, yearsAdd:0.15,
+    text:'You stop your men\'s ears with wax. You alone listen, lashed to the mast. You beg and scream to be cut free. Your men row harder. The Sirens offer omniscience at the cost of everything else. You sail past.' },
+  { name:'Scylla and Charybdis', lon:15.6, lat:38.15, crewLost:6, yearsAdd:0.1,
+    text:'Steer toward Scylla: lose six to save the rest. Scylla lifts six men screaming from the oars. You had told them nothing. Knowing it would happen and being unable to stop it — this is the specific weight of command.' },
+  { name:'Thrinacia — Cattle of the Sun', lon:15.1, lat:37.0, thrinacia:true, yearsAdd:0.3,
+    text:'Storms pin you for a month. Your men slaughter the sacred cattle while you sleep. You warned them. Zeus sends a thunderbolt into the hull. Every man drowns. You alone survive — because you ate nothing.' },
+  { name:'Ogygia — Island of Calypso', lon:13.8, lat:35.7, calypso:true, hasScene:true, yearsAdd:7,
+    text:'Calypso pulls you from the wreckage. She is immortal, beautiful, and loves you without deception. Seven years you have wept for Ithaca on her shore.',
+    scenePrompt:'The night is still. The sea is black glass. She stands before you and makes her offer plainly. She will not make it again.',
+    lore:'<strong>Who is Calypso?</strong>Calypso (Greek: Καλυψώ, "she who conceals") is a daughter of Atlas, a sea-nymph of the island Ogygia — located by Homer at the "navel of the sea," far from all gods and men. Her name hints at her function: she conceals Odysseus from the world and from his own story for seven years. She is not a villain. She loves him genuinely and offers what no mortal can: immortality and agelessness beside her forever. When Zeus sends Hermes to order his release (Book 5), she obeys — but not without grief. She is among the most sympathetic figures in the poem. The choice Homer stages here — mortal life, remembered, versus immortal life, forgotten — is central to what the <em>Odyssey</em> argues: that identity, suffering, and return are worth more than paradise without a self.',
+    choices:[
+      { id:'immortality', label:'Accept. Stay with Calypso forever.' },
+      { id:'refuse',      label:'Refuse. Weep for Ithaca.' }
+    ]
+  },
+  { name:'Scheria — Phaeacians', lon:19.9, lat:39.8, yearsAdd:0.3,
+    text:'Poseidon wrecks your raft. You wash ashore naked and sleep under an olive tree. Princess Nausicaa finds you. The Phaeacians feast you, hear the entire voyage, then give you a ship. While you sleep it carries you to Ithaca. Twenty years have passed.' },
+  { name:'Ithaca — Home', lon:20.7, lat:38.4, yearsAdd:0,
+    text:'Athena reveals the island to you. 108 suitors fill your palace. Penelope has held them off for twenty years. You enter disguised as a beggar. You string your own bow — the great bow no suitor could bend — and begin. When it is over the hall is quiet. You find Penelope. She tests you. You pass. You are home.' },
+];
+
+// Preload Calypso image
+const calypsoImg = new Image();
+calypsoImg.src = 'calypso.avif';
+
+// Precompute stars for Calypso scene
+const STARS = Array.from({length:220}, () => ({
+  x: Math.random() * W,
+  y: Math.random() * H * 0.66,
+  r: Math.random() * 1.4 + 0.2,
+  b: Math.random() * 0.55 + 0.45,
+  p: Math.random() * Math.PI * 2
+}));
+
+// State
+const g = {
+  cur: 0, crew: 600, ships: 12, years: 0,
+  shipLon: stops[0].lon, shipLat: stops[0].lat,
+  mode: 'map',  // 'map' | 'scene' | 'end'
+  sceneRaf: null
+};
+
+function applyStop(s) {
+  if (s.crewLost)       g.crew  = Math.max(1, g.crew - s.crewLost);
+  if (s.shipsLost)      g.ships = Math.max(0, g.ships - s.shipsLost);
+  if (s.laestrygonians) g.crew  = 45;
+  if (s.thrinacia)      g.crew  = 1;
+  if (s.calypso)        g.ships = 0;
+  if (s.yearsAdd)       g.years += s.yearsAdd;
+}
+
+// ── MAP DRAWING ─────────────────────────────────────────────
+
+function renderMap() {
+  cx.clearRect(0, 0, W, H);
+
+  const sea = cx.createLinearGradient(0,0,0,H);
+  sea.addColorStop(0,'#1a3f68'); sea.addColorStop(1,'#0c2444');
+  cx.fillStyle = sea; cx.fillRect(0,0,W,H);
+
+  cx.save();
+  cx.strokeStyle='rgba(30,80,150,0.2)'; cx.lineWidth=0.5;
+  for (let y=18;y<H;y+=24){
+    cx.beginPath();
+    for (let x=0;x<=W;x+=2){ const wy=y+Math.sin(x*0.025+y*0.08)*1.8; x===0?cx.moveTo(x,wy):cx.lineTo(x,wy); }
+    cx.stroke();
+  }
+  cx.restore();
+
+  for (const pts of landmasses) poly(pts,'#b89650','#8a6e30');
+
+  cx.font='italic 8px Georgia'; cx.fillStyle='rgba(60,40,10,0.6)'; cx.textAlign='center';
+  for (const [n,lon,lat] of [['HISPANIA',-3,40.5],['GALLIA',9,43.9],['ITALIA',11.5,42.2],['GRAECIA',22,40.5],['ANATOLIA',31,40],['AFRICA',10,32.5],['SICILIA',14,37.3]]){
+    const [x,y]=pt(lon,lat); cx.fillText(n,x,y);
+  }
+  cx.font='italic 9px Georgia'; cx.fillStyle='rgba(80,130,200,0.18)';
+  const [mx,my]=pt(10,36.2); cx.fillText('MARE NOSTRUM',mx,my);
+
+  // Path
+  if (g.cur >= 1) {
+    cx.save(); cx.setLineDash([5,8]); cx.strokeStyle='rgba(240,192,96,0.4)';
+    cx.lineWidth=1.5; cx.lineJoin='round';
+    cx.beginPath();
+    const [sx,sy]=pt(stops[0].lon,stops[0].lat); cx.moveTo(sx,sy);
+    for (let i=1;i<=g.cur;i++){ const [x,y]=pt(stops[i].lon,stops[i].lat); cx.lineTo(x,y); }
+    cx.stroke(); cx.restore();
+  }
+
+  // Stop dots
+  stops.forEach((s,i)=>{
+    const [x,y]=pt(s.lon,s.lat);
+    const isCur=i===g.cur, isVis=i<g.cur, isNext=i===g.cur+1;
+    if (isCur){
+      const glow=cx.createRadialGradient(x,y,4,x,y,22);
+      glow.addColorStop(0,'rgba(240,192,96,0.55)'); glow.addColorStop(1,'rgba(240,192,96,0)');
+      cx.beginPath(); cx.arc(x,y,22,0,Math.PI*2); cx.fillStyle=glow; cx.fill();
+    }
+    const r=isCur?7:isVis?4:isNext?5:3;
+    cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2);
+    cx.fillStyle=isCur?'#f0c060':isVis?'#7a5820':isNext?'#c0a050':'#3a2a18'; cx.fill();
+    cx.strokeStyle=isCur?'#fff8d8':'#8a6828'; cx.lineWidth=isCur?1.5:0.7; cx.stroke();
+    if (isCur||isNext||(isVis&&i>=g.cur-3)){
+      const label=s.name.split('—')[0].trim();
+      cx.font=isCur?'bold 10px Georgia':'9px Georgia';
+      cx.fillStyle=isCur?'#f0c060':isVis?'#6a5028':'#b09048'; cx.textAlign='center';
+      cx.fillText(label,x,y+(s.lat>40?-13:13));
+    }
+  });
+
+  // Ship
+  const [sx2,sy2]=pt(g.shipLon,g.shipLat);
+  cx.font='16px serif'; cx.textAlign='center'; cx.fillText('⛵',sx2,sy2-16);
+
+  const v=cx.createRadialGradient(W/2,H/2,H*0.28,W/2,H/2,H*0.82);
+  v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,0.38)');
+  cx.fillStyle=v; cx.fillRect(0,0,W,H);
+}
+
+// ── CALYPSO SCENE ────────────────────────────────────────────
+
+function renderScene(t) {
+  cx.clearRect(0,0,W,H);
+  const HZ = H * 0.61; // horizon y
+
+  // Sky
+  const sky=cx.createLinearGradient(0,0,0,HZ);
+  sky.addColorStop(0,'#060318'); sky.addColorStop(0.45,'#0c0828');
+  sky.addColorStop(0.85,'#150d38'); sky.addColorStop(1,'#1c1245');
+  cx.fillStyle=sky; cx.fillRect(0,0,W,HZ);
+
+  // Stars
+  STARS.forEach(s=>{
+    const twinkle=0.5+0.5*Math.sin(t*0.0008+s.p);
+    const alpha=s.b*twinkle;
+    if (s.r>1.0){
+      const sg=cx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*3.5);
+      sg.addColorStop(0,`rgba(210,218,255,${alpha})`);
+      sg.addColorStop(1,'rgba(180,190,255,0)');
+      cx.fillStyle=sg; cx.beginPath(); cx.arc(s.x,s.y,s.r*3.5,0,Math.PI*2); cx.fill();
+    }
+    cx.beginPath(); cx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    cx.fillStyle=`rgba(225,232,255,${alpha})`; cx.fill();
+  });
+
+  // Moon — upper left
+  const moonX=W*0.15, moonY=H*0.15, moonR=36;
+  const mHalo=cx.createRadialGradient(moonX,moonY,moonR,moonX,moonY,moonR*5);
+  mHalo.addColorStop(0,'rgba(255,240,185,0.2)');
+  mHalo.addColorStop(0.4,'rgba(255,225,160,0.07)');
+  mHalo.addColorStop(1,'rgba(255,200,120,0)');
+  cx.fillStyle=mHalo; cx.beginPath(); cx.arc(moonX,moonY,moonR*5,0,Math.PI*2); cx.fill();
+  const mGrad=cx.createRadialGradient(moonX-moonR*0.3,moonY-moonR*0.3,moonR*0.08,moonX,moonY,moonR);
+  mGrad.addColorStop(0,'#fffde8'); mGrad.addColorStop(0.65,'#f8f0cc'); mGrad.addColorStop(1,'#e8d898');
+  cx.shadowColor='rgba(255,238,175,0.7)'; cx.shadowBlur=22;
+  cx.fillStyle=mGrad; cx.beginPath(); cx.arc(moonX,moonY,moonR,0,Math.PI*2); cx.fill();
+  cx.shadowBlur=0;
+
+  // Sea
+  const sea2=cx.createLinearGradient(0,HZ,0,H);
+  sea2.addColorStop(0,'#0b1d3a'); sea2.addColorStop(0.6,'#081428'); sea2.addColorStop(1,'#050c1c');
+  cx.fillStyle=sea2; cx.fillRect(0,HZ,W,H-HZ);
+
+  // Moon reflection
+  const phase=t*0.0016;
+  const refG=cx.createLinearGradient(moonX,HZ,moonX,H);
+  refG.addColorStop(0,'rgba(255,238,165,0.32)'); refG.addColorStop(0.45,'rgba(255,218,140,0.14)'); refG.addColorStop(1,'rgba(255,200,100,0.04)');
+  cx.beginPath(); cx.moveTo(moonX-6,HZ);
+  for (let y=HZ;y<=H;y+=3){
+    const prog=(y-HZ)/(H-HZ), wid=10+prog*55, wobble=Math.sin(y*0.055+phase)*7*prog;
+    cx.lineTo(moonX+wobble+wid,y);
+  }
+  for (let y=H;y>=HZ;y-=3){
+    const prog=(y-HZ)/(H-HZ), wid=10+prog*55, wobble=Math.sin(y*0.055+phase)*7*prog;
+    cx.lineTo(moonX+wobble-wid,y);
+  }
+  cx.closePath(); cx.fillStyle=refG; cx.fill();
+
+  // Waves
+  for (let layer=0;layer<4;layer++){
+    const baseY=HZ+3+layer*22, amp=4.5-layer*0.8, spd=0.0009*(1+layer*0.4);
+    cx.beginPath(); cx.moveTo(0,baseY);
+    for (let x=0;x<=W;x+=4){ cx.lineTo(x,baseY+amp*Math.sin(x*0.017+t*spd)); }
+    cx.lineTo(W,H); cx.lineTo(0,H); cx.closePath();
+    cx.fillStyle=`rgba(18,48,98,${0.28-layer*0.05})`; cx.fill();
+    cx.beginPath(); cx.moveTo(0,baseY);
+    for (let x=0;x<=W;x+=4){ cx.lineTo(x,baseY+amp*Math.sin(x*0.017+t*spd)); }
+    cx.strokeStyle=`rgba(100,165,240,${0.07-layer*0.012})`; cx.lineWidth=1; cx.stroke();
+  }
+
+  // Shore strip
+  cx.beginPath();
+  cx.moveTo(W*0.18,HZ+14); cx.bezierCurveTo(W*0.38,HZ+4,W*0.6,HZ+3,W*0.78,HZ+10);
+  cx.bezierCurveTo(W*0.88,HZ+16,W,HZ+20,W,HZ+24);
+  cx.lineTo(W,HZ); cx.lineTo(W*0.18,HZ); cx.closePath();
+  const shore=cx.createLinearGradient(0,HZ,0,HZ+24);
+  shore.addColorStop(0,'rgba(148,118,62,0.55)'); shore.addColorStop(1,'rgba(70,55,28,0.3)');
+  cx.fillStyle=shore; cx.fill();
+
+  drawCalypsoImage(t, HZ);
+
+  // Horizon haze
+  const haze=cx.createLinearGradient(0,HZ-28,0,HZ+28);
+  haze.addColorStop(0,'rgba(35,18,75,0)'); haze.addColorStop(0.5,'rgba(35,18,75,0.13)'); haze.addColorStop(1,'rgba(35,18,75,0)');
+  cx.fillStyle=haze; cx.fillRect(0,HZ-28,W,56);
+
+  // Vignette
+  const vig=cx.createRadialGradient(W/2,H*0.44,H*0.18,W/2,H*0.44,H*0.78);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.48)');
+  cx.fillStyle=vig; cx.fillRect(0,0,W,H);
+}
+
+function drawCalypsoImage(t, HZ) {
+  if (!calypsoImg.complete || !calypsoImg.naturalWidth) return;
+
+  const imgW = calypsoImg.naturalWidth;
+  const imgH = calypsoImg.naturalHeight;
+
+  // Scale image to fill canvas height, position right-of-center
+  const scale = H / imgH;
+  const dw = imgW * scale;
+  const dh = H;
+  const dx = W * 0.5 - dw * 0.38; // nudge left so face is near center
+
+  // Divine aura behind her
+  const calX = dx + dw * 0.5;
+  const aura = cx.createRadialGradient(calX, H*0.35, 20, calX, H*0.38, 260);
+  aura.addColorStop(0, 'rgba(255,210,100,0.18)');
+  aura.addColorStop(0.45, 'rgba(200,160,60,0.06)');
+  aura.addColorStop(1, 'rgba(180,120,40,0)');
+  cx.fillStyle=aura; cx.beginPath(); cx.ellipse(calX,H*0.36,240,300,0,0,Math.PI*2); cx.fill();
+
+  // Draw image
+  cx.save();
+  cx.drawImage(calypsoImg, dx, 0, dw, dh);
+
+  // Fade left edge into sky — gradient mask
+  const fadeL = cx.createLinearGradient(dx, 0, dx + dw*0.28, 0);
+  fadeL.addColorStop(0, 'rgba(8,4,24,1)');
+  fadeL.addColorStop(1, 'rgba(8,4,24,0)');
+  cx.fillStyle=fadeL; cx.fillRect(0, 0, dx + dw*0.28, H);
+
+  // Fade right edge
+  const fadeR = cx.createLinearGradient(dx + dw*0.72, 0, dx + dw, 0);
+  fadeR.addColorStop(0, 'rgba(8,4,24,0)');
+  fadeR.addColorStop(1, 'rgba(8,4,24,1)');
+  cx.fillStyle=fadeR; cx.fillRect(dx + dw*0.72, 0, W-(dx+dw*0.72), H);
+
+  // Fade bottom into sea
+  const fadeB = cx.createLinearGradient(0, HZ*0.72, 0, H);
+  fadeB.addColorStop(0, 'rgba(8,4,24,0)');
+  fadeB.addColorStop(0.6, 'rgba(8,10,28,0.82)');
+  fadeB.addColorStop(1, 'rgba(5,8,20,1)');
+  cx.fillStyle=fadeB; cx.fillRect(0, HZ*0.72, W, H - HZ*0.72);
+
+  // Fade top (sky bleeds through above her head)
+  const fadeT = cx.createLinearGradient(0, 0, 0, H*0.12);
+  fadeT.addColorStop(0, 'rgba(6,3,18,1)');
+  fadeT.addColorStop(1, 'rgba(6,3,18,0)');
+  cx.fillStyle=fadeT; cx.fillRect(0, 0, W, H*0.12);
+
+  cx.restore();
+
+  // Floating light motes
+  for (let m=0;m<8;m++){
+    const ang=(m/8)*Math.PI*2+t*0.00028;
+    const rad=110+Math.sin(t*0.0004+m)*18;
+    const mx2=calX+Math.cos(ang)*rad*0.9;
+    const my2=H*0.38+Math.sin(ang)*rad*0.55;
+    if (my2 < HZ-4){
+      const ma=0.3+0.2*Math.sin(t*0.0009+m*1.4);
+      cx.beginPath(); cx.arc(mx2,my2,1.8,0,Math.PI*2);
+      cx.fillStyle=`rgba(255,220,120,${ma})`; cx.fill();
+    }
+  }
+}
+
+
+// ── SCENE LOOP ────────────────────────────────────────────────
+
+function startScene() {
+  g.mode='scene';
+  const t0=performance.now();
+  function loop(now){
+    if (g.mode!=='scene') return;
+    renderScene(now-t0);
+    g.sceneRaf=requestAnimationFrame(loop);
+  }
+  g.sceneRaf=requestAnimationFrame(loop);
+}
+
+function stopScene(){
+  g.mode='map';
+  if (g.sceneRaf){ cancelAnimationFrame(g.sceneRaf); g.sceneRaf=null; }
+}
+
+// ── GAME LOGIC ────────────────────────────────────────────────
+
+function advance(){
+  if (g.cur>=stops.length-1) return;
+  g.cur++;
+  g.shipLon=stops[g.cur].lon;
+  g.shipLat=stops[g.cur].lat;
+  applyStop(stops[g.cur]);
+  if (stops[g.cur].hasScene){
+    setTimeout(()=>{ startScene(); updatePanel(); }, 150);
+  } else {
+    renderMap(); updatePanel();
+  }
+}
+
+function handleChoice(id){
+  if (id==='immortality'){
+    stopScene(); g.mode='end';
+    renderMap();
+    document.getElementById('loc-name').textContent='Ogygia — You stay.';
+    document.getElementById('myth').textContent='You accept. Calypso weeps — not from sorrow, but from joy. She leads you back into her cavern where a great fire of fragrant cedar burns always. You stop counting years. The sea outside grows quiet. Ithaca fades. Penelope fades. Somewhere a son grows old waiting for a father who will not come. The gods do not speak of you again. You are no longer a story. You are simply, at last, content. The Odyssey does not end here — it simply never happens.';
+    document.getElementById('btns').innerHTML='';
+    document.getElementById('progress').textContent='An ending not in Homer.';
+  } else {
+    stopScene();
+    document.getElementById('myth').textContent='You refuse. You have refused every morning for seven years — sitting on the rocks, weeping toward the empty horizon. The gods finally compel her. Hermes arrives. Calypso obeys with quiet grief. She helps you build a raft, gives you provisions and a fair wind, and stands on the shore as you sail away. She does not call after you. She loved you enough to let you go.';
+    const nxt=stops[g.cur+1].name.split('—')[0].trim();
+    document.getElementById('btns').innerHTML=`<button class="btn" onclick="advance()">Sail for ${nxt} →</button>`;
+    document.getElementById('progress').textContent=`Stop ${g.cur+1} of ${stops.length}`;
+    renderMap();
+  }
+}
+
+// ── UI ────────────────────────────────────────────────────────
+
+function updatePanel(){
+  const s=stops[g.cur];
+  document.getElementById('loc-name').textContent=s.name;
+  document.getElementById('s-crew').textContent=g.crew<=1?'You alone':g.crew;
+  document.getElementById('s-ships').textContent=g.ships===0?'A raft':g.ships;
+  document.getElementById('s-years').textContent=g.years<1?'< 1':Math.floor(g.years);
+
+  const btns=document.getElementById('btns');
+
+  if (g.mode==='scene' && s.choices){
+    document.getElementById('myth').textContent=s.scenePrompt||s.text;
+    btns.innerHTML=s.choices.map(c=>
+      `<button class="btn btn-gold" onclick="handleChoice('${c.id}')">${c.label}</button>`
+    ).join('');
+  } else if (g.cur>=stops.length-1){
+    document.getElementById('myth').textContent=s.text;
+    btns.innerHTML='<button class="btn" disabled>You are home.</button>';
+  } else {
+    document.getElementById('myth').textContent=s.text;
+    const nxt=stops[g.cur+1].name.split('—')[0].trim();
+    btns.innerHTML=`<button class="btn" onclick="advance()">Sail for ${nxt} →</button>`;
+  }
+  document.getElementById('progress').textContent=`Stop ${g.cur+1} of ${stops.length}`;
+
+  const loreEl=document.getElementById('lore');
+  if (s.lore){
+    loreEl.innerHTML=s.lore;
+    loreEl.classList.add('visible');
+  } else {
+    loreEl.classList.remove('visible');
+    loreEl.innerHTML='';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+renderMap();
+updatePanel();
+</script>
+</body>
+</html>
