@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Ergodicity Trap</title>
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0e0e1a;
+  --card: #121224;
+  --border: #1e1e38;
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.12);
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.12);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --soft: #94a3b8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Georgia', serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(59,130,246,0.07), transparent);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.hero-label {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 24px;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #93c5fd, #e2e8f0, #fcd34d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 1.15rem;
+  color: var(--soft);
+  max-width: 540px;
+  margin: 0 auto 48px;
+  font-style: italic;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* CHAPTERS */
+.chapter {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chapter-num {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.chapter h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 400;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.chapter p {
+  color: var(--soft);
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+  max-width: 700px;
+}
+
+/* BET BOX */
+.bet-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 32px 0;
+  text-align: center;
+}
+
+.bet-title {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.outcomes {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.outcome {
+  flex: 1;
+  max-width: 180px;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.outcome.win {
+  background: var(--green-dim);
+  border: 1px solid rgba(16,185,129,0.25);
+}
+
+.outcome.lose {
+  background: var(--red-dim);
+  border: 1px solid rgba(239,68,68,0.25);
+}
+
+.outcome-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.outcome-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.outcome.win .outcome-value { color: var(--green); }
+.outcome.lose .outcome-value { color: var(--red); }
+
+.ev-line {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: var(--gold);
+  padding: 12px 20px;
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* COIN ARENA */
+.coin-arena {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.coin-controls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.coin {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8rem;
+  cursor: pointer;
+  user-select: none;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  transition: transform 0.1s, border-color 0.2s;
+}
+
+.coin:hover { transform: scale(1.06); border-color: var(--blue); }
+.coin:active { transform: scale(0.96); }
+.coin.flipping { animation: flip3d 0.45s ease-in-out; }
+
+@keyframes flip3d {
+  0%   { transform: perspective(400px) rotateY(0deg); }
+  50%  { transform: perspective(400px) rotateY(90deg) scale(1.1); }
+  100% { transform: perspective(400px) rotateY(0deg); }
+}
+
+.wealth-display { text-align: center; }
+
+.wealth-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.wealth-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  transition: color 0.4s;
+}
+
+.wealth-change {
+  font-size: 0.95rem;
+  color: var(--muted);
+  height: 22px;
+  font-family: 'Courier New', monospace;
+}
+
+.flip-count {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* CHART */
+.chart-wrap { flex: 1; min-width: 280px; }
+
+canvas {
+  width: 100%;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+/* BUTTONS */
+.btn {
+  padding: 11px 26px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+.btn-primary { background: var(--blue); color: white; }
+.btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--soft);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--soft); color: var(--text); }
+
+.btn-gold { background: var(--gold); color: #1a1000; font-weight: 700; }
+.btn-gold:hover { background: #d97706; transform: translateY(-1px); }
+
+.btn-green { background: var(--green); color: #001a10; font-weight: 700; }
+.btn-green:hover { background: #059669; transform: translateY(-1px); }
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* STATS ROW */
+.stats-row {
+  display: flex;
+  gap: 14px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+
+.stat-box {
+  flex: 1;
+  min-width: 130px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.stat-label {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* REVEAL BOX */
+.reveal-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-top: 32px;
+  text-align: center;
+  display: none;
+}
+
+.reveal-box.show { display: block; }
+
+/* MATH BLOCK */
+.math-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 28px;
+  margin: 20px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.math-line {
+  font-size: 0.95rem;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.math-line:last-child { border-bottom: none; }
+.math-label { color: var(--muted); font-size: 0.82rem; flex-shrink: 0; }
+.math-val-good { color: var(--green); font-weight: 700; }
+.math-val-bad  { color: var(--red);   font-weight: 700; }
+.math-val-gold { color: var(--gold);  font-weight: 700; }
+
+/* KELLY COMPARE */
+.kelly-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.kelly-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.kelly-col.bad  { border-color: rgba(239,68,68,0.3); }
+.kelly-col.good { border-color: rgba(16,185,129,0.3); }
+
+.kelly-col-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.kelly-col.bad  .kelly-col-label { color: var(--red); }
+.kelly-col.good .kelly-col-label { color: var(--green); }
+
+/* QUOTE */
+.quote {
+  border-left: 3px solid var(--blue);
+  padding: 16px 24px;
+  margin: 32px 0;
+  font-style: italic;
+  color: var(--soft);
+  font-size: 1.05rem;
+}
+
+.quote cite {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: normal;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+/* LEGEND */
+.legend {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.legend-line {
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+}
+
+/* RUIN */
+.ruin-message {
+  display: none;
+  background: rgba(239,68,68,0.07);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.ruin-message.show { display: block; }
+
+/* UTILITY */
+.hl-blue  { color: var(--blue); }
+.hl-red   { color: var(--red); }
+.hl-green { color: var(--green); }
+.hl-gold  { color: var(--gold); }
+
+/* LIFE APPLICATIONS */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 32px 0;
+}
+
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.app-card-label {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.app-card.fragile .app-card-label { color: var(--red); }
+.app-card.robust  .app-card-label { color: var(--blue); }
+.app-card.anti    .app-card-label { color: var(--green); }
+
+.app-card p { font-size: 0.88rem; color: var(--soft); margin: 0; }
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .coin-arena { flex-direction: column; }
+  .kelly-compare { grid-template-columns: 1fr; }
+  .outcomes { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HERO ─────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-label">Nassim Nicholas Taleb</div>
+  <h1>The Ergodicity<br>Trap</h1>
+  <p class="hero-sub">Why expected value can be a lie — and why surviving long enough to win is the whole game.</p>
+  <div class="scroll-hint">↓ scroll to begin</div>
+</section>
+
+<!-- ── CHAPTER I: THE OFFER ──────────────────────────────────────────── -->
+<section class="chapter" id="ch1">
+  <div class="chapter-num">Chapter I</div>
+  <h2>A bet you can't refuse</h2>
+  <p>A friend offers you a coin flip. Heads, you gain 50% of your wealth. Tails, you lose 40%. The coin is perfectly fair — 50/50.</p>
+  <p>Before you decide, calculate the expected value.</p>
+
+  <div class="bet-box">
+    <div class="bet-title">The Coin Flip</div>
+    <div class="outcomes">
+      <div class="outcome win">
+        <div class="outcome-label">Heads</div>
+        <div class="outcome-value">+50%</div>
+      </div>
+      <div class="outcome lose">
+        <div class="outcome-label">Tails</div>
+        <div class="outcome-value">−40%</div>
+      </div>
+    </div>
+    <div class="ev-line">
+      Expected Value = (50% × +50%) + (50% × −40%) = <strong>+5% per flip</strong>
+    </div>
+  </div>
+
+  <p>The math is unambiguous. Every flip adds 5% to your expected wealth. If a thousand people each flip once, the average outcome is a gain. If you flip a thousand times, the average is even larger.</p>
+  <p>You'd be irrational not to take this. Right?</p>
+
+  <div class="quote">
+    "Expected value is not the right tool for repeated bets when ruin is possible."
+    <cite>— Nassim Nicholas Taleb, Skin in the Game</cite>
+  </div>
+</section>
+
+<!-- ── CHAPTER II: PLAY THE BET ──────────────────────────────────────── -->
+<section class="chapter" id="ch2">
+  <div class="chapter-num">Chapter II</div>
+  <h2>Play it yourself</h2>
+  <p>You start with <strong>$1,000</strong>. Flip the coin. See what happens over time. The blue line shows where the expected value says you should be.</p>
+  <p style="color: var(--muted); font-size: 0.9rem;">Click the coin to flip manually, or fast-forward to run many flips at once.</p>
+
+  <div class="coin-arena">
+    <div class="coin-controls">
+      <div class="coin" id="coin" onclick="flipCoin()" title="Click to flip">🪙</div>
+      <div class="wealth-display">
+        <div class="wealth-label">Your Wealth</div>
+        <div class="wealth-value" id="wealth-val">$1,000</div>
+        <div class="wealth-change" id="wealth-change">&nbsp;</div>
+      </div>
+      <div class="flip-count" id="flip-count">0 flips</div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-ghost" onclick="fastForward(50)">+50 flips</button>
+        <button class="btn btn-ghost" onclick="fastForward(200)">+200 flips</button>
+      </div>
+      <button class="btn btn-primary" onclick="resetCoin()">Reset</button>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas id="wealth-chart" width="520" height="290"></canvas>
+      <div class="legend" style="margin-top:8px;">
+        <div class="legend-item">
+          <div class="legend-line" style="background:var(--gold);"></div>
+          Your wealth
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:var(--blue); opacity:0.5;"></div>
+          Expected value (×1.05/flip)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ruin-message" id="ruin-msg">
+    <div style="font-size:1.4rem; margin-bottom:8px;">💀 Ruined</div>
+    <div style="color:var(--muted);">Your wealth dropped below $1. The game is over — you can't recover from zero. Ruin is an absorbing barrier.</div>
+  </div>
+
+  <div class="reveal-box" id="reveal-box">
+    <p style="color:var(--soft); margin-bottom:16px;">You've played <span id="flip-count-reveal">0</span> flips. The expected value line climbs steadily. Are you keeping up?</p>
+    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:20px;">In the next chapter, watch what happens to 1,000 people who took the exact same bet.</p>
+    <a href="#ch3" class="btn btn-primary">See the full picture →</a>
+  </div>
+</section>
+
+<!-- ── CHAPTER III: THE ENSEMBLE ─────────────────────────────────────── -->
+<section class="chapter" id="ch3">
+  <div class="chapter-num">Chapter III</div>
+  <h2>The ensemble illusion</h2>
+  <p>What if 1,000 people each played this bet for 300 flips? The chart below shows every path — and compares the ensemble average to the typical outcome.</p>
+
+  <div style="text-align:center; margin:32px 0;">
+    <button class="btn btn-gold" onclick="runEnsemble()" id="ensemble-btn">Run 1,000 Simulations</button>
+  </div>
+
+  <canvas id="ensemble-chart" width="860" height="380" style="display:none;"></canvas>
+  <div class="legend" id="ensemble-legend" style="display:none; margin-top:10px;">
+    <div class="legend-item">
+      <div class="legend-line" style="background:rgba(148,163,184,0.4); height:1px;"></div>
+      Individual paths
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="background:var(--blue);"></div>
+      Ensemble mean
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="background:var(--red);"></div>
+      Median player
+    </div>
+    <div class="legend-item" id="your-legend" style="display:none;">
+      <div class="legend-line" style="background:var(--gold);"></div>
+      You (ch. II)
+    </div>
+  </div>
+
+  <div class="stats-row" id="ensemble-stats" style="display:none; margin-top:24px;">
+    <div class="stat-box">
+      <div class="stat-label">Ensemble Mean</div>
+      <div class="stat-value hl-blue" id="stat-mean">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Median Player</div>
+      <div class="stat-value hl-red" id="stat-median">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Below Start</div>
+      <div class="stat-value hl-red" id="stat-below">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Ruined (&lt;$1)</div>
+      <div class="stat-value hl-red" id="stat-ruined">—</div>
+    </div>
+  </div>
+
+  <div id="ensemble-explain" style="display:none; margin-top:32px;">
+    <p>The <span class="hl-blue">ensemble mean</span> is extraordinary. A handful of lucky survivors made astronomical gains and dragged the average skyward. This is the number your brain reaches for when it hears "expected value."</p>
+    <p>But the <span class="hl-red">median player</span> — the typical outcome — is close to zero. More than half the players end up worse off than when they started. Many are completely ruined.</p>
+    <p>The expected value was real. It just described a <em>population</em>, not a <em>person</em>. You only get one life — one path through time. The ensemble doesn't apply to you.</p>
+  </div>
+</section>
+
+<!-- ── CHAPTER IV: THE MATH ──────────────────────────────────────────── -->
+<section class="chapter" id="ch4">
+  <div class="chapter-num">Chapter IV</div>
+  <h2>Two kinds of average</h2>
+  <p>There is no contradiction here — only a confusion between two different quantities that both go by the name "average."</p>
+
+  <div class="math-block">
+    <div class="math-line">
+      <span class="math-label">Arithmetic mean per flip</span>
+      <span class="math-val-gold">×1.05 &nbsp;→&nbsp; +5% per flip</span>
+    </div>
+    <div class="math-line">
+      <span class="math-label">Calculation</span>
+      <span style="color:var(--soft); font-size:0.88rem;">0.5 × 1.5 &nbsp;+&nbsp; 0.5 × 0.6 &nbsp;= &nbsp;1.05</span>
+    </div>
+  </div>
+
+  <p>The arithmetic mean describes what happens <em>across people in a single round</em>. If 1,000 people each flip once, the average multiplier is 1.05. This is the ensemble average — and it's real, as long as you're talking about a population.</p>
+
+  <div class="math-block">
+    <div class="math-line">
+      <span class="math-label">Geometric mean per flip</span>
+      <span class="math-val-bad">×0.949 &nbsp;→&nbsp; −5% per flip</span>
+    </div>
+    <div class="math-line">
+      <span class="math-label">Calculation</span>
+      <span style="color:var(--soft); font-size:0.88rem;">√(1.5 × 0.6) &nbsp;= &nbsp;√0.9 &nbsp;≈ &nbsp;0.949</span>
+    </div>
+  </div>
+
+  <p>The geometric mean describes what happens <em>to one person over time</em>. Each flip multiplies your wealth. Multiplications chain together — and the long-run growth rate is the geometric mean, which is <span class="hl-red">negative</span>. You lose about 5% per flip, on average, over time.</p>
+
+  <div class="math-block">
+    <div class="math-line">
+      <span class="math-label">Expected wealth after 100 flips</span>
+      <span class="math-val-gold">$131,501</span>
+    </div>
+    <div class="math-line">
+      <span class="math-label">Typical player after 100 flips</span>
+      <span class="math-val-bad">$5</span>
+    </div>
+    <div class="math-line">
+      <span class="math-label">The divergence</span>
+      <span class="math-val-bad">26,300×</span>
+    </div>
+  </div>
+
+  <p>This process is <strong>non-ergodic</strong>: the time average (one player over many flips) is not equal to the ensemble average (many players over one flip). Standard expected value assumes ergodicity. Most of real life violates it.</p>
+
+  <div class="quote">
+    "The first principle is that you must not fool yourself — and you are the easiest person to fool. Expected value, in non-ergodic situations, will fool you."
+    <cite>— Nassim Nicholas Taleb, paraphrased from The Technical Incerto</cite>
+  </div>
+
+  <p>Once you're ruined, you cannot play again. Zero is an absorbing barrier — no subsequent win can rescue you. This is why the variance kills you even when the mean is positive. You only need to be ruined once.</p>
+</section>
+
+<!-- ── CHAPTER V: KELLY ───────────────────────────────────────────────── -->
+<section class="chapter" id="ch5">
+  <div class="chapter-num">Chapter V</div>
+  <h2>The fix: Kelly sizing</h2>
+  <p>The bet isn't broken. Your position size is. What if, instead of betting your entire wealth each flip, you only risked a <em>fraction</em> of it?</p>
+  <p>The Kelly Criterion gives you the mathematically optimal fraction to bet to maximize long-run growth without risking ruin. For this specific bet, the answer is <strong class="hl-green">25% of your wealth per flip</strong>.</p>
+
+  <div class="math-block">
+    <div class="math-line">
+      <span class="math-label">Kelly fraction (f*)</span>
+      <span style="color:var(--soft); font-size:0.88rem;">(p × b − q) / b &nbsp;→&nbsp; 25%</span>
+    </div>
+    <div class="math-line">
+      <span class="math-label">With Kelly: Heads</span>
+      <span style="color:var(--soft); font-size:0.88rem;">1 + (0.5 × 0.25) = ×1.125</span>
+    </div>
+    <div class="math-line">
+      <span class="math-label">With Kelly: Tails</span>
+      <span style="color:var(--soft); font-size:0.88rem;">1 − (0.4 × 0.25) = ×0.900</span>
+    </div>
+    <div class="math-line">
+      <span class="math-label">Geometric mean per flip</span>
+      <span class="math-val-good">√(1.125 × 0.90) ≈ ×1.006 &nbsp;→&nbsp; +0.6% per flip</span>
+    </div>
+  </div>
+
+  <p>Smaller gain per flip — but the geometric mean is now <em>positive</em>. You grow steadily over time rather than drifting toward zero. See the difference:</p>
+
+  <div style="text-align:center; margin:32px 0;">
+    <button class="btn btn-green" onclick="runKelly()" id="kelly-btn">Run the Comparison</button>
+  </div>
+
+  <div class="kelly-compare" id="kelly-compare" style="display:none;">
+    <div class="kelly-col bad">
+      <div class="kelly-col-label">All-In (bet everything)</div>
+      <canvas id="kelly-chart-bad" width="380" height="220"></canvas>
+      <div style="margin-top:14px;">
+        <div class="stat-label">Median after 300 flips</div>
+        <div class="stat-value hl-red" id="kelly-bad-median">—</div>
+        <div class="stat-label" style="margin-top:10px;">Ruined</div>
+        <div class="stat-value hl-red" id="kelly-bad-ruined">—</div>
+      </div>
+    </div>
+    <div class="kelly-col good">
+      <div class="kelly-col-label">Kelly Sizing (25%)</div>
+      <canvas id="kelly-chart-good" width="380" height="220"></canvas>
+      <div style="margin-top:14px;">
+        <div class="stat-label">Median after 300 flips</div>
+        <div class="stat-value hl-green" id="kelly-good-median">—</div>
+        <div class="stat-label" style="margin-top:10px;">Ruined</div>
+        <div class="stat-value hl-green" id="kelly-good-ruined">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="kelly-explain" style="display:none; margin-top:32px;">
+    <p>Same bet. Same coin. Same odds. Completely different outcomes — just from sizing the position correctly.</p>
+    <p>Kelly sizing doesn't make you timid. It makes you <em>survivable</em>. You stay in the game long enough for the positive expected value to actually show up in your own life, not just the ensemble's average.</p>
+  </div>
+</section>
+
+<!-- ── CHAPTER VI: THE LESSON ─────────────────────────────────────────── -->
+<section class="chapter" id="ch6" style="border-bottom:none;">
+  <div class="chapter-num">Chapter VI</div>
+  <h2>What ergodicity means for your life</h2>
+  <p>This isn't a coin flip abstraction. Non-ergodicity is the structure of almost every consequential decision you make.</p>
+
+  <div class="app-grid">
+    <div class="app-card fragile">
+      <div class="app-card-label">Fragile</div>
+      <p>Maximizing expected return while ignoring ruin. Investing 100% in volatile assets. Betting everything on a single company. One bad outcome ends the game.</p>
+    </div>
+    <div class="app-card robust">
+      <div class="app-card-label">Robust</div>
+      <p>Survive first, grow second. Never risk so much that a single loss means you can't play again. Kelly sizing. Diversification. Keeping the game going.</p>
+    </div>
+    <div class="app-card anti">
+      <div class="app-card-label">Antifragile</div>
+      <p>Barbell strategy: safe core + asymmetric upside bets. Small, capped-loss positions with unlimited upside. Gain from volatility rather than being destroyed by it.</p>
+    </div>
+  </div>
+
+  <div class="quote">
+    "In a strategy that entails ruin, benefits never offset risks of ruin. Never cross a river if it is on average four feet deep."
+    <cite>— Nassim Nicholas Taleb, Antifragile</cite>
+  </div>
+
+  <p>The classical economist asks: "What is the expected value?" Taleb asks: "Can I survive long enough to see the expected value?" These are completely different questions, and only one of them applies to a single life lived through time.</p>
+  <p>Ergodicity is the gap between what works <em>on paper</em> and what works <em>for you, in one lifetime, without a second chance</em>.</p>
+
+  <div style="text-align:center; margin-top:56px;">
+    <div style="font-family:'Courier New',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:20px;">Explore more</div>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <a href="Game-Theory/evolution-of-trust.html" class="btn btn-ghost">Evolution of Trust</a>
+      <a href="munger-engine.html" class="btn btn-ghost">The Munger Engine</a>
+      <a href="naval-engine.html" class="btn btn-ghost">Naval's Almanack</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Based on ideas from <em>Antifragile</em>, <em>Skin in the Game</em>, and <em>The Technical Incerto</em> by Nassim Nicholas Taleb</div>
+  <div style="margin-top:8px; color:#3d3d5c;">An interactive exploration · built to think with</div>
+</footer>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let wealth = 1000;
+let flips  = 0;
+let wealthHistory = [1000];
+let ruined = false;
+let playerFinalWealth = null;
+
+const START       = 1000;
+const WIN_M       = 1.5;
+const LOSE_M      = 0.6;
+const KELLY_WIN   = 1.125;   // 1 + 0.5*0.25
+const KELLY_LOSE  = 0.900;   // 1 - 0.4*0.25
+const RUIN_FLOOR  = 1;
+
+// ── FORMAT ────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n < 0.01) return '$0';
+  if (n < 1)    return '$' + n.toFixed(2);
+  if (n >= 1e12) return '$' + (n/1e12).toFixed(1) + 'T';
+  if (n >= 1e9)  return '$' + (n/1e9).toFixed(1)  + 'B';
+  if (n >= 1e6)  return '$' + (n/1e6).toFixed(1)  + 'M';
+  if (n >= 1000) return '$' + Math.round(n).toLocaleString();
+  return '$' + n.toFixed(0);
+}
+
+function pct(r) { return Math.round(r * 100) + '%'; }
+
+// ── COIN ──────────────────────────────────────────────────────────────────
+function doFlip() {
+  const heads = Math.random() < 0.5;
+  const prev  = wealth;
+  wealth = heads ? wealth * WIN_M : wealth * LOSE_M;
+  flips++;
+  wealthHistory.push(wealth);
+
+  if (wealth < RUIN_FLOOR) {
+    ruined = true;
+    wealth = 0;
+    wealthHistory[wealthHistory.length - 1] = 0;
+  }
+  return { heads, prev };
+}
+
+function updateDisplay({ heads, prev } = {}) {
+  const wv = document.getElementById('wealth-val');
+  const wc = document.getElementById('wealth-change');
+  const fc = document.getElementById('flip-count');
+
+  wv.textContent = ruined ? '$0' : fmt(wealth);
+  if (prev !== undefined) {
+    const diff = wealth - prev;
+    wv.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+    setTimeout(() => { wv.style.color = 'var(--text)'; }, 600);
+    wc.textContent = (diff >= 0 ? '+' : '') + fmt(Math.abs(diff)) + (heads ? ' (heads)' : ' (tails)');
+    wc.style.color = diff >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  fc.textContent = flips + ' flip' + (flips === 1 ? '' : 's');
+}
+
+function flipCoin() {
+  if (ruined) return;
+  const coin = document.getElementById('coin');
+  coin.classList.remove('flipping');
+  void coin.offsetWidth;
+  coin.classList.add('flipping');
+  const result = doFlip();
+  coin.textContent = result.heads ? '🌕' : '🌑';
+  setTimeout(() => { coin.textContent = '🪙'; }, 460);
+  updateDisplay(result);
+  checkReveal();
+  drawWealthChart();
+  if (ruined) document.getElementById('ruin-msg').classList.add('show');
+}
+
+function fastForward(n) {
+  if (ruined) return;
+  for (let i = 0; i < n && !ruined; i++) doFlip();
+  updateDisplay();
+  if (ruined) document.getElementById('ruin-msg').classList.add('show');
+  checkReveal();
+  drawWealthChart();
+}
+
+function checkReveal() {
+  if (flips >= 20 || ruined) {
+    playerFinalWealth = wealth;
+    document.getElementById('flip-count-reveal').textContent = flips;
+    document.getElementById('reveal-box').classList.add('show');
+  }
+}
+
+function resetCoin() {
+  wealth = START; flips = 0;
+  wealthHistory = [START];
+  ruined = false; playerFinalWealth = null;
+  document.getElementById('wealth-val').textContent = fmt(START);
+  document.getElementById('wealth-val').style.color = 'var(--text)';
+  document.getElementById('wealth-change').innerHTML = '&nbsp;';
+  document.getElementById('flip-count').textContent = '0 flips';
+  document.getElementById('ruin-msg').classList.remove('show');
+  document.getElementById('reveal-box').classList.remove('show');
+  document.getElementById('coin').textContent = '🪙';
+  drawWealthChart();
+}
+
+// ── WEALTH CHART ──────────────────────────────────────────────────────────
+function drawWealthChart() {
+  const canvas = document.getElementById('wealth-chart');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#0e0e1a';
+  ctx.fillRect(0, 0, W, H);
+
+  const n = wealthHistory.length;
+  const evLine = Array.from({ length: n }, (_, i) => START * Math.pow(1.05, i));
+
+  const pad = { t: 18, r: 18, b: 18, l: 18 };
+  const pw  = W - pad.l - pad.r;
+  const ph  = H - pad.t - pad.b;
+
+  const allVals = [...wealthHistory.filter(v => v > 0), ...evLine];
+  const useLog  = Math.max(...allVals) > START * 4;
+  const vMax = Math.max(...allVals);
+  const vMin = 0;
+
+  function xP(i) { return pad.l + (i / Math.max(n - 1, 1)) * pw; }
+  function yP(v) {
+    if (useLog) {
+      const lo = Math.log(Math.max(v, 1));
+      const hi = Math.log(Math.max(vMax, 2));
+      const lm = Math.log(1);
+      return pad.t + ph - ((lo - lm) / (hi - lm)) * ph;
+    }
+    return pad.t + ph - ((Math.max(v, 0) - vMin) / (vMax - vMin + 1)) * ph;
+  }
+
+  // start grid line
+  ctx.strokeStyle = 'rgba(100,116,139,0.15)';
+  ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
+  ctx.beginPath(); ctx.moveTo(pad.l, yP(START)); ctx.lineTo(W - pad.r, yP(START)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // EV line
+  ctx.strokeStyle = 'rgba(59,130,246,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  evLine.forEach((v, i) => { i === 0 ? ctx.moveTo(xP(i), yP(v)) : ctx.lineTo(xP(i), yP(v)); });
+  ctx.stroke();
+
+  // Wealth line
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  wealthHistory.forEach((v, i) => { i === 0 ? ctx.moveTo(xP(i), yP(v)) : ctx.lineTo(xP(i), yP(v)); });
+  ctx.stroke();
+
+  if (!ruined && n > 1) {
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(xP(n - 1), yP(wealthHistory[n - 1]), 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ── ENSEMBLE ──────────────────────────────────────────────────────────────
+function runEnsemble() {
+  const N_P = 1000, N_F = 300;
+  const btn = document.getElementById('ensemble-btn');
+  btn.disabled = true; btn.textContent = 'Running…';
+
+  setTimeout(() => {
+    const paths = [];
+    let logMax = Math.log(START);
+
+    for (let p = 0; p < N_P; p++) {
+      let w = START;
+      const path = [w];
+      for (let f = 0; f < N_F; f++) {
+        w = Math.random() < 0.5 ? w * WIN_M : w * LOSE_M;
+        if (w > 0 && Math.log(w) > logMax) logMax = Math.log(w);
+        path.push(Math.max(0, w));
+      }
+      paths.push(path);
+    }
+
+    // Sort by final wealth to find median path and stats
+    const byFinal = paths.slice().sort((a, b) => a[N_F] - b[N_F]);
+    const finals  = byFinal.map(p => p[N_F]);
+    const mean    = finals.reduce((s, v) => s + v, 0) / N_P;
+    const median  = finals[Math.floor(N_P / 2)];
+    const below   = finals.filter(v => v < START).length;
+    const ruinedN = finals.filter(v => v < RUIN_FLOOR).length;
+    const medianPath = byFinal[Math.floor(N_P / 2)];
+
+    // Mean at each step — simple sum, no sort
+    const means = new Array(N_F + 1).fill(0);
+    for (let p = 0; p < N_P; p++)
+      for (let f = 0; f <= N_F; f++)
+        means[f] += paths[p][f];
+    for (let f = 0; f <= N_F; f++) means[f] /= N_P;
+
+    document.getElementById('stat-mean').textContent   = fmt(mean);
+    document.getElementById('stat-median').textContent = fmt(median);
+    document.getElementById('stat-below').textContent  = pct(below / N_P);
+    document.getElementById('stat-ruined').textContent = pct(ruinedN / N_P);
+
+    drawEnsemble(paths, medianPath, means, N_F, logMax);
+
+    ['ensemble-chart', 'ensemble-legend', 'ensemble-stats', 'ensemble-explain'].forEach(id => {
+      const el = document.getElementById(id);
+      el.style.display = id === 'ensemble-chart' ? 'block'
+                       : id === 'ensemble-explain' ? 'block'
+                       : 'flex';
+    });
+
+    if (playerFinalWealth !== null)
+      document.getElementById('your-legend').style.display = 'flex';
+
+    btn.textContent = 'Re-run Simulation';
+    btn.disabled = false;
+  }, 30);
+}
+
+function drawEnsemble(paths, medianPath, means, nF, logMax) {
+  const canvas = document.getElementById('ensemble-chart');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#0e0e1a';
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = { t: 22, r: 22, b: 22, l: 22 };
+  const pw  = W - pad.l - pad.r;
+  const ph  = H - pad.t - pad.b;
+  const logMin = Math.log(RUIN_FLOOR);
+
+  function xP(i) { return pad.l + (i / nF) * pw; }
+  function yP(v) {
+    if (v <= 0) return pad.t + ph;
+    const lv = Math.log(Math.max(v, RUIN_FLOOR));
+    return pad.t + ph - ((lv - logMin) / (logMax - logMin)) * ph;
+  }
+
+  // Start dashed grid
+  ctx.strokeStyle = 'rgba(100,116,139,0.18)';
+  ctx.lineWidth = 1; ctx.setLineDash([3, 6]);
+  ctx.beginPath(); ctx.moveTo(pad.l, yP(START)); ctx.lineTo(W - pad.r, yP(START)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw ~150 sampled paths in one batched path per color bucket
+  const DRAW_N = 150;
+  const step = Math.floor(paths.length / DRAW_N);
+  ctx.lineWidth = 0.55;
+  ctx.strokeStyle = 'rgba(148,163,184,0.08)';
+  for (let p = 0; p < paths.length; p += step) {
+    ctx.beginPath();
+    paths[p].forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+    ctx.stroke();
+  }
+
+  // Player path
+  if (playerFinalWealth !== null && wealthHistory.length > 1) {
+    ctx.strokeStyle = 'rgba(245,158,11,0.75)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    const pn = Math.min(wealthHistory.length, nF + 1);
+    wealthHistory.slice(0, pn).forEach((v, f) => {
+      f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v));
+    });
+    ctx.stroke();
+  }
+
+  // Median path (red) — single actual median player
+  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  medianPath.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+  ctx.stroke();
+
+  // Mean (blue)
+  ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  means.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+  ctx.stroke();
+
+  // End labels
+  ctx.font = '10px Courier New';
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText(fmt(means[nF]), W - pad.r - 64, yP(means[nF]) - 5);
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText(fmt(medianPath[nF]), W - pad.r - 64, yP(medianPath[nF]) + 13);
+}
+
+// ── KELLY COMPARISON ──────────────────────────────────────────────────────
+function runKelly() {
+  const N = 500, F = 300;
+  const btn = document.getElementById('kelly-btn');
+  btn.disabled = true; btn.textContent = 'Running…';
+
+  setTimeout(() => {
+    const makePaths = (wm, lm) => {
+      const ps = [];
+      for (let p = 0; p < N; p++) {
+        let w = START; const path = [w];
+        for (let f = 0; f < F; f++) {
+          w = Math.random() < 0.5 ? w * wm : w * lm;
+          path.push(Math.max(0, w));
+        }
+        ps.push(path);
+      }
+      return ps;
+    };
+
+    const badP  = makePaths(WIN_M,     LOSE_M);
+    const goodP = makePaths(KELLY_WIN, KELLY_LOSE);
+
+    const badF  = badP.map(p => p[F]).sort((a, b) => a - b);
+    const goodF = goodP.map(p => p[F]).sort((a, b) => a - b);
+
+    const bMed = badF[Math.floor(N/2)];
+    const gMed = goodF[Math.floor(N/2)];
+    const bRuin = badF.filter(v => v < RUIN_FLOOR).length;
+    const gRuin = goodF.filter(v => v < RUIN_FLOOR).length;
+
+    document.getElementById('kelly-bad-median').textContent  = fmt(bMed);
+    document.getElementById('kelly-good-median').textContent = fmt(gMed);
+    document.getElementById('kelly-bad-ruined').textContent  = pct(bRuin / N);
+    document.getElementById('kelly-good-ruined').textContent = pct(gRuin / N);
+
+    drawKellyChart('kelly-chart-bad',  badP,  F, false);
+    drawKellyChart('kelly-chart-good', goodP, F, true);
+
+    document.getElementById('kelly-compare').style.display = 'grid';
+    document.getElementById('kelly-explain').style.display = 'block';
+    btn.textContent = 'Re-run Comparison';
+    btn.disabled = false;
+  }, 30);
+}
+
+function drawKellyChart(id, paths, nF, isGood) {
+  const canvas = document.getElementById(id);
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#0e0e1a';
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = { t: 14, r: 14, b: 14, l: 14 };
+  const pw  = W - pad.l - pad.r;
+  const ph  = H - pad.t - pad.b;
+  const N   = paths.length;
+
+  const meds = [];
+  for (let f = 0; f <= nF; f++) {
+    const vals = paths.map(p => p[f]).sort((a, b) => a - b);
+    meds.push(vals[Math.floor(N / 2)]);
+  }
+
+  const allVals = paths.flat().filter(v => v > 0);
+  const logMax = Math.log(Math.max(...allVals, 2));
+  const logMin = Math.log(RUIN_FLOOR);
+
+  function xP(i) { return pad.l + (i / nF) * pw; }
+  function yP(v) {
+    if (v <= 0) return pad.t + ph;
+    const lv = Math.log(Math.max(v, RUIN_FLOOR));
+    return pad.t + ph - ((lv - logMin) / (logMax - logMin)) * ph;
+  }
+
+  ctx.strokeStyle = 'rgba(100,116,139,0.18)';
+  ctx.lineWidth = 1; ctx.setLineDash([3, 6]);
+  ctx.beginPath(); ctx.moveTo(pad.l, yP(START)); ctx.lineTo(W - pad.r, yP(START)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.lineWidth = 0.5;
+  paths.forEach(path => {
+    ctx.strokeStyle = isGood ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)';
+    ctx.beginPath();
+    path.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+    ctx.stroke();
+  });
+
+  ctx.strokeStyle = isGood ? '#10b981' : '#ef4444';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  meds.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+  ctx.stroke();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+drawWealthChart();
+</script>
+</body>
+</html>
