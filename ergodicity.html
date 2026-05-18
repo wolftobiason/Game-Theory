@@ -768,21 +768,53 @@ footer {
     <div class="kelly-col bad">
       <div class="kelly-col-label">All-In (bet everything)</div>
       <canvas id="kelly-chart-bad" width="380" height="220"></canvas>
-      <div style="margin-top:14px;">
-        <div class="stat-label">Median after 300 flips</div>
-        <div class="stat-value hl-red" id="kelly-bad-median">—</div>
-        <div class="stat-label" style="margin-top:10px;">Ruined</div>
-        <div class="stat-value hl-red" id="kelly-bad-ruined">—</div>
+      <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div>
+          <div class="stat-label">Median</div>
+          <div class="stat-value hl-red" id="kelly-bad-median">—</div>
+        </div>
+        <div>
+          <div class="stat-label">Ruined</div>
+          <div class="stat-value hl-red" id="kelly-bad-ruined">—</div>
+        </div>
+        <div>
+          <div class="stat-label">5th percentile</div>
+          <div class="stat-value hl-red" id="kelly-bad-p5">—</div>
+        </div>
+        <div>
+          <div class="stat-label">95th percentile</div>
+          <div class="stat-value hl-red" id="kelly-bad-p95">—</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <div class="stat-label">Geometric mean / flip</div>
+          <div class="stat-value hl-red" id="kelly-bad-geo">—</div>
+        </div>
       </div>
     </div>
     <div class="kelly-col good">
       <div class="kelly-col-label">Kelly Sizing (25%)</div>
       <canvas id="kelly-chart-good" width="380" height="220"></canvas>
-      <div style="margin-top:14px;">
-        <div class="stat-label">Median after 300 flips</div>
-        <div class="stat-value hl-green" id="kelly-good-median">—</div>
-        <div class="stat-label" style="margin-top:10px;">Ruined</div>
-        <div class="stat-value hl-green" id="kelly-good-ruined">—</div>
+      <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div>
+          <div class="stat-label">Median</div>
+          <div class="stat-value hl-green" id="kelly-good-median">—</div>
+        </div>
+        <div>
+          <div class="stat-label">Ruined</div>
+          <div class="stat-value hl-green" id="kelly-good-ruined">—</div>
+        </div>
+        <div>
+          <div class="stat-label">5th percentile</div>
+          <div class="stat-value hl-green" id="kelly-good-p5">—</div>
+        </div>
+        <div>
+          <div class="stat-label">95th percentile</div>
+          <div class="stat-value hl-green" id="kelly-good-p95">—</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <div class="stat-label">Geometric mean / flip</div>
+          <div class="stat-value hl-green" id="kelly-good-geo">—</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1149,18 +1181,44 @@ function runKelly() {
     const badF  = badP.map(p => p[F]).sort((a, b) => a - b);
     const goodF = goodP.map(p => p[F]).sort((a, b) => a - b);
 
-    const bMed = badF[Math.floor(N/2)];
-    const gMed = goodF[Math.floor(N/2)];
-    const bRuin = badF.filter(v => v < RUIN_FLOOR).length;
-    const gRuin = goodF.filter(v => v < RUIN_FLOOR).length;
+    function kellyStats(sorted, paths, nF) {
+      const n    = sorted.length;
+      const med  = sorted[Math.floor(n / 2)];
+      const p5   = sorted[Math.floor(n * 0.05)];
+      const p95  = sorted[Math.floor(n * 0.95)];
+      const ruin = sorted.filter(v => v < RUIN_FLOOR).length;
+      // geometric mean per flip = exp(mean(log(final/START)) / nF)
+      const logSum = paths.reduce((s, p) => s + Math.log(Math.max(p[nF], RUIN_FLOOR) / START), 0);
+      const geo = Math.exp(logSum / n / nF);
+      // percentile paths for chart bands
+      const p5path  = paths.slice().sort((a,b) => a[nF]-b[nF])[Math.floor(n*0.05)];
+      const p95path = paths.slice().sort((a,b) => a[nF]-b[nF])[Math.floor(n*0.95)];
+      const medPath = paths.slice().sort((a,b) => a[nF]-b[nF])[Math.floor(n/2)];
+      return { med, p5, p95, ruin, geo, p5path, p95path, medPath };
+    }
 
-    document.getElementById('kelly-bad-median').textContent  = fmt(bMed);
-    document.getElementById('kelly-good-median').textContent = fmt(gMed);
-    document.getElementById('kelly-bad-ruined').textContent  = pct(bRuin / N);
-    document.getElementById('kelly-good-ruined').textContent = pct(gRuin / N);
+    const bStats = kellyStats(badF,  badP,  F);
+    const gStats = kellyStats(goodF, goodP, F);
 
-    drawKellyChart('kelly-chart-bad',  badP,  F, false);
-    drawKellyChart('kelly-chart-good', goodP, F, true);
+    function fmtGeo(g) {
+      const sign = g >= 1 ? '+' : '';
+      return sign + ((g - 1) * 100).toFixed(2) + '%';
+    }
+
+    document.getElementById('kelly-bad-median').textContent  = fmt(bStats.med);
+    document.getElementById('kelly-bad-p5').textContent      = fmt(bStats.p5);
+    document.getElementById('kelly-bad-p95').textContent     = fmt(bStats.p95);
+    document.getElementById('kelly-bad-ruined').textContent  = pct(bStats.ruin / N);
+    document.getElementById('kelly-bad-geo').textContent     = fmtGeo(bStats.geo);
+
+    document.getElementById('kelly-good-median').textContent = fmt(gStats.med);
+    document.getElementById('kelly-good-p5').textContent     = fmt(gStats.p5);
+    document.getElementById('kelly-good-p95').textContent    = fmt(gStats.p95);
+    document.getElementById('kelly-good-ruined').textContent = pct(gStats.ruin / N);
+    document.getElementById('kelly-good-geo').textContent    = fmtGeo(gStats.geo);
+
+    drawKellyChart('kelly-chart-bad',  badP,  bStats, F, false);
+    drawKellyChart('kelly-chart-good', goodP, gStats, F, true);
 
     document.getElementById('kelly-compare').style.display = 'grid';
     document.getElementById('kelly-explain').style.display = 'block';
@@ -1169,7 +1227,7 @@ function runKelly() {
   }, 30);
 }
 
-function drawKellyChart(id, paths, nF, isGood) {
+function drawKellyChart(id, paths, stats, nF, isGood) {
   const canvas = document.getElementById(id);
   const ctx    = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
@@ -1180,16 +1238,10 @@ function drawKellyChart(id, paths, nF, isGood) {
   const pad = { t: 14, r: 14, b: 14, l: 14 };
   const pw  = W - pad.l - pad.r;
   const ph  = H - pad.t - pad.b;
-  const N   = paths.length;
 
-  const meds = [];
-  for (let f = 0; f <= nF; f++) {
-    const vals = paths.map(p => p[f]).sort((a, b) => a - b);
-    meds.push(vals[Math.floor(N / 2)]);
-  }
-
-  const allVals = paths.flat().filter(v => v > 0);
-  const logMax = Math.log(Math.max(...allVals, 2));
+  // track logMax from all four key paths + sampled paths
+  const keyPaths = [stats.p5path, stats.medPath, stats.p95path];
+  let logMax = Math.log(Math.max(stats.p95, START, 2));
   const logMin = Math.log(RUIN_FLOOR);
 
   function xP(i) { return pad.l + (i / nF) * pw; }
@@ -1199,23 +1251,49 @@ function drawKellyChart(id, paths, nF, isGood) {
     return pad.t + ph - ((lv - logMin) / (logMax - logMin)) * ph;
   }
 
+  // start grid line
   ctx.strokeStyle = 'rgba(100,116,139,0.18)';
   ctx.lineWidth = 1; ctx.setLineDash([3, 6]);
   ctx.beginPath(); ctx.moveTo(pad.l, yP(START)); ctx.lineTo(W - pad.r, yP(START)); ctx.stroke();
   ctx.setLineDash([]);
 
+  // sampled individual paths
+  const step = Math.max(1, Math.floor(paths.length / 80));
   ctx.lineWidth = 0.5;
-  paths.forEach(path => {
-    ctx.strokeStyle = isGood ? 'rgba(16,185,129,0.07)' : 'rgba(239,68,68,0.07)';
+  ctx.strokeStyle = isGood ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+  for (let p = 0; p < paths.length; p += step) {
     ctx.beginPath();
-    path.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+    paths[p].forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
     ctx.stroke();
-  });
+  }
 
+  // p5/p95 shaded band
+  const color = isGood ? '16,185,129' : '239,68,68';
+  ctx.fillStyle = `rgba(${color},0.07)`;
+  ctx.beginPath();
+  stats.p95path.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+  for (let f = nF; f >= 0; f--) ctx.lineTo(xP(f), yP(stats.p5path[f]));
+  ctx.closePath();
+  ctx.fill();
+
+  // p5 dashed
+  ctx.strokeStyle = `rgba(${color},0.4)`;
+  ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]);
+  ctx.beginPath();
+  stats.p5path.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+  ctx.stroke();
+
+  // p95 dashed
+  ctx.beginPath();
+  stats.p95path.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // median solid
   ctx.strokeStyle = isGood ? '#10b981' : '#ef4444';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  meds.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
+  stats.medPath.forEach((v, f) => { f === 0 ? ctx.moveTo(xP(f), yP(v)) : ctx.lineTo(xP(f), yP(v)); });
   ctx.stroke();
 }
 
