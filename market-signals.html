@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Signal Engine</title>
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0e0e1a;
+  --card: #121224;
+  --border: #1e1e38;
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.10);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.10);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.10);
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.10);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --soft: #94a3b8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Georgia', serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── HERO ───────────────────────────────────────────── */
+.hero {
+  min-height: 38vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px 48px;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.07), transparent);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.hero-label {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.hero p {
+  font-size: 1.05rem;
+  color: var(--soft);
+  max-width: 540px;
+  margin-bottom: 36px;
+}
+
+/* ── STATUS BAR ─────────────────────────────────────── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.status-item {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--soft);
+}
+.status-item span { color: var(--text); }
+
+.market-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.market-dot.open   { background: var(--green); animation: pulse 2s infinite; }
+.market-dot.pre    { background: var(--gold);  animation: pulse 2s infinite; }
+.market-dot.closed { background: var(--muted); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+.refresh-btn {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--soft);
+  padding: 8px 18px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.refresh-btn:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+.refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── LOADING ────────────────────────────────────────── */
+#loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 24px;
+  gap: 18px;
+}
+
+.ld-dots { display: flex; gap: 7px; }
+.ld-dots span {
+  width: 7px; height: 7px;
+  background: var(--blue);
+  border-radius: 50%;
+  animation: ldBounce 1.2s infinite;
+}
+.ld-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ld-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes ldBounce {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.35; }
+  40%           { transform: scale(1.2); opacity: 1; }
+}
+
+.ld-text {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+
+.error-box {
+  max-width: 500px;
+  margin: 60px auto;
+  padding: 24px;
+  border: 1px solid rgba(239,68,68,0.3);
+  background: var(--red-dim);
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--red);
+  text-align: center;
+  line-height: 1.8;
+}
+
+/* ── DASHBOARD ──────────────────────────────────────── */
+#dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 52px 24px 80px;
+}
+
+/* ── SIGNAL GRID ────────────────────────────────────── */
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 56px;
+}
+@media (max-width: 960px) { .signal-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .signal-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.scard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 18px 16px 16px;
+  transition: border-color 0.2s, transform 0.15s;
+  cursor: default;
+}
+.scard:hover { transform: translateY(-2px); }
+.scard.long    { border-color: rgba(59,130,246,0.45);  background: linear-gradient(160deg, var(--card), rgba(59,130,246,0.05)); }
+.scard.short   { border-color: rgba(239,68,68,0.45);   background: linear-gradient(160deg, var(--card), rgba(239,68,68,0.05)); }
+.scard.neutral { border-color: rgba(100,116,139,0.35); }
+
+.sc-ticker {
+  font-family: 'Courier New', monospace;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.sc-name {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.sc-price {
+  font-family: 'Courier New', monospace;
+  font-size: 21px;
+  margin-bottom: 3px;
+}
+.sc-ret {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.pos { color: var(--green); }
+.neg { color: var(--red);   }
+.neu { color: var(--muted); }
+
+canvas.sparkline {
+  display: block;
+  width: 100%;
+  height: 52px;
+  margin-bottom: 12px;
+}
+
+.sig-badge {
+  display: inline-block;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 3px 9px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+.sig-badge.long    { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+.sig-badge.short   { background: var(--red-dim);  color: var(--red);  border: 1px solid rgba(239,68,68,0.3); }
+.sig-badge.neutral { background: rgba(100,116,139,0.1); color: var(--muted); border: 1px solid rgba(100,116,139,0.25); }
+
+.sc-stats {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 12px;
+}
+.sc-stats .v { color: var(--soft); }
+.sc-stats .v.pos { color: var(--green); }
+.sc-stats .v.neg { color: var(--red);   }
+
+/* predicted return bar */
+.pred-wrap { margin-top: 2px; }
+.pred-lbl {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.pred-track {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+.pred-fill {
+  position: absolute;
+  top: 0; height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+.pred-val {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+/* ── SECTION ────────────────────────────────────────── */
+.section { margin-bottom: 52px; }
+
+.sec-label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 6px;
+}
+
+.sec-title {
+  font-size: 1.55rem;
+  font-weight: 400;
+  margin-bottom: 24px;
+}
+
+/* ── REGRESSION TABLE ───────────────────────────────── */
+.rtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  overflow-x: auto;
+  display: block;
+}
+.rtable th {
+  text-align: left;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.rtable td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(30,30,56,0.6);
+  color: var(--soft);
+  white-space: nowrap;
+}
+.rtable tr:hover td { background: rgba(59,130,246,0.025); }
+.rtable td:first-child { color: var(--text); font-size: 14px; font-weight: 700; }
+
+/* ── METHODOLOGY ────────────────────────────────────── */
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 720px) { .method-grid { grid-template-columns: 1fr; } }
+
+.mcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 22px 20px;
+  border-radius: 4px;
+}
+.mcard h3 {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 10px;
+}
+.mcard p { font-size: 13px; color: var(--soft); line-height: 1.7; }
+.formula {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--gold);
+  background: var(--bg);
+  padding: 7px 12px;
+  border-radius: 2px;
+  margin-top: 10px;
+  border-left: 2px solid var(--gold);
+}
+
+/* ── API KEY INPUT ──────────────────────────────────── */
+.key-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.key-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--soft);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 2px;
+  width: 168px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.key-input:focus  { border-color: var(--blue); }
+.key-input.ok     { border-color: rgba(16,185,129,0.5); }
+.key-input::placeholder { color: var(--muted); }
+.key-link {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.key-link:hover { color: var(--blue); }
+
+/* ── FOOTER ─────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 24px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="hero">
+  <div class="hero-label">Quantitative Research</div>
+  <h1>Market Signal Engine</h1>
+  <p>OLS momentum &amp; mean-reversion model on major ETFs · Refreshed daily before the open</p>
+  <div class="status-bar">
+    <div class="status-item" id="mkt-status"></div>
+    <div class="status-item" id="last-upd"></div>
+    <div class="key-wrap">
+      <input id="av-key-input" class="key-input" type="text"
+             placeholder="Alpha Vantage API key…"
+             title="Paste your free key — alphavantage.co">
+      <a href="https://www.alphavantage.co/support/#api-key" class="key-link" target="_blank">get free key ↗</a>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="kickoff(true)">↻ Refresh</button>
+  </div>
+</div>
+
+<!-- ═══════════ LOADING ═══════════ -->
+<div id="loading">
+  <div class="ld-dots"><span></span><span></span><span></span></div>
+  <div class="ld-text">Fetching market data&hellip;</div>
+</div>
+
+<div id="err-box"></div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<div id="dashboard" style="display:none">
+  <div class="signal-grid" id="sig-grid"></div>
+
+  <div class="section">
+    <div class="sec-label">Model Output</div>
+    <div class="sec-title">Regression Summary</div>
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>ETF</th>
+          <th>β₁ (1-day lag)</th>
+          <th>t-stat</th>
+          <th>β₅ (5-day lag)</th>
+          <th>t-stat</th>
+          <th>R² (1d)</th>
+          <th>Predicted</th>
+          <th>Regime</th>
+          <th>Signal</th>
+        </tr>
+      </thead>
+      <tbody id="rtbody"></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="sec-label">How It Works</div>
+    <div class="sec-title">Methodology</div>
+    <div class="method-grid">
+      <div class="mcard">
+        <h3>Autocorrelation Regression</h3>
+        <p>For each ETF, a rolling 60-day OLS regression tests whether past returns predict future returns. The β coefficient is the autocorrelation at each lag.</p>
+        <code class="formula">r_{t+1} = α + β · r_t + ε</code>
+      </div>
+      <div class="mcard">
+        <h3>Regime Detection</h3>
+        <p>The sign of β encodes the return regime. β₁ &lt; 0 indicates short-term mean reversion — common in large-cap indices. β₁ &gt; 0 indicates momentum continuation.</p>
+        <code class="formula">β &lt; −0.08 → Reversion · β &gt; 0.08 → Momentum</code>
+      </div>
+      <div class="mcard">
+        <h3>Signal Generation</h3>
+        <p>Tomorrow's predicted return is computed from today's observed returns. When both 1-day and 5-day regressions agree, they are weighted by their t-statistics.</p>
+        <code class="formula">pred = α̂ + β̂ · r_today · w(|t|)</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  MARKET SIGNAL ENGINE &nbsp;·&nbsp; Data: Alpha Vantage · Yahoo Finance · Stooq &nbsp;·&nbsp; Rolling 60-day OLS window<br>
+  Signals are statistical, not financial advice. Past regression fit ≠ future alpha.
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════════════════
+const TICKERS = ['SPY','QQQ','IWM','TLT','GLD'];
+const NAMES   = { SPY:'S&P 500', QQQ:'Nasdaq 100', IWM:'Russell 2000', TLT:'20yr Treasury', GLD:'Gold' };
+const CACHE_KEY = 'mse_v3';
+const CACHE_TTL  = 8 * 3600 * 1000;   // 8 h
+const REG_WIN    = 60;                 // rolling regression window (days)
+const SIG_THRESH = 0.002;             // ±0.20% threshold for LONG/SHORT
+
+// ════════════════════════════════════════════════════════
+//  MARKET STATUS
+// ════════════════════════════════════════════════════════
+function marketStatus() {
+  const et   = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const dow  = et.getDay();
+  const mins = et.getHours() * 60 + et.getMinutes();
+
+  if (dow === 0 || dow === 6)
+    return { label:'Market Closed', detail:'Weekend', dot:'closed' };
+
+  if (mins >= 570 && mins < 960) {
+    const left = 960 - mins;
+    return { label:'Market Open', detail:`Closes in ${Math.floor(left/60)}h ${left%60}m`, dot:'open' };
+  }
+  if (mins >= 240 && mins < 570) {
+    const left = 570 - mins;
+    return { label:'Pre-Market', detail:`Opens in ${Math.floor(left/60)}h ${left%60}m`, dot:'pre' };
+  }
+  if (mins >= 960 && mins < 1200)
+    return { label:'After Hours', detail:'', dot:'pre' };
+
+  return { label:'Market Closed', detail:'Opens 9:30 AM ET', dot:'closed' };
+}
+
+function tickStatus() {
+  const s = marketStatus();
+  document.getElementById('mkt-status').innerHTML =
+    `<span class="market-dot ${s.dot}"></span>${s.label}${s.detail ? ' · ' + s.detail : ''}`;
+}
+
+// ════════════════════════════════════════════════════════
+//  DATA FETCHING
+// ════════════════════════════════════════════════════════
+const AV_KEY_STORE = 'mse_av_key';
+const STOOQ_SYM   = { SPY:'spy.us', QQQ:'qqq.us', IWM:'iwm.us', TLT:'tlt.us', GLD:'gld.us' };
+const PROXIES   = [
+  url => url,                                                          // direct
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`
+];
+
+async function tryFetch(url, opts = {}) {
+  const r = await fetch(url, { ...opts, signal: AbortSignal.timeout(7000) });
+  if (!r.ok) throw new Error(r.status);
+  return r;
+}
+
+async function fetchYahoo(ticker) {
+  const yahooHosts = ['query1', 'query2'];
+  for (const host of yahooHosts) {
+    const base = `https://${host}.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=6mo`;
+    for (const proxy of PROXIES) {
+      try {
+        const r = await tryFetch(proxy(base), { headers:{ Accept:'application/json' }, cache:'no-store' });
+        const j = await r.json();
+        const res = j?.chart?.result?.[0];
+        if (!res) continue;
+
+        const ts     = res.timestamp;
+        const closes = res.indicators.quote[0].close;
+        const pairs  = ts.map((t,i) => ({ t, p:closes[i] })).filter(x => x.p > 0);
+        if (pairs.length < 40) continue;
+
+        return {
+          ticker,
+          name: NAMES[ticker],
+          timestamps: pairs.map(x => x.t),
+          prices:     pairs.map(x => x.p),
+          livePrice:  res.meta?.regularMarketPrice ?? pairs.at(-1).p
+        };
+      } catch (_) { /* try next proxy */ }
+    }
+  }
+  return null; // Yahoo exhausted
+}
+
+async function fetchStooq(ticker) {
+  const sym  = STOOQ_SYM[ticker];
+  const base = `https://stooq.com/q/d/l/?s=${sym}&i=d`;
+  for (const proxy of PROXIES.slice(1)) { // skip direct — Stooq blocks CORS
+    try {
+      const r   = await tryFetch(proxy(base), { cache:'no-store' });
+      const csv = await r.text();
+      if (!csv.includes('Date')) continue;
+
+      const lines = csv.trim().split('\n');
+      const pairs = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',');
+        if (cols.length < 5) continue;
+        const price = parseFloat(cols[4]);
+        const ts    = new Date(cols[0]).getTime() / 1000;
+        if (price > 0 && !isNaN(ts)) pairs.push({ t: ts, p: price });
+      }
+      if (pairs.length < 40) continue;
+
+      pairs.sort((a,b) => a.t - b.t);
+      const recent = pairs.slice(-130);
+      return {
+        ticker,
+        name: NAMES[ticker],
+        timestamps: recent.map(x => x.t),
+        prices:     recent.map(x => x.p),
+        livePrice:  recent.at(-1).p
+      };
+    } catch (_) { /* try next proxy */ }
+  }
+  return null;
+}
+
+async function fetchAlphaVantage(ticker) {
+  const key = localStorage.getItem(AV_KEY_STORE);
+  if (!key) return null;
+  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&outputsize=compact&apikey=${key}`;
+  try {
+    const r = await tryFetch(url, { cache:'no-store' });
+    const j = await r.json();
+    if (j['Error Message'] || j['Note'] || j['Information']) return null; // bad key or rate-limited
+    const ts = j['Time Series (Daily)'];
+    if (!ts) return null;
+
+    const entries = Object.entries(ts)
+      .map(([date, v]) => ({ t: new Date(date).getTime()/1000, p: parseFloat(v['4. close']) }))
+      .filter(x => x.p > 0)
+      .sort((a,b) => a.t - b.t);
+
+    if (entries.length < 40) return null;
+    return {
+      ticker, name: NAMES[ticker],
+      timestamps: entries.map(x => x.t),
+      prices:     entries.map(x => x.p),
+      livePrice:  entries.at(-1).p
+    };
+  } catch (_) { return null; }
+}
+
+async function fetchTicker(ticker) {
+  const result = await fetchAlphaVantage(ticker)
+              ?? await fetchYahoo(ticker)
+              ?? await fetchStooq(ticker);
+  if (!result) throw new Error(`All sources failed for ${ticker}`);
+  return result;
+}
+
+function initKeyInput() {
+  const input = document.getElementById('av-key-input');
+  const stored = localStorage.getItem(AV_KEY_STORE) || '';
+  input.value = stored;
+  if (stored) input.classList.add('ok');
+  input.addEventListener('change', () => {
+    const key = input.value.trim();
+    if (key) { localStorage.setItem(AV_KEY_STORE, key); input.classList.add('ok'); }
+    else     { localStorage.removeItem(AV_KEY_STORE);   input.classList.remove('ok'); }
+    localStorage.removeItem(CACHE_KEY); // force re-fetch with new key
+  });
+}
+
+async function fetchAll(force) {
+  if (!force) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+      if (raw && (Date.now() - raw.ts) < CACHE_TTL) {
+        setUpd(`Cached · ${new Date(raw.ts).toLocaleTimeString()}`);
+        return raw.data;
+      }
+    } catch (_) {}
+  }
+  setUpd('Fetching…');
+  const data = await Promise.all(TICKERS.map(fetchTicker));
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch (_) {}
+  setUpd(`Updated ${new Date().toLocaleTimeString('en-US', { timeZone:'America/New_York' })} ET`);
+  return data;
+}
+
+function setUpd(msg) {
+  document.getElementById('last-upd').textContent = msg;
+}
+
+// ════════════════════════════════════════════════════════
+//  MATH
+// ════════════════════════════════════════════════════════
+function ols(x, y) {
+  const n = x.length;
+  if (n < 8) return { alpha:0, beta:0, r2:0, tstat:0, n };
+
+  let sx=0, sy=0;
+  for (let i=0; i<n; i++) { sx+=x[i]; sy+=y[i]; }
+  const xm=sx/n, ym=sy/n;
+
+  let sxy=0, sxx=0, syy=0;
+  for (let i=0; i<n; i++) {
+    const dx=x[i]-xm, dy=y[i]-ym;
+    sxy+=dx*dy; sxx+=dx*dx; syy+=dy*dy;
+  }
+
+  if (sxx===0) return { alpha:ym, beta:0, r2:0, tstat:0, n };
+
+  const beta  = sxy/sxx;
+  const alpha = ym - beta*xm;
+  const r2    = syy>0 ? (sxy*sxy)/(sxx*syy) : 0;
+
+  let sse=0;
+  for (let i=0; i<n; i++) { const e=y[i]-(alpha+beta*x[i]); sse+=e*e; }
+  const mse    = sse / Math.max(n-2,1);
+  const seBeta = Math.sqrt(mse/sxx);
+  const tstat  = seBeta>0 ? beta/seBeta : 0;
+
+  return { alpha, beta, r2, tstat, n };
+}
+
+function dailyRets(prices) {
+  return prices.slice(1).map((p,i) => (p - prices[i]) / prices[i]);
+}
+
+function rollingSum(arr, w) {
+  return arr.map((_,i) => {
+    if (i < w-1) return null;
+    let s=0; for (let k=i-w+1;k<=i;k++) s+=arr[k]; return s;
+  });
+}
+
+function rollingMean(arr, w) {
+  return rollingSum(arr, w).map(s => s === null ? null : s/w);
+}
+
+function rollingStdDev(arr, w) {
+  const means = rollingMean(arr, w);
+  return arr.map((_,i) => {
+    if (means[i]===null) return null;
+    const m=means[i];
+    let v=0; for (let k=i-w+1;k<=i;k++) v+=(arr[k]-m)**2;
+    return Math.sqrt(v/w);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  SIGNAL COMPUTATION
+// ════════════════════════════════════════════════════════
+function computeSignals(allData) {
+  return allData.map(({ ticker, name, prices, livePrice }) => {
+    const rets = dailyRets(prices);
+    const N    = rets.length;
+
+    const cum5  = rollingSum(rets, 5);
+    const cum20 = rollingSum(rets, 20);
+
+    // Build sample: for t in [20..N-1], predict rets[t] from lagged features at t-1
+    const x1=[], x5=[], x20=[], Y=[];
+    for (let t=20; t<N; t++) {
+      if (cum5[t-1]===null || cum20[t-1]===null) continue;
+      x1.push(rets[t-1]);
+      x5.push(cum5[t-1]);
+      x20.push(cum20[t-1]);
+      Y.push(rets[t]);
+    }
+
+    // Use last REG_WIN observations
+    const trim = a => a.slice(-REG_WIN);
+    const fit1  = ols(trim(x1),  trim(Y));
+    const fit5  = ols(trim(x5),  trim(Y));
+    const fit20 = ols(trim(x20), trim(Y));
+
+    // Current features (predict TOMORROW)
+    const rToday = rets[N-1];
+    const r5d    = cum5[N-1]  ?? 0;
+    const r20d   = cum20[N-1] ?? 0;
+
+    const pred1 = fit1.alpha  + fit1.beta  * rToday;
+    const pred5 = fit5.alpha  + fit5.beta  * r5d;
+
+    // Weight by |t-stat| above floor of 1.0
+    const w1 = Math.max(0, Math.abs(fit1.tstat) - 1.0);
+    const w5 = Math.max(0, Math.abs(fit5.tstat) - 1.0);
+    const wt = w1 + w5;
+    const pred = wt > 0 ? (w1*pred1 + w5*pred5)/wt : (pred1+pred5)/2;
+
+    const signal = pred > SIG_THRESH ? 'LONG' : pred < -SIG_THRESH ? 'SHORT' : 'NEUTRAL';
+
+    const regime = fit1.beta < -0.08 ? 'Mean Reversion'
+                 : fit1.beta >  0.08 ? 'Momentum'
+                 : 'Mixed';
+
+    // MA20 z-score (Bollinger position)
+    const ma20 = rollingMean(prices, 20);
+    const sd20 = rollingStdDev(prices, 20);
+    const lastMa = ma20.at(-1), lastSd = sd20.at(-1);
+    const maZ = lastMa && lastSd ? (prices.at(-1) - lastMa) / lastSd : 0;
+
+    return {
+      ticker, name, prices, rets,
+      ma20,
+      price: livePrice ?? prices.at(-1),
+      rToday, r5d, r20d,
+      fit1, fit5, fit20,
+      pred,
+      signal, regime, maZ
+    };
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  SPARKLINE CHART
+// ════════════════════════════════════════════════════════
+function drawSpark(canvas, sig) {
+  const dpr = window.devicePixelRatio || 1;
+  const W   = canvas.clientWidth  || 180;
+  const H   = 52;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pts = sig.prices.slice(-REG_WIN);
+  const ma  = sig.ma20.filter(v => v !== null).slice(-pts.length);
+  const mOff = pts.length - ma.length;
+
+  const lo = Math.min(...pts) * 0.9985;
+  const hi = Math.max(...pts) * 1.0015;
+  const rng = hi - lo || 1;
+
+  const sx = i => (i / (pts.length - 1)) * W;
+  const sy = p => H - 2 - ((p - lo) / rng) * (H - 4);
+
+  const rgb = sig.signal==='LONG' ? '59,130,246' : sig.signal==='SHORT' ? '239,68,68' : '100,116,139';
+
+  // Gradient fill
+  const grd = ctx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0, `rgba(${rgb},0.18)`);
+  grd.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.beginPath();
+  pts.forEach((p,i) => i===0 ? ctx.moveTo(sx(i),sy(p)) : ctx.lineTo(sx(i),sy(p)));
+  ctx.lineTo(sx(pts.length-1), H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  // Price line
+  ctx.beginPath();
+  pts.forEach((p,i) => i===0 ? ctx.moveTo(sx(i),sy(p)) : ctx.lineTo(sx(i),sy(p)));
+  ctx.strokeStyle = `rgba(${rgb},0.9)`;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // MA20 dashed
+  if (ma.length > 2) {
+    ctx.beginPath();
+    ma.forEach((p,i) => {
+      const xi = sx(i + mOff);
+      i===0 ? ctx.moveTo(xi,sy(p)) : ctx.lineTo(xi,sy(p));
+    });
+    ctx.strokeStyle = 'rgba(245,158,11,0.55)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // End dot
+  ctx.beginPath();
+  ctx.arc(sx(pts.length-1), sy(pts.at(-1)), 3, 0, Math.PI*2);
+  ctx.fillStyle = `rgb(${rgb})`;
+  ctx.fill();
+}
+
+// ════════════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════════════
+const pct  = (v, d=2) => (v>=0?'+':'') + (v*100).toFixed(d) + '%';
+const pctC = (v)      => v>=0 ? 'pos' : 'neg';
+
+function sigArrow(s) { return s==='LONG' ? '▲ LONG' : s==='SHORT' ? '▼ SHORT' : '─ NEUTRAL'; }
+
+function renderCards(signals) {
+  const grid = document.getElementById('sig-grid');
+  grid.innerHTML = '';
+
+  signals.forEach(sig => {
+    const card = document.createElement('div');
+    card.className = `scard ${sig.signal.toLowerCase()}`;
+
+    // Bar: 0 = center, ±0.6% = full rail
+    const barMax  = 0.006;
+    const barPct  = Math.min(Math.abs(sig.pred) / barMax * 50, 50);
+    const barLeft = sig.pred >= 0 ? '50%' : `${50 - barPct}%`;
+    const barCol  = sig.pred >= 0 ? '#3b82f6' : '#ef4444';
+
+    card.innerHTML = `
+      <div class="sc-ticker">${sig.ticker}</div>
+      <div class="sc-name">${sig.name}</div>
+      <div class="sc-price">$${sig.price.toFixed(2)}</div>
+      <div class="sc-ret ${pctC(sig.rToday)}">${pct(sig.rToday)} today</div>
+      <canvas class="sparkline" style="height:52px"></canvas>
+      <div class="sig-badge ${sig.signal.toLowerCase()}">${sigArrow(sig.signal)}</div>
+      <div class="sc-stats">
+        <div>5d &nbsp;<span class="v ${pctC(sig.r5d)}">${pct(sig.r5d)}</span></div>
+        <div>20d <span class="v ${pctC(sig.r20d)}">${pct(sig.r20d)}</span></div>
+        <div>MA20 <span class="v">${sig.maZ>=0?'+':''}${sig.maZ.toFixed(1)}σ</span></div>
+        <div>Mode <span class="v">${sig.regime}</span></div>
+      </div>
+      <div class="pred-wrap">
+        <div class="pred-lbl">Predicted Tomorrow</div>
+        <div class="pred-track">
+          <div class="pred-fill" style="width:${barPct}%;left:${barLeft};background:${barCol}"></div>
+        </div>
+        <div class="pred-val ${pctC(sig.pred)}">${pct(sig.pred, 3)}</div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+
+    // Draw chart after layout
+    const cv = card.querySelector('canvas');
+    requestAnimationFrame(() => drawSpark(cv, sig));
+  });
+}
+
+function renderTable(signals) {
+  const tbody = document.getElementById('rtbody');
+  tbody.innerHTML = '';
+
+  const tc = t => Math.abs(t)>2 ? 'var(--text)' : Math.abs(t)>1.5 ? 'var(--soft)' : 'var(--muted)';
+  const bc = b => b<0 ? 'var(--red)' : b>0 ? 'var(--green)' : 'var(--muted)';
+
+  signals.forEach(sig => {
+    const { fit1, fit5, pred, signal, regime, ticker } = sig;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${ticker}</td>
+      <td style="color:${bc(fit1.beta)}">${fit1.beta>=0?'+':''}${fit1.beta.toFixed(3)}</td>
+      <td style="color:${tc(fit1.tstat)}">${fit1.tstat>=0?'+':''}${fit1.tstat.toFixed(2)}</td>
+      <td style="color:${bc(fit5.beta)}">${fit5.beta>=0?'+':''}${fit5.beta.toFixed(3)}</td>
+      <td style="color:${tc(fit5.tstat)}">${fit5.tstat>=0?'+':''}${fit5.tstat.toFixed(2)}</td>
+      <td>${(fit1.r2*100).toFixed(1)}%</td>
+      <td style="color:${pred>=0?'var(--green)':'var(--red)'}">${pct(pred,3)}</td>
+      <td style="color:var(--muted);font-size:10px;letter-spacing:0.5px">${regime}</td>
+      <td><span class="sig-badge ${signal.toLowerCase()}" style="font-size:9px;padding:2px 7px">${sigArrow(signal)}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  MORNING AUTO-REFRESH
+// ════════════════════════════════════════════════════════
+function checkMorningRefresh() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (!raw) return;
+    const etNow  = new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+    const etLast = new Date(new Date(raw.ts).toLocaleString('en-US',{timeZone:'America/New_York'}));
+    const newDay = etNow.toDateString() !== etLast.toDateString();
+    const hour   = etNow.getHours();
+    // It's a new trading day and we're in the 4–9 AM pre-market window
+    if (newDay && hour >= 4 && hour < 10) return true;
+  } catch (_) {}
+  return false;
+}
+
+// ════════════════════════════════════════════════════════
+//  MAIN
+// ════════════════════════════════════════════════════════
+let running = false;
+
+async function kickoff(force = false) {
+  if (running) return;
+  running = true;
+
+  const btn  = document.getElementById('refresh-btn');
+  const ld   = document.getElementById('loading');
+  const dash = document.getElementById('dashboard');
+  const err  = document.getElementById('err-box');
+
+  btn.disabled = true;
+  btn.textContent = '…';
+  ld.style.display   = 'flex';
+  dash.style.display = 'none';
+  err.innerHTML      = '';
+
+  try {
+    const shouldForce = force || checkMorningRefresh();
+    const raw     = await fetchAll(shouldForce);
+    const signals = computeSignals(raw);
+
+    renderCards(signals);
+    renderTable(signals);
+
+    ld.style.display   = 'none';
+    dash.style.display = 'block';
+  } catch (e) {
+    ld.style.display = 'none';
+    err.innerHTML = `
+      <div class="error-box">
+        ⚠ Data fetch failed: ${e.message}<br>
+        <small>Yahoo Finance may be rate-limiting. Try again in a moment.</small>
+      </div>`;
+    console.error(e);
+  } finally {
+    running = false;
+    btn.disabled = false;
+    btn.textContent = '↻ Refresh';
+  }
+}
+
+// Init
+initKeyInput();
+tickStatus();
+setInterval(tickStatus, 30_000);
+kickoff(false);
+</script>
+</body>
+</html>
