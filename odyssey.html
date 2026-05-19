@@ -376,18 +376,32 @@ function renderMap() {
   // Land — warm cream
   for (const pts of landmasses) poly(pts,'#e8d888','#b8a048');
 
-  // Region labels
-  cx.textAlign='center';
-  cx.font='italic bold 9px Georgia'; cx.fillStyle='rgba(80,55,10,0.6)';
+  // Region labels — crisp, rounded positions, shadow halo
+  cx.textAlign='center'; cx.textBaseline='middle';
+  cx.font='bold 11px Georgia';
   for (const [n,lon,lat] of [
     ['HISPANIA',-2.5,40.5],['GAUL',7,43.9],['ITALY',11.8,42.3],
     ['GREECE',22.5,40.6],['ASIA MINOR',31,40],['AFRICA',8,32.2]
-  ]){ const [x,y]=pt(lon,lat); cx.fillText(n,x,y); }
+  ]){
+    const [rx,ry]=pt(lon,lat);
+    const rx2=Math.round(rx), ry2=Math.round(ry);
+    // white halo
+    cx.shadowColor='rgba(255,248,210,0.9)'; cx.shadowBlur=4;
+    cx.fillStyle='rgba(70,45,8,0.85)';
+    cx.fillText(n,rx2,ry2);
+    cx.shadowBlur=0;
+  }
 
   // Sea labels
-  cx.font='italic 11px Georgia'; cx.fillStyle='rgba(10,55,90,0.38)';
-  const [mx,my]=pt(13,35.2); cx.fillText('Mediterranean Sea',mx,my);
-  const [bx,by]=pt(32,43.2); cx.fillText('Black Sea',bx,by);
+  cx.font='italic 12px Georgia';
+  for (const [n,lon,lat] of [['Mediterranean Sea',13,35.2],['Black Sea',32,43.2]]){
+    const [sx,sy]=pt(lon,lat);
+    cx.shadowColor='rgba(100,180,210,0.7)'; cx.shadowBlur=3;
+    cx.fillStyle='rgba(10,50,85,0.55)';
+    cx.fillText(n,Math.round(sx),Math.round(sy));
+    cx.shadowBlur=0;
+  }
+  cx.textBaseline='alphabetic';
 
   // Visited path — curved red lines with arrowheads
   if (g.cur>=1){
@@ -429,20 +443,24 @@ function renderMap() {
     cx.strokeStyle=isVis?'#fff':'rgba(255,255,255,0.5)'; cx.lineWidth=1.5; cx.stroke();
 
     // Number
-    cx.font=`bold ${isCur?9:8}px Georgia`;
-    cx.fillStyle=isVis?'#fff':'rgba(140,30,20,0.7)';
+    const nx2=Math.round(x), ny2=Math.round(y);
+    cx.font=`bold ${isCur?10:9}px Georgia`;
+    cx.fillStyle=isVis?'#fff':'rgba(140,30,20,0.8)';
     cx.textAlign='center'; cx.textBaseline='middle';
-    cx.fillText(i+1,x,y);
+    cx.fillText(i+1,nx2,ny2);
     cx.textBaseline='alphabetic';
 
-    // Label
+    // Place-name label — only shown when relevant
     if (isCur||isNext||(isVis&&i>=g.cur-2)){
       const label=s.name.split('—')[0].trim().split(' — ')[0];
-      cx.font=isCur?'bold 10px Georgia':'9px Georgia';
-      cx.fillStyle=isCur?'#8a1a0a':isVis?'#6a3010':'#5a3818';
+      cx.font=isCur?'bold 11px Georgia':'10px Georgia';
       cx.textAlign='center';
       const above=s.lat>40||s.lat<34;
-      cx.fillText(label,x,y+(above?-14:15));
+      const lx=Math.round(x), ly=Math.round(y+(above?-16:17));
+      cx.shadowColor='rgba(240,228,185,0.98)'; cx.shadowBlur=6;
+      cx.fillStyle=isCur?'#7a1208':isVis?'#5a2808':'#3a2208';
+      cx.fillText(label,lx,ly);
+      cx.shadowBlur=0;
     }
   });
 
