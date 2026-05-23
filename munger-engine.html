@@ -241,24 +241,45 @@
   .model-card.expanded .model-tag { color: var(--amber); }
 
   /* ── INVERSION ENGINE ── */
-  .inversion-form { display: flex; flex-direction: column; gap: 20px; }
-  .inv-field {
+  .domain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 640px) { .domain-grid { grid-template-columns: 1fr 1fr; } }
+  .domain-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 4px; padding: 28px;
-    transition: border-color 0.2s;
+    border-radius: 4px; padding: 20px 18px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
   }
-  .inv-field:focus-within { border-color: var(--amber); }
-  .inv-label {
+  .domain-card:hover { border-color: var(--amber); background: var(--amber-glow); }
+  .domain-card.selected {
+    border-color: var(--amber);
+    background: var(--amber-dim);
+  }
+  .domain-card.selected::after {
+    content: '✓';
+    position: absolute; top: 12px; right: 14px;
     font-family: 'Courier New', monospace;
-    font-size: 10px; letter-spacing: 3px;
-    color: var(--amber); text-transform: uppercase; margin-bottom: 14px;
+    font-size: 11px; color: var(--amber);
   }
-  .inv-q { font-size: 16px; line-height: 1.5; margin-bottom: 16px; }
-  .inv-hint {
+  .domain-card-key {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 3px;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .domain-card.selected .domain-card-key { color: var(--amber); }
+  .domain-card-name {
+    font-size: 16px; font-weight: 400; margin-bottom: 6px;
+  }
+  .domain-card-desc {
     font-family: 'Courier New', monospace;
     font-size: 11px; color: var(--muted); line-height: 1.6;
-    font-style: italic; margin-bottom: 14px;
   }
   textarea, input[type="text"] {
     width: 100%; background: var(--bg);
@@ -601,24 +622,10 @@
 <section id="inversion">
   <div class="section-label">03 · Method</div>
   <div class="section-title">The Inversion Engine</div>
-  <p class="section-desc">Munger learned from the mathematician Jacobi: invert, always invert. Describe your goal or problem below. The engine will flip it, surface the failure modes, and show you what Munger would ask first.</p>
+  <p class="section-desc">Munger learned from the mathematician Jacobi: invert, always invert. Select your domain below. The engine will surface the failure modes, active biases, and Munger's principle for that situation.</p>
   <div class="divider"></div>
 
-  <div class="inversion-form">
-    <div class="inv-field">
-      <div class="inv-label">Your Goal or Decision</div>
-      <div class="inv-q">What are you trying to achieve or decide right now?</div>
-      <div class="inv-hint">Be specific. "I want to grow my company" is less useful than "I want to reach $5M in revenue within 18 months."</div>
-      <textarea id="invGoal" rows="3" placeholder="e.g. I want to hire a VP of Engineering who will scale the team from 8 to 40 engineers over two years..."></textarea>
-    </div>
-
-    <div class="inv-field">
-      <div class="inv-label">Constraints &amp; Stakes</div>
-      <div class="inv-q">What makes this hard, and what is the cost of getting it wrong?</div>
-      <div class="inv-hint">High stakes sharpen inversion. Munger: "All I want to know is where I'm going to die, so I'll never go there."</div>
-      <textarea id="invStakes" rows="2" placeholder="e.g. We can only afford one bad hire at this stage. A wrong decision costs us 12+ months..."></textarea>
-    </div>
-  </div>
+  <div class="domain-grid" id="domainGrid"></div>
 
   <button class="btn" onclick="runInversion()">→ &nbsp;Invert the Problem</button>
 
@@ -1445,34 +1452,57 @@ function renderModels() {
 }
 
 // ── INVERSION ENGINE ──────────────────────────────────────────────────────
-function detectDomain(text) {
-  const lower = text.toLowerCase();
-  let best = null, bestScore = 0;
-  for (const [key, domain] of Object.entries(DOMAINS)) {
-    const score = domain.keywords.reduce((s, kw) => s + (lower.includes(kw) ? 1 : 0), 0);
-    if (score > bestScore) { bestScore = score; best = { key, ...domain }; }
-  }
-  return best || { ...DEFAULT_DOMAIN, key: 'general', label: 'General Decision' };
-}
+const DOMAIN_META = {
+  investing:     { name: "Investing",        desc: "Making an investment or capital allocation decision" },
+  management:    { name: "Hiring & Managing", desc: "Hiring, building a team, or managing people" },
+  startup:       { name: "Entrepreneurship", desc: "Building, launching, or scaling a product or company" },
+  learning:      { name: "Career & Learning", desc: "A career move, skill investment, or learning choice" },
+  relationships: { name: "Relationships",    desc: "A decision involving a person or long-term relationship" },
+  health:        { name: "Health",           desc: "A health, fitness, or wellbeing decision" },
+  general:       { name: "General Decision", desc: "Any other high-stakes decision or problem" },
+};
 
-function buildInversionQ(goalText) {
-  const text = goalText.trim();
-  if (!text) return "What would guarantee the OPPOSITE of your goal?";
-  const clean = text.replace(/^(i want to |i'm trying to |we want to |we need to |my goal is to |i need to )/i, '').trim();
-  const lower = clean.toLowerCase();
-  if (lower.startsWith('i ') || lower.startsWith('we ')) {
-    return `What would guarantee ${lower.replace(/\.$/, '')} NEVER happens?`;
-  }
-  return `What would guarantee that "${clean.replace(/\.$/, '')}" completely fails?`;
+let selectedDomainKey = null;
+
+function buildDomainGrid() {
+  const grid = document.getElementById('domainGrid');
+  const keys = [...Object.keys(DOMAIN_META)];
+  keys.forEach(key => {
+    const meta = DOMAIN_META[key];
+    const card = document.createElement('div');
+    card.className = 'domain-card';
+    card.id = 'dc-' + key;
+    card.innerHTML = `
+      <div class="domain-card-key">${String(keys.indexOf(key) + 1).padStart(2, '0')}</div>
+      <div class="domain-card-name">${meta.name}</div>
+      <div class="domain-card-desc">${meta.desc}</div>`;
+    card.onclick = () => {
+      document.querySelectorAll('.domain-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedDomainKey = key;
+    };
+    grid.appendChild(card);
+  });
 }
 
 function runInversion() {
-  const goal = document.getElementById('invGoal').value.trim();
-  if (!goal) { alert('Describe your goal or decision first.'); return; }
+  if (!selectedDomainKey) { alert('Select a domain first.'); return; }
 
-  const domain = detectDomain(goal + ' ' + document.getElementById('invStakes').value);
+  const domain = selectedDomainKey === 'general'
+    ? { ...DEFAULT_DOMAIN, label: DOMAIN_META.general.name }
+    : { ...DOMAINS[selectedDomainKey], label: DOMAIN_META[selectedDomainKey].name };
 
-  document.getElementById('inversionQ').textContent = buildInversionQ(goal);
+  const inversionLines = {
+    investing:     "What would guarantee this investment permanently destroys capital?",
+    management:    "What would guarantee this hire or decision fails the team within 12 months?",
+    startup:       "What would guarantee this company or product never reaches its goal?",
+    learning:      "What would guarantee this career move leaves you worse off in 5 years?",
+    relationships: "What would guarantee this relationship causes lasting damage to both people?",
+    health:        "What would guarantee your health is significantly worse in 10 years?",
+    general:       "What would guarantee the outcome you want never happens?",
+  };
+
+  document.getElementById('inversionQ').textContent = inversionLines[selectedDomainKey];
   document.getElementById('invDomainBadge').textContent = domain.label;
 
   const failList = document.getElementById('invFailures');
@@ -1627,6 +1657,7 @@ buildTicker();
 renderPrinciple();
 buildModelFilter();
 renderModels();
+buildDomainGrid();
 buildBiasGrid();
 renderBiasScore();
 buildWisdomFilter();
