@@ -349,14 +349,14 @@ body {
 <div id="screen-menu" class="screen active">
   <div class="menu-hero">
     <h1>⚔️ Game Theory<br>Arena</h1>
-    <p class="subtitle">Discover why cooperation sometimes beats competition — through the most famous games in social science.</p>
+    <p class="subtitle">Discover why cooperation sometimes beats competition  -  through the most famous games in social science.</p>
     <button class="btn btn-primary" onclick="showScreen('select')">▶ Enter the Arena</button>
   </div>
   <div class="menu-concepts">
     <div class="concept-card">
       <div class="icon">🎭</div>
       <h3>The Dilemma</h3>
-      <p>Cooperation creates the best mutual outcome — but defection is individually tempting. What would you choose?</p>
+      <p>Cooperation creates the best mutual outcome  -  but defection is individually tempting. What would you choose?</p>
     </div>
     <div class="concept-card">
       <div class="icon">🎯</div>
@@ -366,12 +366,12 @@ body {
     <div class="concept-card">
       <div class="icon">♾️</div>
       <h3>Iterated Games</h3>
-      <p>When you play repeatedly, reputation matters. Trust can evolve — and so can betrayal.</p>
+      <p>When you play repeatedly, reputation matters. Trust can evolve  -  and so can betrayal.</p>
     </div>
   </div>
   <div class="how-it-works">
     <h3>How it works</h3>
-    <p>Face 5 AI opponents in 8-round matches. Each round, you both secretly choose <strong style="color:var(--green)">Cooperate</strong> or <strong style="color:var(--red)">Defect</strong>. The payoffs depend on both choices. Each opponent uses a different strategy from game theory history — some simple, some devious. Play all three games: Prisoner's Dilemma, Stag Hunt, and Chicken.</p>
+    <p>Face 5 AI opponents in 8-round matches. Each round, you both secretly choose <strong style="color:var(--green)">Cooperate</strong> or <strong style="color:var(--red)">Defect</strong>. The payoffs depend on both choices. Each opponent uses a different strategy from game theory history  -  some simple, some devious. Play all three games: Prisoner's Dilemma, Stag Hunt, and Chicken.</p>
   </div>
 </div>
 
@@ -429,7 +429,7 @@ body {
     <div class="payoff-grid" id="payoff-grid"></div>
   </div>
   <div class="action-section">
-    <h4>Round <span id="round-num">1</span> of <span id="total-rounds">8</span> — Your move?</h4>
+    <h4>Round <span id="round-num">1</span> of <span id="total-rounds">8</span>  -  Your move?</h4>
     <div class="action-btns">
       <button class="btn-cooperate" id="btn-coop" onclick="makeMove('C')">🤝 Cooperate</button>
       <button class="btn-defect" id="btn-def" onclick="makeMove('D')">⚔️ Defect</button>
@@ -517,7 +517,7 @@ const GAMES = {
     name: "Prisoner's Dilemma", emoji: "🔒",
     payoffs: { CC:[3,3], CD:[0,5], DC:[5,0], DD:[1,1] },
     desc: "Two suspects interrogated separately. Stay silent (cooperate) or betray (defect). If you betray while they stay silent, you go free. If both betray, both suffer. The tension: individual logic leads to mutual harm.",
-    nashDesc: "Nash Equilibrium: (Defect, Defect) — even though (Cooperate, Cooperate) is better for everyone!",
+    nashDesc: "Nash Equilibrium: (Defect, Defect)  -  even though (Cooperate, Cooperate) is better for everyone!",
     cLabel: "Stay Silent", dLabel: "Betray Partner",
     cellLabels: { CC:"Mutual Trust", CD:"Sucker's Payoff", DC:"Temptation", DD:"Nash Eq ⚡" }
   },
@@ -546,7 +546,7 @@ const OPPONENTS = [
     difficulty:'easy',
     strategy: () => 'C',
     revealedName:'Always Cooperate',
-    lesson:'Always cooperating is noble — but leaves you open to exploitation. In a world with defectors, pure cooperation gets punished consistently.',
+    lesson:'Always cooperating is noble  -  but leaves you open to exploitation. In a world with defectors, pure cooperation gets punished consistently.',
     insight:'In Axelrod\'s famous 1980 tournaments, "Always Cooperate" ranked poorly overall. It\'s the ideal partner, but the worst solo strategy.'
   },
   {
@@ -555,7 +555,7 @@ const OPPONENTS = [
     difficulty:'easy',
     strategy: () => 'D',
     revealedName:'Always Defect',
-    lesson:'Always defecting exploits naive cooperators — but against sophisticated opponents, it creates a spiral of mutual punishment and earns the worst long-run scores.',
+    lesson:'Always defecting exploits naive cooperators  -  but against sophisticated opponents, it creates a spiral of mutual punishment and earns the worst long-run scores.',
     insight:'In Axelrod\'s tournaments, "Always Defect" came last overall despite never being "suckered." Persistent aggression is self-defeating.'
   },
   {
@@ -564,16 +564,16 @@ const OPPONENTS = [
     difficulty:'medium',
     strategy: (h) => h.length === 0 ? 'C' : h[h.length-1].playerMove,
     revealedName:'Tit for Tat',
-    lesson:'Tit for Tat — cooperate first, then copy your opponent\'s last move — won Axelrod\'s tournaments. It\'s nice, retaliatory, forgiving, and crystal-clear.',
+    lesson:'Tit for Tat  -  cooperate first, then copy your opponent\'s last move  -  won Axelrod\'s tournaments. It\'s nice, retaliatory, forgiving, and crystal-clear.',
     insight:'"Tit for Tat" was submitted by Anatol Rapoport and beat hundreds of complex strategies. Its four keys: never defect first, retaliate immediately, forgive after one retaliatory defect, be simple enough to read.'
   },
   {
     id:'grudger', name:'The Grudge', avatar:'😤',
-    desc:'Patient and cooperative — until you cross them even once. Then they never forgive.',
+    desc:'Patient and cooperative  -  until you cross them even once. Then they never forgive.',
     difficulty:'medium',
     strategy: (h) => h.some(r => r.playerMove==='D') ? 'D' : 'C',
     revealedName:'Grim Trigger',
-    lesson:'Grim Trigger cooperates until the first betrayal — then defects forever. A powerful deterrent, but zero-forgiveness means one mistake destroys everything.',
+    lesson:'Grim Trigger cooperates until the first betrayal  -  then defects forever. A powerful deterrent, but zero-forgiveness means one mistake destroys everything.',
     insight:'Grim Trigger is theoretically optimal but fragile. In noisy real-world environments where moves can be misread, permanent punishment for one error is catastrophically wasteful.'
   },
   {
@@ -588,7 +588,7 @@ const OPPONENTS = [
     },
     revealedName:'The Detective (Probe + Exploit)',
     lesson:'The Detective tests whether you\'ll push back. If you cooperate through the probing phase without retaliating, it marks you as exploitable and defects forever. Stand your ground.',
-    insight:'This reveals a key insight: in repeated games, being predictably compliant is dangerous. Strength — the credible threat of retaliation — is what keeps exploiters at bay.'
+    insight:'This reveals a key insight: in repeated games, being predictably compliant is dangerous. Strength  -  the credible threat of retaliation  -  is what keeps exploiters at bay.'
   }
 ];
 
@@ -760,10 +760,10 @@ function makeMove(pm) {
 
 function showRoundResult(pm, om, payoffs, key) {
   const outcomes = {
-    CC:{icon:'🤝',title:'Mutual Cooperation!',desc:'Both cooperated. The socially optimal result — trust paid off.',cls:'gain'},
+    CC:{icon:'🤝',title:'Mutual Cooperation!',desc:'Both cooperated. The socially optimal result  -  trust paid off.',cls:'gain'},
     CD:{icon:'😔',title:'You Were Betrayed',desc:'You cooperated but they defected. The "Sucker\'s Payoff." Oof.',cls:'loss'},
     DC:{icon:'😏',title:'You Defected!',desc:'You defected while they cooperated. You got the Temptation payoff.',cls:'gain'},
-    DD:{icon:'💥',title:'Mutual Punishment',desc:'Both defected. The Nash Equilibrium — individually rational, collectively terrible.',cls:'neutral'}
+    DD:{icon:'💥',title:'Mutual Punishment',desc:'Both defected. The Nash Equilibrium  -  individually rational, collectively terrible.',cls:'neutral'}
   };
   const o = outcomes[key];
   document.getElementById('popup-icon').textContent = o.icon;
@@ -849,7 +849,7 @@ function renderTournament() {
     <div class="t-stat"><div class="tslabel">Your Points</div><div class="tsval">${state.totalPlayer}</div></div>`;
 
   document.getElementById('match-list').innerHTML = t.length === 0
-    ? '<p style="text-align:center;color:var(--text-dim);padding:20px">No matches yet — go play!</p>'
+    ? '<p style="text-align:center;color:var(--text-dim);padding:20px">No matches yet  -  go play!</p>'
     : t.map(m=>`
       <div class="match-row">
         <div class="opp-inf">
@@ -873,7 +873,7 @@ function renderTournament() {
     <h3>🧠 About Game Theory</h3>
     <p>Play some matches and come back for insights on your strategy!</p>` : `
     <h3>🧠 What You're Discovering</h3>
-    <p>Robert Axelrod's 1980 computer tournament invited game theorists worldwide to submit strategies for an iterated Prisoner's Dilemma. The winner? <strong>Tit for Tat</strong> — the simplest strategy entered, submitted by Anatol Rapoport in just 4 lines of code.</p>
+    <p>Robert Axelrod's 1980 computer tournament invited game theorists worldwide to submit strategies for an iterated Prisoner's Dilemma. The winner? <strong>Tit for Tat</strong>  -  the simplest strategy entered, submitted by Anatol Rapoport in just 4 lines of code.</p>
     <p>It won by being: <em>nice</em> (never defects first), <em>retaliatory</em> (punishes immediately), <em>forgiving</em> (returns to cooperation after punishment), and <em>clear</em> (predictable enough that opponents can build trust).</p>
     <p>The deep lesson: <strong>in repeated interactions, cooperation is evolutionarily stable</strong>. The future casts a long enough shadow that short-term betrayal costs more than it gains.</p>`;
   document.getElementById('theory-box').innerHTML = theoryContent;

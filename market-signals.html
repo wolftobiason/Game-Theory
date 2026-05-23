@@ -200,7 +200,7 @@ canvas.ispark { display: block; width: 100%; height: 48px; margin: 10px 0; }
 .caveat-list { list-style: none; margin: 0; padding: 0; }
 .caveat-list li { font-size: 12px; color: var(--soft); line-height: 1.75; padding: 5px 0; border-bottom: 1px solid rgba(30,30,56,.5); font-family: 'Courier New', monospace; }
 .caveat-list li:last-child { border-bottom: none; }
-.caveat-list li::before { content: '—'; color: var(--muted); margin-right: 8px; }
+.caveat-list li::before { content: ' - '; color: var(--muted); margin-right: 8px; }
 
 /* ── FOOTER ── */
 footer { border-top: 1px solid var(--border); padding: 28px 24px; text-align: center; font-family: 'Courier New', monospace; font-size: 11px; color: var(--muted); line-height: 1.9; }
@@ -218,7 +218,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 24px; text-align: ce
     <div class="key-wrap">
       <input id="av-key-input" class="key-input" type="text"
              placeholder="Alpha Vantage API key…"
-             title="Paste your free key — alphavantage.co">
+             title="Paste your free key  -  alphavantage.co">
       <a href="https://www.alphavantage.co/support/#api-key" class="key-link" target="_blank">get free key ↗</a>
     </div>
     <button class="refresh-btn" id="refresh-btn" onclick="kickoff(true)">↻ Refresh</button>
@@ -302,7 +302,7 @@ r<sub>i,t+1</sub> = α₅ + β₅ · Σr<sub>i,t-k</sub> + ε &nbsp;&nbsp; k=0..
       <h3>Layer 2 · Cross-Asset Lead-Lag &nbsp;(base weight 30%)</h3>
       <p>A 5×5 pairwise regression matrix is estimated. Each off-diagonal cell (j → i) fits the return of instrument <em>i</em> tomorrow against the return of instrument <em>j</em> today, over the same 60-day rolling window:</p>
       <code class="eq">r<sub>i,t+1</sub> = α<sub>ji</sub> + β<sub>ji</sub> · r<sub>j,t</sub> + ε &nbsp;&nbsp; ∀ j ≠ i</code>
-      <p>This captures systematic lead-lag relationships across asset classes — e.g. whether Treasury moves today predict equity moves tomorrow. The cross-asset prediction for target <em>i</em> is a t-stat-weighted average across all predictor instruments <em>j</em>:</p>
+      <p>This captures systematic lead-lag relationships across asset classes  -  e.g. whether Treasury moves today predict equity moves tomorrow. The cross-asset prediction for target <em>i</em> is a t-stat-weighted average across all predictor instruments <em>j</em>:</p>
       <code class="eq">ŷ<sub>cross,i</sub> = Σ<sub>j≠i</sub> w<sub>ji</sub> · (α<sub>ji</sub> + β<sub>ji</sub> · r<sub>j,today</sub>) / Σ w<sub>ji</sub>
 where w<sub>ji</sub> = max(0, |t<sub>ji</sub>| − 1.0)</code>
       <p>Predictor–target pairs with |t| &lt; 1.0 receive zero weight and do not influence the cross prediction. The matrix display bolds cells where |t| ≥ 2.0; the "strongest predictors" chip list surfaces pairs with |t| ≥ 1.5.</p>
@@ -348,7 +348,7 @@ w<sub>I</sub> = 0.20 if intraday data available, else 0</code>
         <code class="eq">signal =  LONG    if ŷ<sub>final</sub> &gt; +0.20%
           SHORT   if ŷ<sub>final</sub> &lt; −0.20%
           NEUTRAL otherwise</code>
-        <p>The ±0.20% threshold is a fixed heuristic — roughly one-quarter of the typical daily absolute move for these instruments — intended to filter noise rather than to optimize expected return.</p>
+        <p>The ±0.20% threshold is a fixed heuristic  -  roughly one-quarter of the typical daily absolute move for these instruments  -  intended to filter noise rather than to optimize expected return.</p>
         <h4>Caching &amp; Refresh</h4>
         <p>Fetched data is cached in browser localStorage with an 8-hour TTL. On page load between 4:00–9:30 AM ET on any new trading day, the cache is automatically invalidated and fresh data is pulled.</p>
       </div>
@@ -364,13 +364,13 @@ w<sub>I</sub> = 0.20 if intraday data available, else 0</code>
         </ul>
         <h4>Limitations</h4>
         <ul class="caveat-list">
-          <li>All regressions are in-sample over the trailing window — no walk-forward or out-of-sample validation</li>
+          <li>All regressions are in-sample over the trailing window  -  no walk-forward or out-of-sample validation</li>
           <li>R² on short-horizon return regressions is typically &lt;5%; statistically significant β does not imply large expected return</li>
           <li>No transaction costs, slippage, or bid-ask spread modeled</li>
           <li>Cross-asset β estimates are unstable; 60-day window is short relative to structural regime changes</li>
           <li>Intraday slope regressed on next-day return conflates overnight gap with intraday trend</li>
           <li>Free-tier API rate limits (25 req/day Alpha Vantage) restrict same-day re-estimation frequency</li>
-          <li>Signals are purely statistical — no macro, earnings, or event calendar conditioning</li>
+          <li>Signals are purely statistical  -  no macro, earnings, or event calendar conditioning</li>
         </ul>
       </div>
     </div>
@@ -869,7 +869,7 @@ function drawIntraSpark(canvas, bars) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  RENDER — SIGNAL CARDS
+//  RENDER  -  SIGNAL CARDS
 // ══════════════════════════════════════════════════════════════
 const pct  = (v,d=2) => (v>=0?'+':'')+(v*100).toFixed(d)+'%';
 const pctC = v => v>=0?'pos':'neg';
@@ -921,7 +921,7 @@ function renderCards(signals) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  RENDER — AUTOCORRELATION TABLE
+//  RENDER  -  AUTOCORRELATION TABLE
 // ══════════════════════════════════════════════════════════════
 function renderTable(signals) {
   const tbody = document.getElementById('rtbody');
@@ -944,7 +944,7 @@ function renderTable(signals) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  RENDER — CROSS-ETF MATRIX
+//  RENDER  -  CROSS-ETF MATRIX
 // ══════════════════════════════════════════════════════════════
 function renderCrossMatrix(signals, matrix) {
   // Header row
@@ -998,7 +998,7 @@ function renderCrossMatrix(signals, matrix) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  RENDER — INTRADAY CARDS
+//  RENDER  -  INTRADAY CARDS
 // ══════════════════════════════════════════════════════════════
 function renderIntradayCards(signals, intradayMap) {
   if (!intradayMap) return;
