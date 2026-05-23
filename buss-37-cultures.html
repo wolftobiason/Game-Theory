@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>37 Cultures — Buss (1989)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050509;
+    --surface: #0d0d18;
+    --border: #1e1e35;
+    --muted: #3a3a5c;
+    --text: #e2e2f0;
+    --text-dim: #8888aa;
+    --male: #3b82f6;
+    --female: #f59e0b;
+    --accent: #a78bfa;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 56px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(167,139,250,.06), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--female);
+  }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 580px;
+    margin: 0 auto 28px;
+    line-height: 1.65;
+  }
+  .hero-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── Tabs ── */
+  .tabs-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 0;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 22px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── Chart panel ── */
+  .chart-panel { display: none; }
+  .chart-panel.active { display: block; }
+
+  .insight-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .insight-badge {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+  .insight-text {
+    font-size: .9rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .insight-text strong { color: var(--text); }
+
+  .legend {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    align-items: center;
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px;
+  }
+  .legend-line {
+    display: flex; align-items: center; gap: 0;
+  }
+
+  canvas.dumbbell { display: block; width: 100%; cursor: default; }
+
+  /* Region legend */
+  .region-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .region-item { display: flex; align-items: center; gap: 6px; color: var(--text-dim); }
+  .region-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Culture Profile ── */
+  .profile-section {
+    max-width: 1100px;
+    margin: 64px auto 0;
+    padding: 0 24px;
+    border-top: 1px solid var(--border);
+    padding-top: 56px;
+  }
+  .section-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .profile-header h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  select#cultureSelect {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238888aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  select#cultureSelect:focus { outline: none; border-color: var(--accent); }
+
+  canvas#profileCanvas { display: block; width: 100%; }
+
+  /* ── Theory ── */
+  .theory-section {
+    max-width: 800px;
+    margin: 64px auto 0;
+    padding: 0 24px;
+    border-top: 1px solid var(--border);
+    padding-top: 56px;
+  }
+  .theory-section h2 {
+    font-size: 1.6rem;
+    font-weight: 400;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .theory-section .byline {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 36px;
+  }
+  .hypotheses { display: grid; gap: 24px; }
+  .hyp {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+  }
+  .hyp-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .hyp-num {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .hyp-title {
+    font-size: 1rem;
+    font-weight: 400;
+  }
+  .hyp-body {
+    font-size: .875rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+  .hyp-result {
+    margin-top: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+  }
+
+  /* ── Footer ── */
+  footer {
+    max-width: 1100px;
+    margin: 64px auto 0;
+    padding: 24px 24px 0;
+    border-top: 1px solid var(--border);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+    letter-spacing: .5px;
+  }
+
+  /* Tooltip */
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: #12122a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 220px;
+    display: none;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,.6);
+  }
+  #tooltip .t-name { font-size: 13px; margin-bottom: 4px; }
+  #tooltip .t-m { color: var(--male); }
+  #tooltip .t-f { color: var(--female); }
+  #tooltip .t-diff { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-label">Evolutionary Psychology · Empirical Study</div>
+  <h1>37 Cultures,<br>One <em>Pattern</em></h1>
+  <p class="hero-sub">
+    Sex differences in human mate preferences, tested across 10,047 participants in 37 cultures on six continents — revealing what is universal and what varies.
+  </p>
+  <div class="hero-meta">Buss (1989) · Behavioral and Brain Sciences, 12, 1–49</div>
+</section>
+
+<!-- Main tabs -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" data-char="finance">Financial Prospect</button>
+    <button class="tab" data-char="ambition">Ambition</button>
+    <button class="tab" data-char="looks">Good Looks</button>
+    <button class="tab" data-char="chastity">Chastity</button>
+  </div>
+
+  <!-- Panels -->
+  <div id="panel-finance" class="chart-panel active"></div>
+  <div id="panel-ambition" class="chart-panel"></div>
+  <div id="panel-looks" class="chart-panel"></div>
+  <div id="panel-chastity" class="chart-panel"></div>
+</div>
+
+<!-- Culture Profile -->
+<section class="profile-section">
+  <div class="section-label">Culture Profile</div>
+  <div class="profile-header">
+    <h2>All four characteristics for one culture</h2>
+    <select id="cultureSelect"></select>
+  </div>
+  <canvas id="profileCanvas"></canvas>
+</section>
+
+<!-- Theory -->
+<section class="theory-section">
+  <h2>The Five Hypotheses</h2>
+  <div class="byline">Buss (1989) derived predictions from evolutionary theory and sexual selection. Each hypothesis was tested against the full 37-culture dataset.</div>
+  <div class="hypotheses">
+    <div class="hyp">
+      <div class="hyp-head">
+        <span class="hyp-num">H1</span>
+        <span class="hyp-title">Good Financial Prospect</span>
+      </div>
+      <div class="hyp-body">Women should value earning capacity and financial resources more than men. Resources enable offspring investment; ancestral women mating with resource-rich men gained survival advantages for their children.</div>
+      <div class="hyp-result">Supported in 36 / 37 samples · Sole exception: Spain (virtually tied)</div>
+    </div>
+    <div class="hyp">
+      <div class="hyp-head">
+        <span class="hyp-num">H2</span>
+        <span class="hyp-title">Ambition &amp; Industriousness</span>
+      </div>
+      <div class="hyp-body">Women should value ambition more than men, as a cue to a mate's likely future resource acquisition. Ambition signals willingness to invest across time, not just present wealth.</div>
+      <div class="hyp-result">Supported in 29 / 37 samples · Reversals: Iran, S. Africa (Zulu)</div>
+    </div>
+    <div class="hyp">
+      <div class="hyp-head">
+        <span class="hyp-num">H3</span>
+        <span class="hyp-title">Age Preference</span>
+      </div>
+      <div class="hyp-body">Men should prefer younger mates (peak reproductive value); women should prefer older mates (greater resource accumulation). Everywhere men preferred women younger than themselves; women preferred men 3–4 years older on average.</div>
+      <div class="hyp-result">Supported in all 37 samples — the most universal finding</div>
+    </div>
+    <div class="hyp">
+      <div class="hyp-head">
+        <span class="hyp-num">H4</span>
+        <span class="hyp-title">Good Looks</span>
+      </div>
+      <div class="hyp-body">Men should value physical attractiveness more than women. Appearance cues fertility and health; because ancestral men could not directly assess ovulatory status, they relied on observable cues correlated with reproductive value.</div>
+      <div class="hyp-result">Supported in 34 / 37 samples · Near-zero gap: Zulu, Poland, Sweden</div>
+    </div>
+    <div class="hyp">
+      <div class="hyp-head">
+        <span class="hyp-num">H5</span>
+        <span class="hyp-title">Chastity</span>
+      </div>
+      <div class="hyp-body">Men should value chastity more than women because paternity certainty was a recurring adaptive problem in human evolutionary history. This is the most culturally variable prediction — cultural norms around sexuality substantially modulate the baseline difference.</div>
+      <div class="hyp-result">Supported in 23 / 37 samples · Most culturally variable characteristic</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Buss, D. M. (1989). Sex differences in human mate preferences: Evolutionary hypotheses tested in 37 cultures. <em>Behavioral and Brain Sciences, 12</em>, 1–49.</p>
+  <p style="margin-top:6px">Ratings: 0 = unimportant, 1 = slightly important, 2 = important, 3 = indispensable. N = 10,047 participants.</p>
+  <p style="margin-top:6px; color:#5a5a7a">Visualization by Wolf Tobiason · Data extracted from original paper</p>
+</footer>
+
+<div id="tooltip">
+  <div class="t-name" id="tt-name"></div>
+  <div class="t-m" id="tt-m"></div>
+  <div class="t-f" id="tt-f"></div>
+  <div class="t-diff" id="tt-diff"></div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const REGION_COLORS = {
+  'Africa':    '#10b981',
+  'Asia':      '#f97316',
+  'E. Europe': '#a855f7',
+  'W. Europe': '#94a3b8',
+  'N. America':'#ef4444',
+  'Oceania':   '#06b6d4',
+  'S. America':'#ec4899',
+};
+
+const CHARS = [
+  { key:'finance',  label:'Good Financial Prospect',             short:'Financial Prospect',
+    xmin:0, xmax:3, prediction:'F > M', supported:'36 / 37 samples',
+    note:'<strong>Most universally confirmed sex difference.</strong> Women valued earning capacity more in 36 of 37 cultures. Sole exception: Spain, where ratings were virtually identical (M=1.35, F=1.39).' },
+  { key:'ambition', label:'Ambition &amp; Industriousness',      short:'Ambition',
+    xmin:0, xmax:3, prediction:'F > M', supported:'29 / 37 samples',
+    note:'<strong>Broadly confirmed but not universal.</strong> Women consistently placed greater importance on ambition as a proxy for future resource acquisition. Notable reversals: Iran and S. Africa (Zulu).' },
+  { key:'looks',    label:'Good Looks',                           short:'Good Looks',
+    xmin:0, xmax:3, prediction:'M > F', supported:'34 / 37 samples',
+    note:'<strong>Men valued physical attractiveness significantly more</strong> across virtually all cultures — the second most universal finding. Statistically significant in 34 of 37 samples.' },
+  { key:'chastity', label:'Chastity: No Prior Sexual Experience', short:'Chastity',
+    xmin:0, xmax:3, prediction:'M > F', supported:'23 / 37 samples',
+    note:'<strong>Most culturally variable characteristic.</strong> Ranges from near-zero importance (Japan, Scandinavia, France) to near-maximum (China, Iran, Taiwan). Men > Women in 23/37; reversed in 14 — reflecting local norms around sexuality.' },
+];
+
+const SAMPLES = [
+  {name:'Nigeria',           region:'Africa'},
+  {name:'S. Africa (White)', region:'Africa'},
+  {name:'S. Africa (Zulu)',  region:'Africa'},
+  {name:'Zambia',            region:'Africa'},
+  {name:'China',             region:'Asia'},
+  {name:'India',             region:'Asia'},
+  {name:'Indonesia',         region:'Asia'},
+  {name:'Iran',              region:'Asia'},
+  {name:'Israel (Jewish)',   region:'Asia'},
+  {name:'Israel (Arab)',     region:'Asia'},
+  {name:'Japan',             region:'Asia'},
+  {name:'Taiwan',            region:'Asia'},
+  {name:'Bulgaria',          region:'E. Europe'},
+  {name:'Estonia',           region:'E. Europe'},
+  {name:'Poland',            region:'E. Europe'},
+  {name:'Yugoslavia',        region:'E. Europe'},
+  {name:'Belgium',           region:'W. Europe'},
+  {name:'France',            region:'W. Europe'},
+  {name:'Finland',           region:'W. Europe'},
+  {name:'Germany (W.)',      region:'W. Europe'},
+  {name:'Great Britain',     region:'W. Europe'},
+  {name:'Greece',            region:'W. Europe'},
+  {name:'Ireland',           region:'W. Europe'},
+  {name:'Italy',             region:'W. Europe'},
+  {name:'Netherlands',       region:'W. Europe'},
+  {name:'Norway',            region:'W. Europe'},
+  {name:'Spain',             region:'W. Europe'},
+  {name:'Sweden',            region:'W. Europe'},
+  {name:'Canada (English)',  region:'N. America'},
+  {name:'Canada (French)',   region:'N. America'},
+  {name:'USA (Mainland)',    region:'N. America'},
+  {name:'USA (Hawaii)',      region:'N. America'},
+  {name:'Australia',         region:'Oceania'},
+  {name:'New Zealand',       region:'Oceania'},
+  {name:'Brazil',            region:'S. America'},
+  {name:'Colombia',          region:'S. America'},
+  {name:'Venezuela',         region:'S. America'},
+];
+
+const DATA = {
+  'Nigeria':           { finance:{m:1.37,f:2.30}, ambition:{m:2.25,f:2.61}, looks:{m:2.24,f:1.72}, chastity:{m:2.31,f:0.97} },
+  'S. Africa (White)': { finance:{m:0.94,f:1.73}, ambition:{m:1.73,f:2.16}, looks:{m:1.58,f:1.22}, chastity:{m:1.06,f:0.84} },
+  'S. Africa (Zulu)':  { finance:{m:0.70,f:1.14}, ambition:{m:2.41,f:2.10}, looks:{m:1.17,f:1.06}, chastity:{m:1.31,f:0.62} },
+  'Zambia':            { finance:{m:1.46,f:2.31}, ambition:{m:1.97,f:2.14}, looks:{m:2.23,f:1.65}, chastity:{m:1.56,f:1.03} },
+  'China':             { finance:{m:1.10,f:1.56}, ambition:{m:2.22,f:2.63}, looks:{m:2.06,f:1.59}, chastity:{m:2.54,f:2.45} },
+  'India':             { finance:{m:1.60,f:2.00}, ambition:{m:1.70,f:2.44}, looks:{m:2.03,f:1.97}, chastity:{m:1.54,f:1.98} },
+  'Indonesia':         { finance:{m:1.42,f:2.55}, ambition:{m:1.97,f:2.29}, looks:{m:1.81,f:1.36}, chastity:{m:2.06,f:1.98} },
+  'Iran':              { finance:{m:1.25,f:2.04}, ambition:{m:2.68,f:2.55}, looks:{m:2.07,f:1.97}, chastity:{m:2.67,f:2.23} },
+  'Israel (Jewish)':   { finance:{m:0.91,f:1.61}, ambition:{m:1.78,f:2.36}, looks:{m:2.39,f:1.47}, chastity:{m:0.41,f:0.29} },
+  'Israel (Arab)':     { finance:{m:1.28,f:1.65}, ambition:{m:2.28,f:2.58}, looks:{m:1.56,f:0.81}, chastity:{m:2.24,f:1.18} },
+  'Japan':             { finance:{m:0.92,f:2.20}, ambition:{m:1.92,f:2.17}, looks:{m:1.50,f:1.09}, chastity:{m:0.25,f:0.28} },
+  'Taiwan':            { finance:{m:1.55,f:2.21}, ambition:{m:2.14,f:2.81}, looks:{m:1.76,f:1.28}, chastity:{m:2.32,f:0.85} },
+  'Bulgaria':          { finance:{m:1.16,f:2.04}, ambition:{m:1.67,f:2.04}, looks:{m:2.39,f:1.95}, chastity:{m:0.69,f:0.44} },
+  'Estonia':           { finance:{m:1.31,f:1.51}, ambition:{m:2.31,f:2.46}, looks:{m:2.27,f:1.63}, chastity:{m:0.48,f:0.28} },
+  'Poland':            { finance:{m:1.09,f:1.74}, ambition:{m:1.93,f:2.29}, looks:{m:1.93,f:1.77}, chastity:{m:1.23,f:0.93} },
+  'Yugoslavia':        { finance:{m:1.27,f:1.66}, ambition:{m:1.82,f:2.24}, looks:{m:2.20,f:1.74}, chastity:{m:0.47,f:0.36} },
+  'Belgium':           { finance:{m:0.95,f:1.36}, ambition:{m:1.67,f:1.97}, looks:{m:1.78,f:1.28}, chastity:{m:0.67,f:0.02} },
+  'France':            { finance:{m:1.22,f:1.68}, ambition:{m:1.75,f:2.00}, looks:{m:2.06,f:1.76}, chastity:{m:0.27,f:0.14} },
+  'Finland':           { finance:{m:0.62,f:1.19}, ambition:{m:1.44,f:1.66}, looks:{m:1.56,f:0.90}, chastity:{m:0.34,f:0.40} },
+  'Germany (W.)':      { finance:{m:1.14,f:1.81}, ambition:{m:1.40,f:1.66}, looks:{m:1.02,f:0.90}, chastity:{m:0.34,f:0.17} },
+  'Great Britain':     { finance:{m:0.67,f:1.16}, ambition:{m:1.15,f:1.78}, looks:{m:1.94,f:1.64}, chastity:{m:0.49,f:0.93} },
+  'Greece':            { finance:{m:1.16,f:1.92}, ambition:{m:1.96,f:2.59}, looks:{m:2.22,f:1.94}, chastity:{m:1.49,f:1.47} },
+  'Ireland':           { finance:{m:0.82,f:1.67}, ambition:{m:1.44,f:1.76}, looks:{m:1.87,f:0.69}, chastity:{m:0.83,f:0.88} },
+  'Italy':             { finance:{m:0.87,f:1.33}, ambition:{m:1.61,f:2.04}, looks:{m:2.00,f:1.64}, chastity:{m:0.25,f:0.27} },
+  'Netherlands':       { finance:{m:0.69,f:0.94}, ambition:{m:1.28,f:1.41}, looks:{m:1.76,f:1.21}, chastity:{m:0.29,f:0.09} },
+  'Norway':            { finance:{m:1.10,f:1.42}, ambition:{m:1.60,f:1.70}, looks:{m:1.57,f:1.32}, chastity:{m:0.66,f:0.36} },
+  'Spain':             { finance:{m:1.35,f:1.39}, ambition:{m:1.73,f:1.90}, looks:{m:1.91,f:1.24}, chastity:{m:0.66,f:0.96} },
+  'Sweden':            { finance:{m:1.18,f:1.75}, ambition:{m:1.97,f:2.04}, looks:{m:1.65,f:1.46}, chastity:{m:0.25,f:0.28} },
+  'Canada (English)':  { finance:{m:1.02,f:1.91}, ambition:{m:1.82,f:2.32}, looks:{m:1.96,f:1.50}, chastity:{m:0.55,f:0.78} },
+  'Canada (French)':   { finance:{m:1.47,f:1.94}, ambition:{m:1.79,f:2.08}, looks:{m:1.68,f:1.41}, chastity:{m:0.33,f:0.43} },
+  'USA (Mainland)':    { finance:{m:1.03,f:1.96}, ambition:{m:1.84,f:2.45}, looks:{m:2.11,f:1.67}, chastity:{m:0.62,f:0.52} },
+  'USA (Hawaii)':      { finance:{m:1.50,f:2.10}, ambition:{m:1.95,f:2.24}, looks:{m:2.06,f:1.49}, chastity:{m:0.91,f:0.94} },
+  'Australia':         { finance:{m:0.69,f:1.54}, ambition:{m:1.38,f:1.82}, looks:{m:1.65,f:1.24}, chastity:{m:0.73,f:0.45} },
+  'New Zealand':       { finance:{m:1.35,f:1.63}, ambition:{m:1.37,f:1.96}, looks:{m:1.29,f:0.99}, chastity:{m:0.88,f:0.72} },
+  'Brazil':            { finance:{m:1.24,f:1.91}, ambition:{m:1.70,f:2.31}, looks:{m:1.89,f:1.68}, chastity:{m:0.61,f:0.30} },
+  'Colombia':          { finance:{m:1.72,f:2.21}, ambition:{m:2.36,f:2.50}, looks:{m:1.56,f:1.22}, chastity:{m:1.27,f:0.30} },
+  'Venezuela':         { finance:{m:1.66,f:2.25}, ambition:{m:2.18,f:2.43}, looks:{m:1.76,f:1.27}, chastity:{m:0.57,f:0.39} },
+};
+
+// ── Drawing constants ──────────────────────────────────────────────────────────
+const MALE_COLOR   = '#3b82f6';
+const FEMALE_COLOR = '#f59e0b';
+const BG           = '#050509';
+const SURFACE      = '#0d0d18';
+const BORDER       = '#1e1e35';
+const TEXT         = '#e2e2f0';
+const TEXT_DIM     = '#8888aa';
+const ACCENT       = '#a78bfa';
+
+// ── Build tab panels ───────────────────────────────────────────────────────────
+CHARS.forEach(ch => {
+  const panel = document.getElementById(`panel-${ch.key}`);
+  panel.innerHTML = `
+    <div class="insight-box">
+      <div class="insight-badge">Finding</div>
+      <div class="insight-text">${ch.note} Predicted direction: <strong>${ch.prediction}</strong>. Confirmed in <strong>${ch.supported}</strong>.</div>
+    </div>
+    <div class="legend">
+      <div class="legend-line"><span class="legend-dot" style="background:${MALE_COLOR}"></span>Men</div>
+      <div class="legend-line"><span class="legend-dot" style="background:${FEMALE_COLOR}"></span>Women</div>
+    </div>
+    <canvas class="dumbbell" id="canvas-${ch.key}"></canvas>
+    <div class="region-legend" id="regions-${ch.key}"></div>
+  `;
+});
+
+// Region legend
+Object.entries(REGION_COLORS).forEach(([region, color]) => {
+  CHARS.forEach(ch => {
+    const el = document.getElementById(`regions-${ch.key}`);
+    if (el) {
+      const div = document.createElement('div');
+      div.className = 'region-item';
+      div.innerHTML = `<span class="region-dot" style="background:${color}"></span>${region}`;
+      el.appendChild(div);
+    }
+  });
+});
+
+// ── Dumbbell chart renderer ────────────────────────────────────────────────────
+function regionOf(name) {
+  const s = SAMPLES.find(s => s.name === name);
+  return s ? s.region : 'W. Europe';
+}
+
+function drawDumbbell(canvasEl, char, hoveredRow) {
+  const dpr    = window.devicePixelRatio || 1;
+  const ROW_H  = 26;
+  const N      = SAMPLES.length;
+  const PAD_L  = 160; // label area
+  const PAD_R  = 20;
+  const PAD_T  = 36;  // axis area
+  const PAD_B  = 10;
+  const W      = canvasEl.offsetWidth;
+  const H      = PAD_T + N * ROW_H + PAD_B;
+
+  canvasEl.width  = W * dpr;
+  canvasEl.height = H * dpr;
+  canvasEl.style.height = H + 'px';
+
+  const ctx = canvasEl.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  // sort: largest diff at top (direction depends on prediction)
+  const isFemaleFav = char.prediction === 'F > M';
+  const sorted = [...SAMPLES].sort((a, b) => {
+    const da = DATA[a.name][char.key];
+    const db = DATA[b.name][char.key];
+    const diffA = isFemaleFav ? da.f - da.m : da.m - da.f;
+    const diffB = isFemaleFav ? db.f - db.m : db.m - db.f;
+    return diffB - diffA;
+  });
+
+  const plotW = W - PAD_L - PAD_R;
+  const xScale = v => PAD_L + (v - char.xmin) / (char.xmax - char.xmin) * plotW;
+
+  // gridlines + axis
+  const ticks = [0, 0.5, 1, 1.5, 2, 2.5, 3];
+  ctx.font = `10px 'Courier New', monospace`;
+  ctx.fillStyle = TEXT_DIM;
+  ctx.textAlign = 'center';
+  ticks.forEach(t => {
+    if (t < char.xmin || t > char.xmax) return;
+    const x = xScale(t);
+    ctx.strokeStyle = BORDER;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, PAD_T - 8);
+    ctx.lineTo(x, PAD_T + N * ROW_H);
+    ctx.stroke();
+    ctx.fillText(t.toFixed(1), x, PAD_T - 12);
+  });
+
+  // axis label
+  ctx.font = `10px 'Courier New', monospace`;
+  ctx.fillStyle = TEXT_DIM;
+  ctx.textAlign = 'center';
+  ctx.fillText('Importance (0–3)', PAD_L + plotW / 2, 12);
+
+  // rows
+  sorted.forEach((sample, i) => {
+    const d   = DATA[sample.name][char.key];
+    const y   = PAD_T + i * ROW_H + ROW_H / 2;
+    const xm  = xScale(d.m);
+    const xf  = xScale(d.f);
+    const rc  = REGION_COLORS[sample.region] || '#94a3b8';
+    const isHovered = hoveredRow === i;
+
+    // row highlight
+    if (isHovered) {
+      ctx.fillStyle = 'rgba(167,139,250,0.06)';
+      ctx.fillRect(0, PAD_T + i * ROW_H, W, ROW_H);
+    }
+
+    // label
+    ctx.font = `12px Georgia, serif`;
+    ctx.fillStyle = isHovered ? TEXT : rc;
+    ctx.textAlign = 'right';
+    ctx.fillText(sample.name, PAD_L - 10, y + 4);
+
+    // connector line
+    const lx1 = Math.min(xm, xf);
+    const lx2 = Math.max(xm, xf);
+    ctx.strokeStyle = isHovered ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = isHovered ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(lx1, y);
+    ctx.lineTo(lx2, y);
+    ctx.stroke();
+
+    // male dot
+    ctx.beginPath();
+    ctx.arc(xm, y, isHovered ? 5 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = MALE_COLOR;
+    ctx.fill();
+
+    // female dot
+    ctx.beginPath();
+    ctx.arc(xf, y, isHovered ? 5 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = FEMALE_COLOR;
+    ctx.fill();
+  });
+
+  return { sorted, xScale, PAD_L, PAD_T, ROW_H, plotW };
+}
+
+// ── Wire up canvases ───────────────────────────────────────────────────────────
+const chartState = {};
+const tooltip    = document.getElementById('tooltip');
+const ttName     = document.getElementById('tt-name');
+const ttM        = document.getElementById('tt-m');
+const ttF        = document.getElementById('tt-f');
+const ttDiff     = document.getElementById('tt-diff');
+
+function setupCanvas(char) {
+  const canvas = document.getElementById(`canvas-${char.key}`);
+  if (!canvas) return;
+  let meta = drawDumbbell(canvas, char, null);
+  chartState[char.key] = { meta, hovered: null };
+
+  function getRow(e) {
+    const rect = canvas.getBoundingClientRect();
+    const my   = e.clientY - rect.top;
+    const i    = Math.floor((my - meta.PAD_T) / meta.ROW_H);
+    if (i < 0 || i >= SAMPLES.length) return -1;
+    return i;
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    const i = getRow(e);
+    if (i === chartState[char.key].hovered) {
+      // still update tooltip position
+      if (i >= 0) {
+        tooltip.style.left = (e.clientX + 16) + 'px';
+        tooltip.style.top  = (e.clientY - 20) + 'px';
+      }
+      return;
+    }
+    chartState[char.key].hovered = i;
+    meta = drawDumbbell(canvas, char, i >= 0 ? i : null);
+    chartState[char.key].meta = meta;
+
+    if (i >= 0) {
+      const sample = meta.sorted[i];
+      const d      = DATA[sample.name][char.key];
+      const diff   = d.f - d.m;
+      ttName.textContent = sample.name;
+      ttM.textContent    = `Men: ${d.m.toFixed(2)}`;
+      ttF.textContent    = `Women: ${d.f.toFixed(2)}`;
+      ttDiff.textContent = `Δ = ${diff > 0 ? '+' : ''}${diff.toFixed(2)} (${diff > 0 ? 'F > M' : 'M > F'})`;
+      tooltip.style.display = 'block';
+      tooltip.style.left    = (e.clientX + 16) + 'px';
+      tooltip.style.top     = (e.clientY - 20) + 'px';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    chartState[char.key].hovered = null;
+    drawDumbbell(canvas, char, null);
+    tooltip.style.display = 'none';
+  });
+}
+
+// ── Profile chart ──────────────────────────────────────────────────────────────
+const profileCanvas = document.getElementById('profileCanvas');
+const select        = document.getElementById('cultureSelect');
+
+// Populate select
+SAMPLES.forEach(s => {
+  const opt = document.createElement('option');
+  opt.value = s.name;
+  opt.textContent = s.name;
+  select.appendChild(opt);
+});
+select.value = 'USA (Mainland)';
+
+function drawProfile(cultureName) {
+  const dpr  = window.devicePixelRatio || 1;
+  const d    = DATA[cultureName];
+  const W    = profileCanvas.offsetWidth;
+  const H    = 260;
+
+  profileCanvas.width  = W * dpr;
+  profileCanvas.height = H * dpr;
+  profileCanvas.style.height = H + 'px';
+
+  const ctx = profileCanvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const PAD_L = 220;
+  const PAD_R = 30;
+  const PAD_T = 36;
+  const PAD_B = 10;
+  const ROW_H = (H - PAD_T - PAD_B) / CHARS.length;
+  const plotW = W - PAD_L - PAD_R;
+  const xScale = v => PAD_L + (v / 3) * plotW;
+
+  // axis
+  const ticks = [0, 0.5, 1, 1.5, 2, 2.5, 3];
+  ctx.font = `10px 'Courier New', monospace`;
+  ctx.fillStyle = TEXT_DIM;
+  ctx.textAlign = 'center';
+  ticks.forEach(t => {
+    const x = xScale(t);
+    ctx.strokeStyle = BORDER;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, PAD_T - 8);
+    ctx.lineTo(x, PAD_T + CHARS.length * ROW_H);
+    ctx.stroke();
+    ctx.fillText(t.toFixed(1), x, PAD_T - 12);
+  });
+
+  ctx.font = `10px 'Courier New', monospace`;
+  ctx.fillStyle = TEXT_DIM;
+  ctx.textAlign = 'center';
+  ctx.fillText('Importance (0–3)', PAD_L + plotW / 2, 12);
+
+  CHARS.forEach((ch, i) => {
+    const row = d[ch.key];
+    const y   = PAD_T + i * ROW_H + ROW_H / 2;
+    const xm  = xScale(row.m);
+    const xf  = xScale(row.f);
+
+    // label
+    ctx.font = `12px Georgia, serif`;
+    ctx.fillStyle = ACCENT;
+    ctx.textAlign = 'right';
+    ctx.fillText(ch.short, PAD_L - 10, y + 4);
+
+    // connector
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(Math.min(xm, xf), y);
+    ctx.lineTo(Math.max(xm, xf), y);
+    ctx.stroke();
+
+    // dots
+    ctx.beginPath();
+    ctx.arc(xm, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = MALE_COLOR;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(xf, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = FEMALE_COLOR;
+    ctx.fill();
+
+    // value labels
+    ctx.font = `11px 'Courier New', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = MALE_COLOR;
+    ctx.fillText(row.m.toFixed(2), xm, y - 10);
+    ctx.fillStyle = FEMALE_COLOR;
+    ctx.fillText(row.f.toFixed(2), xf, y - 10);
+  });
+}
+
+select.addEventListener('change', () => drawProfile(select.value));
+
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.chart-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const key   = btn.dataset.char;
+    const panel = document.getElementById(`panel-${key}`);
+    panel.classList.add('active');
+
+    // re-draw on next frame so offsetWidth is valid
+    requestAnimationFrame(() => {
+      const char = CHARS.find(c => c.key === key);
+      setupCanvas(char);
+    });
+  });
+});
+
+// ── Initial draw ───────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  // Draw active tab first
+  setupCanvas(CHARS[0]);
+
+  // Draw profile
+  drawProfile(select.value);
+
+  // Pre-draw other tabs' canvases when they become visible
+  // (done on tab click above)
+});
+
+// Re-draw on resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    CHARS.forEach(ch => {
+      const panel = document.getElementById(`panel-${ch.key}`);
+      if (panel.classList.contains('active')) setupCanvas(ch);
+    });
+    drawProfile(select.value);
+  }, 150);
+});
+</script>
+</body>
+</html>
