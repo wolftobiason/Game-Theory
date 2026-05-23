@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Munger Engine</title>
+<style>
+  :root {
+    --bg: #09090a;
+    --surface: #100f0c;
+    --border: #1f1c16;
+    --amber: #c8912a;
+    --amber-dim: rgba(200,145,42,0.13);
+    --amber-glow: rgba(200,145,42,0.06);
+    --text: #ede8df;
+    --muted: #8a8278;
+    --rust: #b05a48;
+    --rust-dim: rgba(176,90,72,0.13);
+    --sage: #5a8a68;
+    --sage-dim: rgba(90,138,104,0.12);
+    --slate: #5a7ea0;
+    --slate-dim: rgba(90,126,160,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(9,9,10,0.88);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Georgia', serif;
+    font-size: 13px; letter-spacing: 3px;
+    color: var(--amber); text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex; gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 120px 40px 60px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(200,145,42,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 4px;
+    color: var(--amber); text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero h1 {
+    font-size: clamp(36px, 7vw, 82px);
+    font-weight: 400; line-height: 1.1;
+    text-align: center; max-width: 820px;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero h1 em { font-style: italic; color: var(--amber); }
+  .hero-sub {
+    margin-top: 32px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    text-align: center; max-width: 520px; line-height: 1.8;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .hero-equation {
+    margin-top: 60px;
+    padding: 24px 44px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--muted);
+    letter-spacing: 1px; text-align: center;
+    opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+    line-height: 2;
+  }
+  .eq-wisdom { color: var(--amber); font-weight: bold; font-size: 14px; }
+  .eq-models { color: var(--slate); }
+  .eq-invert { color: var(--rust); }
+  .eq-bias { color: #c084fc; }
+  .eq-time { color: var(--sage); }
+
+  /* ── TICKER ── */
+  .ticker {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 14px 0;
+    overflow: hidden; white-space: nowrap;
+  }
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker 80s linear infinite;
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--muted); letter-spacing: 1px;
+  }
+  .ticker-inner span { margin: 0 40px; }
+
+  /* ── SECTION WRAPPER ── */
+  section {
+    max-width: 880px; margin: 0 auto; padding: 100px 40px;
+  }
+  .section-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 4px;
+    color: var(--amber); text-transform: uppercase; margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: clamp(24px, 4vw, 42px);
+    font-weight: 400; line-height: 1.2; margin-bottom: 16px;
+  }
+  .section-desc {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    line-height: 1.8; margin-bottom: 48px; max-width: 560px;
+  }
+  .divider { width: 40px; height: 1px; background: var(--amber); margin: 0 0 48px; }
+
+  /* ── DAILY PRINCIPLE ── */
+  .principle-card {
+    background: var(--surface);
+    border: 1px solid var(--amber);
+    border-radius: 4px; padding: 48px;
+    text-align: center; position: relative;
+  }
+  .principle-quote {
+    font-size: clamp(17px, 2.8vw, 26px);
+    font-style: italic; line-height: 1.65;
+    margin-bottom: 28px;
+    transition: opacity 0.3s;
+  }
+  .principle-source {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--amber); text-transform: uppercase;
+  }
+  .principle-btns {
+    display: flex; justify-content: center; gap: 12px; margin-top: 28px;
+  }
+
+  /* ── MENTAL MODELS ── */
+  .model-filter {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+  }
+  .filter-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 2px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--amber); color: var(--amber); background: var(--amber-dim);
+  }
+  .models-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  @media (max-width: 640px) { .models-grid { grid-template-columns: 1fr; } }
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 24px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  .model-card:hover { border-color: var(--amber); background: var(--amber-glow); }
+  .model-card.expanded { border-color: var(--amber); }
+  .model-disc {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .disc-psychology { color: #c084fc; }
+  .disc-economics { color: var(--amber); }
+  .disc-mathematics { color: var(--slate); }
+  .disc-physics { color: var(--sage); }
+  .disc-biology { color: #5ab88a; }
+  .disc-wisdom { color: var(--rust); }
+  .model-name {
+    font-size: 18px; font-weight: 400; margin-bottom: 10px;
+  }
+  .model-core {
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--muted); line-height: 1.7;
+  }
+  .model-expanded {
+    display: none; margin-top: 20px;
+    border-top: 1px solid var(--border); padding-top: 20px;
+  }
+  .model-card.expanded .model-expanded { display: block; }
+  .model-munger {
+    font-style: italic; font-size: 14px; line-height: 1.7;
+    color: var(--text); margin-bottom: 16px;
+    border-left: 2px solid var(--amber); padding-left: 16px;
+  }
+  .model-application {
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--muted); line-height: 1.7;
+  }
+  .model-tag {
+    position: absolute; top: 20px; right: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 9px; color: var(--muted); letter-spacing: 1px;
+  }
+  .model-card.expanded .model-tag { color: var(--amber); }
+
+  /* ── INVERSION ENGINE ── */
+  .inversion-form { display: flex; flex-direction: column; gap: 20px; }
+  .inv-field {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .inv-field:focus-within { border-color: var(--amber); }
+  .inv-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--amber); text-transform: uppercase; margin-bottom: 14px;
+  }
+  .inv-q { font-size: 16px; line-height: 1.5; margin-bottom: 16px; }
+  .inv-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: var(--muted); line-height: 1.6;
+    font-style: italic; margin-bottom: 14px;
+  }
+  textarea, input[type="text"] {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 2px;
+    color: var(--text); font-family: 'Courier New', monospace;
+    font-size: 13px; padding: 12px 14px;
+    resize: vertical; outline: none;
+    transition: border-color 0.2s; line-height: 1.7;
+  }
+  textarea { min-height: 80px; }
+  textarea:focus, input:focus { border-color: var(--amber); }
+
+  /* Inversion Result */
+  .inv-result {
+    display: none; margin-top: 32px;
+    animation: fadeUp 0.4s forwards;
+  }
+  .inv-result.visible { display: block; }
+
+  .inv-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 28px;
+    margin-bottom: 16px;
+  }
+  .inv-panel-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .inv-panel.inversion { border-left: 3px solid var(--rust); }
+  .inv-panel.inversion .inv-panel-label { color: var(--rust); }
+  .inv-panel.failures { border-left: 3px solid var(--rust); }
+  .inv-panel.failures .inv-panel-label { color: var(--rust); }
+  .inv-panel.biases { border-left: 3px solid #c084fc; }
+  .inv-panel.biases .inv-panel-label { color: #c084fc; }
+  .inv-panel.principle { border-left: 3px solid var(--amber); }
+  .inv-panel.principle .inv-panel-label { color: var(--amber); }
+  .inv-panel.checklist { border-left: 3px solid var(--sage); }
+  .inv-panel.checklist .inv-panel-label { color: var(--sage); }
+
+  .inv-inversion-q {
+    font-size: clamp(16px, 2.5vw, 22px);
+    font-style: italic; line-height: 1.6; color: var(--text);
+  }
+  .inv-domain-badge {
+    display: inline-block; margin-top: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    padding: 4px 12px; border-radius: 2px;
+    border: 1px solid var(--rust); color: var(--rust);
+    text-transform: uppercase;
+  }
+  .inv-failure-list { list-style: none; }
+  .inv-failure-list li {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--text); line-height: 1.7;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    display: flex; gap: 12px;
+  }
+  .inv-failure-list li:last-child { border-bottom: none; }
+  .fail-num { color: var(--rust); flex-shrink: 0; }
+  .inv-bias-item { margin-bottom: 16px; }
+  .inv-bias-item:last-child { margin-bottom: 0; }
+  .inv-bias-name {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: #c084fc; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .inv-bias-desc {
+    font-size: 14px; color: var(--text); line-height: 1.65;
+  }
+  .inv-munger-q {
+    font-size: clamp(16px, 2.5vw, 20px);
+    font-style: italic; line-height: 1.65;
+    color: var(--text);
+  }
+  .inv-munger-attr {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--amber); text-transform: uppercase; margin-top: 14px;
+  }
+  .inv-check-list { list-style: none; }
+  .inv-check-list li {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .inv-check-list li:last-child { border-bottom: none; }
+  .inv-check-list input[type="checkbox"] { display: none; }
+  .check-box {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1px solid var(--sage); border-radius: 2px;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--sage);
+    transition: background 0.15s;
+  }
+  .inv-check-list li.checked .check-box { background: var(--sage-dim); }
+  .check-text {
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--text); line-height: 1.7;
+  }
+  .inv-check-list li.checked .check-text { color: var(--muted); text-decoration: line-through; }
+
+  /* ── BIAS AUDIT ── */
+  .bias-grid { display: grid; gap: 16px; }
+  .bias-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 24px 28px;
+  }
+  .bias-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 10px;
+  }
+  .bias-num {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 2px;
+  }
+  .bias-val-label {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: #c084fc;
+  }
+  .bias-name { font-size: 17px; margin-bottom: 8px; }
+  .bias-question {
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--muted); line-height: 1.6;
+    margin-bottom: 16px; font-style: italic;
+  }
+  .bias-slider-wrap { position: relative; padding-top: 4px; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%; height: 2px;
+    background: var(--border); border-radius: 2px;
+    outline: none; cursor: pointer; padding: 0; border: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: #c084fc; border-radius: 50%;
+    cursor: pointer; transition: transform 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  /* Bias Score Panel */
+  .bias-score-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 40px;
+    margin-top: 32px; text-align: center; position: relative; overflow: hidden;
+  }
+  .bias-score-panel::before {
+    content: '';
+    position: absolute; top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(192,132,252,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .bias-ring {
+    width: 160px; height: 160px; margin: 0 auto 28px; position: relative;
+  }
+  .bias-ring svg { transform: rotate(-90deg); }
+  .ring-bg { stroke: var(--border); fill: none; stroke-width: 6; }
+  .ring-fill {
+    fill: none; stroke-width: 6; stroke: #c084fc;
+    stroke-linecap: round;
+    stroke-dasharray: 440; stroke-dashoffset: 440;
+    transition: stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1);
+    filter: drop-shadow(0 0 6px rgba(192,132,252,0.45));
+  }
+  .bias-ring-num {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Courier New', monospace;
+    font-size: 36px; color: #c084fc;
+  }
+  .bias-score-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .bias-verdict {
+    font-family: 'Courier New', monospace;
+    font-size: 13px; color: var(--muted);
+    max-width: 440px; margin: 0 auto 32px; line-height: 1.7;
+  }
+  .bias-top3 { text-align: left; margin-top: 32px; }
+  .bias-top3-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 3px; color: #c084fc;
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .bias-antidote {
+    border: 1px solid var(--border);
+    border-left: 3px solid #c084fc;
+    border-radius: 0 4px 4px 0;
+    padding: 20px; margin-bottom: 14px;
+  }
+  .antidote-name {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: #c084fc; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .antidote-text { font-size: 14px; line-height: 1.7; color: var(--text); }
+  .antidote-fix {
+    font-family: 'Courier New', monospace;
+    font-size: 12px; color: var(--sage); margin-top: 10px; line-height: 1.6;
+  }
+
+  /* ── WISDOM ── */
+  .wisdom-grid { display: grid; gap: 14px; }
+  .wisdom-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 4px 4px 0; padding: 22px 26px;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .wisdom-card:hover { background: var(--amber-glow); }
+  .wisdom-card.saved { border-left-color: var(--sage); }
+  .wisdom-text { font-size: 15px; line-height: 1.75; font-style: italic; margin-bottom: 12px; }
+  .wisdom-meta {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .wisdom-theme {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 2px; color: var(--amber); text-transform: uppercase;
+  }
+  .wisdom-saved-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; color: var(--muted);
+  }
+  .wisdom-card.saved .wisdom-saved-label { color: var(--sage); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--amber-dim); border: 1px solid var(--amber); color: var(--amber);
+    font-family: 'Courier New', monospace;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 14px 28px; border-radius: 2px;
+    cursor: pointer; outline: none;
+    transition: background 0.2s, transform 0.1s; margin-top: 32px;
+  }
+  .btn:hover { background: rgba(200,145,42,0.22); }
+  .btn:active { transform: scale(0.98); }
+  .btn-ghost {
+    background: transparent; border-color: var(--border); color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--muted); background: var(--surface); color: var(--text); }
+  .btn-sm { padding: 10px 20px; font-size: 11px; margin-top: 0; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border); padding: 48px 40px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 1px; line-height: 2;
+  }
+  footer strong { color: var(--text); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">The Munger Engine</div>
+  <ul class="nav-links">
+    <li><a href="#models">Models</a></li>
+    <li><a href="#inversion">Inversion</a></li>
+    <li><a href="#biases">Biases</a></li>
+    <li><a href="#wisdom">Wisdom</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Charlie Munger · Mental Latticework</div>
+  <h1><em>Invert,</em><br>always invert.</h1>
+  <p class="hero-sub">The man who never went to law school became one of the sharpest legal minds alive. His secret: a latticework of mental models drawn from every discipline. Build yours here.</p>
+  <div class="hero-equation">
+    <span class="eq-wisdom">GOOD JUDGMENT</span>
+    <span style="color:var(--muted)"> = </span>
+    <span class="eq-models">Wide Models</span>
+    <span style="color:var(--muted)"> × </span>
+    <span class="eq-invert">Inversion</span>
+    <span style="color:var(--muted)"> × </span>
+    <span class="eq-bias">Bias Awareness</span>
+    <span style="color:var(--muted)"> × </span>
+    <span class="eq-time">Patience</span>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- DAILY PRINCIPLE -->
+<section>
+  <div class="section-label">01 · Today</div>
+  <div class="section-title">Daily Principle</div>
+  <p class="section-desc">One Munger idea to carry into the day. The discipline is in applying it, not just knowing it.</p>
+  <div class="divider"></div>
+
+  <div class="principle-card">
+    <div class="principle-quote" id="principleQuote">Loading...</div>
+    <div class="principle-source">— Charlie Munger</div>
+    <div class="principle-btns">
+      <button class="btn btn-ghost btn-sm" onclick="nextPrinciple()">↻ &nbsp;New Principle</button>
+    </div>
+  </div>
+</section>
+
+<!-- MENTAL MODELS LIBRARY -->
+<section id="models">
+  <div class="section-label">02 · Framework</div>
+  <div class="section-title">The Latticework</div>
+  <p class="section-desc">Munger's operating system: models drawn from every discipline, held together so they reinforce each other. "You've got to have models in your head." Click any card to go deeper.</p>
+  <div class="divider"></div>
+
+  <div class="model-filter" id="modelFilter"></div>
+  <div class="models-grid" id="modelsGrid"></div>
+</section>
+
+<!-- INVERSION ENGINE -->
+<section id="inversion">
+  <div class="section-label">03 · Method</div>
+  <div class="section-title">The Inversion Engine</div>
+  <p class="section-desc">Munger learned from the mathematician Jacobi: invert, always invert. Describe your goal or problem below. The engine will flip it, surface the failure modes, and show you what Munger would ask first.</p>
+  <div class="divider"></div>
+
+  <div class="inversion-form">
+    <div class="inv-field">
+      <div class="inv-label">Your Goal or Decision</div>
+      <div class="inv-q">What are you trying to achieve or decide right now?</div>
+      <div class="inv-hint">Be specific. "I want to grow my company" is less useful than "I want to reach $5M in revenue within 18 months."</div>
+      <textarea id="invGoal" rows="3" placeholder="e.g. I want to hire a VP of Engineering who will scale the team from 8 to 40 engineers over two years..."></textarea>
+    </div>
+
+    <div class="inv-field">
+      <div class="inv-label">Constraints &amp; Stakes</div>
+      <div class="inv-q">What makes this hard, and what is the cost of getting it wrong?</div>
+      <div class="inv-hint">High stakes sharpen inversion. Munger: "All I want to know is where I'm going to die, so I'll never go there."</div>
+      <textarea id="invStakes" rows="2" placeholder="e.g. We can only afford one bad hire at this stage. A wrong decision costs us 12+ months..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn" onclick="runInversion()">→ &nbsp;Invert the Problem</button>
+
+  <div class="inv-result" id="invResult">
+    <div class="inv-panel inversion">
+      <div class="inv-panel-label">The Inversion</div>
+      <div class="inv-inversion-q" id="inversionQ"></div>
+      <div class="inv-domain-badge" id="invDomainBadge"></div>
+    </div>
+
+    <div class="inv-panel failures">
+      <div class="inv-panel-label">Failure Modes for This Domain</div>
+      <ul class="inv-failure-list" id="invFailures"></ul>
+    </div>
+
+    <div class="inv-panel biases">
+      <div class="inv-panel-label">Biases Most Likely Active</div>
+      <div id="invBiases"></div>
+    </div>
+
+    <div class="inv-panel principle">
+      <div class="inv-panel-label">Munger's Principle for This Situation</div>
+      <div class="inv-munger-q" id="invMungerQ"></div>
+      <div class="inv-munger-attr">— Charlie Munger</div>
+    </div>
+
+    <div class="inv-panel checklist">
+      <div class="inv-panel-label">Avoid Stupidity Checklist</div>
+      <ul class="inv-check-list" id="invChecklist"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- BIAS AUDIT -->
+<section id="biases">
+  <div class="section-label">04 · Calibration</div>
+  <div class="section-title">Bias Vulnerability Audit</div>
+  <p class="section-desc">Munger spent decades cataloguing the 25 standard causes of human misjudgment. Rate your susceptibility honestly — the score means nothing without honesty. The goal is not a good score; it's awareness.</p>
+  <div class="divider"></div>
+
+  <div class="bias-grid" id="biasGrid"></div>
+
+  <div class="bias-score-panel" id="biasScorePanel">
+    <div class="bias-ring">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle class="ring-bg" cx="80" cy="80" r="70"/>
+        <circle class="ring-fill" id="biasRingFill" cx="80" cy="80" r="70"/>
+      </svg>
+      <div class="bias-ring-num" id="biasRingNum">0%</div>
+    </div>
+    <div class="bias-score-label">Vulnerability Score</div>
+    <div class="bias-verdict" id="biasVerdict">Adjust the sliders above to generate your vulnerability profile.</div>
+    <div class="bias-top3" id="biasTop3" style="display:none">
+      <div class="bias-top3-label">Your Highest Vulnerabilities — and Munger's Antidotes</div>
+      <div id="antidotesList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- WISDOM ARCHIVE -->
+<section id="wisdom">
+  <div class="section-label">05 · Almanack</div>
+  <div class="section-title">The Munger Archive</div>
+  <p class="section-desc">Munger's sharpest ideas, organized by theme. Click to save the ones worth living by.</p>
+  <div class="divider"></div>
+
+  <div class="model-filter" id="wisdomFilter"></div>
+  <div class="wisdom-grid" id="wisdomGrid"></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <strong>The Munger Engine</strong><br>
+  Built on the ideas of Charles T. Munger, Vice Chairman of Berkshire Hathaway (1924 – 2023).<br>
+  "Spend each day trying to be a little wiser than you were when you woke up."
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+
+const PRINCIPLES = [
+  "Invert, always invert: Turn a situation upside down. Look at it backwards.",
+  "All I want to know is where I'm going to die, so I'll never go there.",
+  "It is not necessary to do extraordinary things to get extraordinary results.",
+  "Show me the incentive and I'll show you the outcome.",
+  "In my whole life, I have known no wise people who didn't read all the time.",
+  "Spend each day trying to be a little wiser than you were when you woke up.",
+  "I never allow myself to have an opinion on anything that I don't know the other side's argument better than they do.",
+  "The big money is not in the buying and the selling, but in the waiting.",
+  "Mimicking the herd invites regression to the mean.",
+  "It's a huge mistake to not have a wide variety of models in your head.",
+  "The safest way to get what you want is to deserve what you want.",
+  "People calculate too much and think too little.",
+  "Acknowledging what you don't know is the dawning of wisdom.",
+  "I constantly see people rise in life who are not the smartest, sometimes not even the most diligent, but they are learning machines.",
+  "The iron rule of nature is: you get what you reward for.",
+  "Envy is a really stupid sin because it's the only one you could never possibly have any fun at.",
+  "I have nothing to add.",
+  "It's not supposed to be easy. Anyone who finds it easy is stupid.",
+  "Avoid sloth and unreliability.",
+  "Take a simple idea and take it seriously.",
+];
+
+const MENTAL_MODELS = [
+  {
+    discipline: "psychology",
+    name: "Reward/Punishment Superresponse",
+    core: "Behavior follows incentives, almost always. Show me the incentive, and I'll show you the outcome.",
+    munger: "I think I've been in the top 5% of my age cohort all my life in understanding the power of incentives, and all my life I've underestimated it. Never, ever think about something else when you should be thinking about the power of incentives.",
+    application: "Before analyzing any decision or behavior, ask: what are the actual incentives of each party? Especially the perverse incentives hidden beneath the stated ones.",
+  },
+  {
+    discipline: "psychology",
+    name: "Social Proof Tendency",
+    core: "In uncertainty, we look to what others are doing. In panics, this becomes a cascade. The crowd's behavior becomes evidence of correct behavior.",
+    munger: "The tendency to follow the crowd is strongest when uncertainty is highest. That's precisely when you most need to think for yourself.",
+    application: "When you find yourself doing something primarily because others are, stop and ask if you have an independent thesis. Never let 'everyone is doing it' be a reason.",
+  },
+  {
+    discipline: "psychology",
+    name: "Commitment & Consistency",
+    core: "We defend our past commitments irrationally. Once a position is taken, the mind manufactures reasons to maintain it. The sunk cost fallacy is a symptom.",
+    munger: "If Buffett makes a mistake, he can just reverse course. Most people can't do that — they've publicly committed, they've told their friends. The ability to change your mind is one of the most valuable things you can have.",
+    application: "Keep a decision journal. Actively seek disconfirming evidence for your current positions. Make it a habit to explicitly reverse a prior view at least once per quarter.",
+  },
+  {
+    discipline: "psychology",
+    name: "Availability Misweighing",
+    core: "We weight what's vivid, recent, and emotionally charged over statistical base rates. Plane crashes dominate fear; heart disease does not.",
+    munger: "The human mind is enormously influenced by what is most recent and most vivid. If you've had a bad experience with a banker, you'll overweight that in evaluating all bankers.",
+    application: "Any time you feel strong conviction based on a recent story or vivid event, deliberately look up the base rate. Ask: what does history say happens to situations like this, regardless of this particular story?",
+  },
+  {
+    discipline: "psychology",
+    name: "Liking/Loving Bias",
+    core: "We favor the ideas, people, and conclusions we like — independent of their merit. Admiration distorts judgment.",
+    munger: "The liking/loving tendency acts as a conditioning device that makes the liker or lover tend to ignore faults of, and thus overfavor, the object of his affection.",
+    application: "Whenever you're evaluating an idea from someone you like, admire, or are attracted to — run the analysis as if a stranger proposed it. Does it still hold?",
+  },
+  {
+    discipline: "psychology",
+    name: "Lollapalooza Effect",
+    core: "Multiple psychological tendencies combining at once can produce extreme, irrational outcomes. Auctions, cults, and financial manias are examples. Each bias is moderate alone; together they're overwhelming.",
+    munger: "You get lollapalooza effects when three, four, or five of these tendencies combine. And they're all working together in the same direction. That's when you get the really extreme outcomes.",
+    application: "When a situation feels overwhelmingly compelling — an investment, a purchase, a relationship — count the number of psychological biases that might be active simultaneously. More than three is a warning sign.",
+  },
+  {
+    discipline: "economics",
+    name: "Circle of Competence",
+    core: "Know exactly where your understanding ends. Inside the circle: confidence is warranted. Outside it: humility is mandatory. The edge of the circle matters more than its center.",
+    munger: "It's not a competence if you don't know the edge of it.",
+    application: "Draw a literal boundary. For every domain you claim competence in, write the questions you could not confidently answer. Those are the edges. Never make high-stakes decisions near an edge without acknowledging you're there.",
+  },
+  {
+    discipline: "economics",
+    name: "Moat",
+    core: "A durable competitive advantage that allows a business to earn above-average returns over a long period. Brands, switching costs, network effects, and cost advantages are the four sources.",
+    munger: "The most important thing in evaluating a business is figuring out how durable the competitive advantage is — the moat. In business, I look for economic castles protected by unbreachable moats.",
+    application: "For any business you're evaluating (or building), identify the moat source explicitly. Then ask: what could drain this moat in 10 years? If you can name it easily, the moat is shallow.",
+  },
+  {
+    discipline: "economics",
+    name: "Opportunity Cost",
+    core: "Every choice forecloses alternatives. The relevant comparison is not 'is this good?' but 'is this better than what I'm giving up?' Time and capital are always being allocated, consciously or not.",
+    munger: "Intelligent people make decisions based on opportunity costs. The most important thing in economics, which is taught in every first-year economics course, is opportunity cost — the comparison to the next-best alternative.",
+    application: "Before any commitment of time or capital, explicitly name the three next-best alternatives. Then ask: is this better than all of them? Not just 'is this good?'",
+  },
+  {
+    discipline: "economics",
+    name: "Incentive-Caused Bias",
+    core: "People's conclusions are heavily influenced by their personal incentives. This is not cynicism; it is a mechanical reality of cognition that even honest people cannot fully override.",
+    munger: "Never ask a barber if you need a haircut. The bias is usually not conscious. It is deeply mechanical. You simply cannot fully trust the analysis of someone who profits from a particular conclusion.",
+    application: "Before acting on any expert recommendation, ask: does this person profit if I follow their advice? If yes, the advice needs independent verification — not because they're lying, but because even honest people cannot reliably reason against their interests.",
+  },
+  {
+    discipline: "economics",
+    name: "Margin of Safety",
+    core: "Build in a buffer for being wrong. In investing: buy far below intrinsic value. In engineering: design beyond the maximum expected load. In life: maintain reserves for the unexpected.",
+    munger: "It's not just about avoiding mistakes. It's about ensuring that when you are wrong — and you will be — the mistake isn't fatal. Margin of safety is the most important concept in rational decision-making.",
+    application: "For any important decision, identify the most critical assumption. Now stress-test it: if that assumption is 30% wrong, does the decision still hold? If not, what buffer do you need to build in?",
+  },
+  {
+    discipline: "economics",
+    name: "Mr. Market",
+    core: "The market is a moody, irrational business partner who quotes you a price every day. His mood swings are not information — they're opportunity. Profit from his irrationality rather than participating in it.",
+    munger: "Ben Graham's Mr. Market is one of the most useful concepts in the history of finance. The market is there to serve you, not guide you. Its price is an offer, not a verdict.",
+    application: "When markets are euphoric, ask: what am I giving up to chase this? When markets panic, ask: what is the actual intrinsic value of this asset, independent of what frightened people are paying? Use price swings as a tool, not a signal.",
+  },
+  {
+    discipline: "mathematics",
+    name: "Inversion",
+    core: "Instead of asking how to achieve a goal, ask what would guarantee failure — then avoid those things. It is often easier to identify the path to catastrophe than the path to success.",
+    munger: "Jacobi, the great mathematician, knew an important truth: invert, always invert. Many hard problems are best solved only when they are addressed backwards.",
+    application: "For any goal, write down the 5 surest ways to guarantee it fails. Then build your plan primarily around eliminating those failure conditions rather than optimizing for the success path.",
+  },
+  {
+    discipline: "mathematics",
+    name: "Compound Interest",
+    core: "Small, consistent advantages grow exponentially over time. The returns in the later periods dwarf the earlier ones. This applies to money, knowledge, skill, reputation, and relationships.",
+    munger: "Understanding compound interest is the bedrock of all financial wisdom. But the same math applies to learning — every year of compounded knowledge builds on the last.",
+    application: "Ask yourself: what am I doing today that compounds? What am I doing that merely adds? Focus ruthlessly on the compounding activities, even when they feel slower in the short term.",
+  },
+  {
+    discipline: "mathematics",
+    name: "Base Rates & Probability",
+    core: "Begin with how often things like this have historically succeeded or failed. Use that frequency as your prior. Only then adjust for the specific features of your case — and adjust less than you think.",
+    munger: "I notice that people rarely start with base rates. They start with the story of this particular situation, which they find compelling. The base rate gets forgotten. This is almost always an error.",
+    application: "Before any forecast or decision, look up the base rate: what fraction of similar ventures, similar hires, similar investments, similar timelines have succeeded? Write down that number before you let the narrative of your specific case influence you.",
+  },
+  {
+    discipline: "mathematics",
+    name: "Mean Reversion",
+    core: "Extreme performance — in any direction — tends to revert toward the average over time. Exceptional results attract competition. Catastrophic failures restructure or eliminate. The extremes are temporary.",
+    munger: "In business, great returns attract competition. In life, great runs attract overconfidence. Expect mean reversion, plan for it, and never extrapolate a trend too far.",
+    application: "When evaluating anything performing exceptionally well, ask: what force normally prevents this level of performance from continuing? Is that force currently absent or merely delayed?",
+  },
+  {
+    discipline: "physics",
+    name: "Critical Mass & Tipping Points",
+    core: "Systems have thresholds below which change is incremental and above which it cascades. Nuclear reactions, viral growth, and cultural adoption all follow this pattern.",
+    munger: "A lot of things in life work this way. They don't change at a steady rate. They change very slowly, and then they change all at once. Understanding this changes how you build and how you invest.",
+    application: "When building anything with network effects — a product, a movement, a reputation — identify the threshold. How many users, connections, or advocates are needed before growth becomes self-sustaining? Focus all early resources on reaching that threshold.",
+  },
+  {
+    discipline: "physics",
+    name: "Redundancy",
+    core: "Critical systems must have backup systems. The component that can fail will eventually fail. Reliability requires duplication of the elements you can least afford to lose.",
+    munger: "The wise engineer doesn't just build what's required. He builds what's required, and then he builds backup for the parts that will kill you when they fail. This is not pessimism — it is professionalism.",
+    application: "Identify your single points of failure — in your business, your health, your finances. Ask: if this fails, do I have a backup? If the answer is no, and the consequence is catastrophic, build the backup before you need it.",
+  },
+  {
+    discipline: "physics",
+    name: "Thermodynamics / Entropy",
+    core: "Disorder naturally increases over time without sustained energy input. Organized systems — businesses, relationships, skills, health — decay without deliberate maintenance.",
+    munger: "The natural state of any system is decay. Order requires constant effort. This is not a counsel of despair; it is a description of the maintenance required to hold anything valuable together.",
+    application: "For every important asset — your relationships, your skills, your team culture, your body — ask: what is the rate of decay if I stop actively investing? That rate is the minimum required maintenance.",
+  },
+  {
+    discipline: "biology",
+    name: "Natural Selection",
+    core: "Survivors fit their current environment, not an ideal one. What is selected for in one environment becomes a liability in another. The traits that created success can cause failure when conditions change.",
+    munger: "The fish that thrives in still water drowns in rapids. The same skill set. The environment changed. This is not a metaphor — it is a literal description of how companies, careers, and strategies fail.",
+    application: "What traits, strategies, or skills made you (or your business) successful in the past? Now ask: in what kind of environment would those exact traits be liabilities? If that environment is approaching, adapt now.",
+  },
+  {
+    discipline: "biology",
+    name: "Niche Specialization",
+    core: "Narrow focus reduces competition and allows deeper mastery. The generalist competes with everyone; the specialist competes with almost no one.",
+    munger: "The specialist who knows one thing more deeply than anyone else is worth more than any number of capable generalists. The more specific your knowledge, the less competition you face.",
+    application: "In your field, find the intersection of two areas where you can be genuinely better than almost anyone else. The intersection is usually the niche. Go narrower than feels comfortable.",
+  },
+  {
+    discipline: "biology",
+    name: "Ecosystem Thinking",
+    core: "No organism or organization exists in isolation. Every entity lives within a web of dependencies, competitors, and symbiotic relationships. Changing one element changes the system.",
+    munger: "You can't fully understand a business without understanding its ecosystem. Who depends on it? Who competes with it? What happens to it if one of those relationships changes?",
+    application: "Map the ecosystem of any major decision: the five entities whose behavior most affects the outcome, and the five entities whose behavior your decision most affects. A change anywhere in this web affects you.",
+  },
+  {
+    discipline: "wisdom",
+    name: "Man with a Hammer",
+    core: "If your only tool is a hammer, every problem looks like a nail. Over-reliance on a single discipline or method blinds you to better solutions from outside your expertise.",
+    munger: "I have this mental image of a hammer-equipped person who, when faced with any problem, reaches for the hammer. To the man with only a hammer, every problem looks like a nail. You have to have more tools than that.",
+    application: "When you find yourself reaching for your favorite tool or framework on a new problem, stop. Ask: which discipline would a genuinely smart outsider bring to this? Then actually consult that discipline.",
+  },
+  {
+    discipline: "wisdom",
+    name: "First Principles",
+    core: "Reason from the irreducibly true, not by analogy to what others have done. Strip away assumptions until you reach what must be true, then reason forward from there.",
+    munger: "Reliable thinking involves stripping away all the accumulated assumptions and asking: what is actually true here? What must be true? What is merely conventional? Most 'thinking' is just recombining other people's conclusions.",
+    application: "Take your most confident belief in your domain. Ask: what is the earliest point in the chain of reasoning at which I have direct evidence? Everything before that point is inherited assumption, not knowledge.",
+  },
+  {
+    discipline: "wisdom",
+    name: "Avoiding Envy",
+    core: "Envy is the only vice from which you gain nothing — no pleasure, no information, no insight. It corrodes judgment by substituting comparison for analysis.",
+    munger: "Envy is a really stupid sin because it's the only one you could never possibly have any fun at. There's a lot of pain and no fun. Why would you want to get on that trolley?",
+    application: "When you feel envy — of someone's wealth, success, recognition — note it. Then ask: what would I actually do differently if I had what they have? Usually the answer reveals that you don't actually want what they have; you want the feeling of having it.",
+  },
+  {
+    discipline: "wisdom",
+    name: "Avoiding Stupidity",
+    core: "It is easier to avoid catastrophic mistakes than to achieve brilliance. Most great outcomes come from consistent avoidance of bad decisions, compounded over decades.",
+    munger: "It is not given to human beings to have such talent that they can just know everything about everything all the time. But it is given to human beings who work hard at it — who look and sift the world for a mispriced bet — that they can occasionally find one.",
+    application: "Before optimizing for the best outcome, first eliminate the worst outcomes. Make a list of the ways any given plan could permanently destroy value. Remove those risks first. Then pursue upside.",
+  },
+  {
+    discipline: "wisdom",
+    name: "Patience & Long-term Thinking",
+    core: "The best outcomes require patience that most participants cannot sustain. The edge comes from being willing to wait while others cannot.",
+    munger: "Warren and I don't focus on the froth of the market. We seek out good businesses at fair prices and then we sit on our ass. That's not something most people are temperamentally able to do.",
+    application: "Identify the most important compounding process in your life right now. Ask: what is the minimum time needed for it to fully compound? Are you giving it that time — or are you interrupting it by measuring too early?",
+  },
+];
+
+const BIASES = [
+  {
+    name: "Reward/Punishment Superresponse",
+    question: "Do your conclusions shift — even slightly — when your personal incentives are involved?",
+    antidote: "Before any important analysis, write down how your personal incentives might affect the conclusion. Then deliberately seek out reasons your preferred outcome is wrong.",
+  },
+  {
+    name: "Social Proof",
+    question: "When uncertain, do you look at what everyone else is doing and treat it as evidence?",
+    antidote: "In moments of market euphoria or panic, ask: if the crowd were doing the opposite, would I want to do this? If no, your analysis is driven by social proof, not independent reasoning.",
+  },
+  {
+    name: "Authority Misinfluence",
+    question: "Do credentials, titles, or social status cause you to accept conclusions without evaluating the underlying reasoning?",
+    antidote: "When an expert asserts something, ask: what is the argument? Not who said it — the argument. Follow the logic, not the authority.",
+  },
+  {
+    name: "Commitment & Consistency",
+    question: "Do you defend your past decisions more vigorously than new evidence warrants?",
+    antidote: "Keep a decision journal. Once a year, review your most confident past decisions and ask: given what I know now, was I right? Practice publicly changing your mind without shame.",
+  },
+  {
+    name: "Contrast Misreaction",
+    question: "Does the order or framing of information significantly change what seems acceptable or reasonable to you?",
+    antidote: "Evaluate all prices, offers, and proposals against an absolute standard rather than whatever was presented first. Ask: would I find this reasonable if I saw it first, with no prior reference?",
+  },
+  {
+    name: "Availability Misweighing",
+    question: "Do vivid recent events cause you to overestimate their likelihood or importance relative to base rates?",
+    antidote: "When forming any probabilistic judgment, find the historical base rate before engaging with the narrative of the specific case. Let frequency data anchor your prior.",
+  },
+  {
+    name: "Liking/Loving Bias",
+    question: "Do you find it easier to accept conclusions from people you admire, and harder to criticize their work?",
+    antidote: "When evaluating any proposal or idea, ask: if I disliked the person who proposed this, how would I evaluate it? Run that alternative analysis and compare the conclusions.",
+  },
+  {
+    name: "Stress-Induced Irrationality",
+    question: "Do you make worse decisions under time pressure, fatigue, or emotional distress?",
+    antidote: "Pre-commit to decision processes before stress arrives. Create rules you will follow when you're in a panic state. Never make irreversible decisions during moments of peak stress.",
+  },
+  {
+    name: "Man with a Hammer",
+    question: "Do you tend to apply your area of deepest expertise to every problem, even when it doesn't fit?",
+    antidote: "For any new problem, deliberately name three disciplines that have nothing to do with your expertise and ask what each would say. Take the one that produces the most surprising insight seriously.",
+  },
+  {
+    name: "Envy",
+    question: "Do you find your assessment of your own success significantly affected by comparing yourself to others?",
+    antidote: "Define success internally before you can be influenced by others' outcomes. Write down what genuinely sufficient looks like for you before you open your news feed.",
+  },
+  {
+    name: "Reciprocation",
+    question: "Do gifts, favors, or concessions from others create an obligation you feel unable to override with logic?",
+    antidote: "When someone does something for you and then makes a request, explicitly separate the acts. Ask: would I do this if they hadn't done that favor? If no, decline.",
+  },
+  {
+    name: "Lollapalooza Vulnerability",
+    question: "In contexts designed to be persuasive — sales pitches, auctions, consensus meetings — do you lose your independent footing?",
+    antidote: "Before any high-pressure persuasion context, identify the psychological tendencies that will be activated. Write down your independent position before entering the room. Do not revise it until you are out of the context.",
+  },
+];
+
+const WISDOM_QUOTES = [
+  { text: "Invert, always invert: Turn a situation upside down. Look at it backwards.", theme: "thinking" },
+  { text: "All I want to know is where I'm going to die, so I'll never go there.", theme: "thinking" },
+  { text: "Show me the incentive and I'll show you the outcome.", theme: "business" },
+  { text: "It is not necessary to do extraordinary things to get extraordinary results.", theme: "life" },
+  { text: "In my whole life, I have known no wise people who didn't read all the time.", theme: "learning" },
+  { text: "Spend each day trying to be a little wiser than you were when you woke up.", theme: "learning" },
+  { text: "I never allow myself to have an opinion on anything that I don't know the other side's argument better than they do.", theme: "thinking" },
+  { text: "The big money is not in the buying and the selling, but in the waiting.", theme: "investing" },
+  { text: "Mimicking the herd invites regression to the mean.", theme: "investing" },
+  { text: "It's a huge mistake to not have a wide variety of models in your head.", theme: "thinking" },
+  { text: "The safest way to get what you want is to deserve what you want.", theme: "character" },
+  { text: "People calculate too much and think too little.", theme: "thinking" },
+  { text: "Acknowledging what you don't know is the dawning of wisdom.", theme: "thinking" },
+  { text: "I constantly see people rise in life who are not the smartest, sometimes not even the most diligent, but they are learning machines.", theme: "learning" },
+  { text: "The iron rule of nature is: you get what you reward for.", theme: "business" },
+  { text: "Envy is a really stupid sin because it's the only one you could never possibly have any fun at.", theme: "character" },
+  { text: "It's not supposed to be easy. Anyone who finds it easy is stupid.", theme: "investing" },
+  { text: "Avoid sloth and unreliability.", theme: "character" },
+  { text: "Take a simple idea and take it seriously.", theme: "thinking" },
+  { text: "It's not a competence if you don't know the edge of it.", theme: "thinking" },
+  { text: "You don't have to be brilliant, only a little bit wiser than the other guys, on average, for a long, long time.", theme: "investing" },
+  { text: "The best thing a human being can do is to help another human being know more.", theme: "character" },
+  { text: "I believe in the discipline of mastering the best that other people have ever figured out.", theme: "learning" },
+  { text: "To get what you want, you have to deserve what you want.", theme: "character" },
+  { text: "We have three boxes on our desk: In, Out, and Too Hard.", theme: "investing" },
+  { text: "Opportunity comes to the prepared mind. You need to have the models in your head before the opportunity appears.", theme: "learning" },
+  { text: "The best armor of old age is a well-spent life preceding it.", theme: "life" },
+  { text: "It's waiting that helps you as an investor, and a lot of people just can't stand to wait.", theme: "investing" },
+  { text: "I have nothing to add.", theme: "character" },
+  { text: "If you have a portfolio of businesses and one of them is clearly the best, keep adding to it.", theme: "business" },
+];
+
+// ── DOMAIN DATA ────────────────────────────────────────────────────────────
+
+const DOMAINS = {
+  investing: {
+    keywords: ['invest', 'stock', 'portfolio', 'company', 'market', 'equity', 'valuat', 'capital', 'return', 'asset', 'fund', 'trade', 'buy', 'sell', 'price'],
+    label: "Investing",
+    failures: [
+      "Overconfidence in your thesis — treating your analysis as complete when it's merely directional",
+      "Anchoring to purchase price rather than current intrinsic value",
+      "Extrapolating recent performance as if it predicts future performance",
+      "Ignoring the base rate: how often do similar investments at this price achieve the expected return?",
+      "Confusing a good business with a good investment — they are not the same thing at any price",
+    ],
+    biases: [
+      { name: "Commitment & Consistency", desc: "You've built a thesis. You want to be right. New disconfirming evidence gets rationalized away rather than integrated." },
+      { name: "Availability Misweighing", desc: "The most recent market move, the most recent earnings beat — these feel more meaningful than they are. Base rates get forgotten." },
+      { name: "Social Proof", desc: "If every smart investor you admire is buying, you start to feel that the analysis is already done. It isn't." },
+    ],
+    munger: "It's not supposed to be easy. Anyone who finds it easy is stupid. You're competing with smart, hardworking people who have all the same information. Your only edge is thinking more clearly — not faster.",
+    checks: [
+      "Am I inside my circle of competence — or just near enough to feel comfortable?",
+      "What is the base rate for this type of investment at this valuation?",
+      "What would have to be true for this thesis to be wrong? Is it already true?",
+      "Have I stress-tested my most critical assumption? What if it's 30% wrong?",
+      "Would I be comfortable holding this for 10 years if the market closed tomorrow?",
+    ],
+  },
+  management: {
+    keywords: ['hire', 'team', 'employee', 'manage', 'lead', 'culture', 'organization', 'talent', 'staff', 'performance', 'recruit', 'report', 'director', 'vp', 'executive'],
+    label: "Management & Hiring",
+    failures: [
+      "Hiring someone who interviews brilliantly rather than someone whose track record proves execution",
+      "Creating incentive structures that reward the wrong behaviors — especially activity over outcomes",
+      "Tolerating a cancerous personality too long because their output metrics look good",
+      "Confusing loyalty with competence — keeping people because they've been around, not because they're right",
+      "Failing to give direct critical feedback early enough to matter",
+    ],
+    biases: [
+      { name: "Liking/Loving Bias", desc: "Hiring people we like, who are similar to us, or who flatter us. The interview is a social performance, not an evidence-based evaluation." },
+      { name: "Authority Misinfluence", desc: "Prestigious logos on a résumé carry enormous weight that often isn't earned by the specific person in front of you." },
+      { name: "Commitment & Consistency", desc: "Once you've hired someone, you defend the decision. Evidence of poor fit gets rationalized as a 'fit issue' rather than a hiring mistake." },
+    ],
+    munger: "Show me the incentive and I'll show you the outcome. If you design a system that rewards people for activity, you'll get activity. If you design it for outcomes, you'll get a fight over how to measure outcomes. Neither is easy. But the incentive is everything.",
+    checks: [
+      "What specific, observable evidence — not impressions — supports this decision?",
+      "What incentives am I creating, and what behaviors will they reward in 12 months?",
+      "Who have I asked who has no stake in the outcome and no reason to tell me what I want to hear?",
+      "If this person turns out to be wrong for the role, what will I have been fooling myself about?",
+      "Am I hiring for now or for where we'll be in two years? Are those the same person?",
+    ],
+  },
+  startup: {
+    keywords: ['start', 'launch', 'product', 'customer', 'startup', 'founder', 'grow', 'revenue', 'mrr', 'arr', 'scale', 'pmf', 'market fit', 'traction', 'raise', 'fund'],
+    label: "Entrepreneurship",
+    failures: [
+      "Solving for product when the actual bottleneck is distribution",
+      "Building what you can build, not what the customer demonstrably needs",
+      "Running out of time and money before you've discovered what actually works",
+      "Hiring before you've proven the thing that hiring is supposed to accelerate",
+      "Confusing activity and busyness with progress toward the critical unknown",
+    ],
+    biases: [
+      { name: "Commitment & Consistency", desc: "Founders fall in love with their original idea. Evidence that the thesis is wrong gets reframed as 'we just haven't explained it well enough.'" },
+      { name: "Liking/Loving Bias", desc: "You build for customers who are enthusiastic and friendly, not for the skeptical majority who represent the actual market." },
+      { name: "Social Proof", desc: "Other founders are raising rounds, announcing press, posting metrics. This creates pressure to mirror their behavior regardless of whether it's right for your stage." },
+    ],
+    munger: "All I want to know is where I'm going to die, so I'll never go there. What are the three things that would guarantee this company fails? Eliminate those. The rest is execution.",
+    checks: [
+      "What is the single most critical assumption in this plan — the one that, if wrong, makes everything else irrelevant?",
+      "What would a skeptical, successful person in this market say I'm missing?",
+      "What is the smallest possible test that would prove or disprove that assumption this week?",
+      "Am I building this because I love the product or because there is real evidence customers need it?",
+      "What does 'running out of runway' look like — and how many months away is it if growth is flat?",
+    ],
+  },
+  learning: {
+    keywords: ['learn', 'study', 'skill', 'read', 'knowledge', 'career', 'grow', 'develop', 'train', 'master', 'expert', 'education', 'course', 'book', 'practice'],
+    label: "Learning & Career",
+    failures: [
+      "Staying in the wrong field too long due to sunk cost — years invested become chains",
+      "Optimizing for credential signals rather than actual competence",
+      "Treating learning as a phase that ends rather than the permanent operating mode",
+      "Networking superficially instead of building deep competence people seek out",
+      "Avoiding honest, painful feedback that would accelerate growth",
+    ],
+    biases: [
+      { name: "Commitment & Consistency", desc: "Years of investment in a field or credential create deep resistance to pivoting, even when the evidence strongly suggests a different path." },
+      { name: "Social Proof", desc: "Career choices get made based on what your peers are doing, what LinkedIn makes prestigious, what seems safe by consensus rather than what is actually right for you." },
+      { name: "Availability Misweighing", desc: "Careers that look glamorous from the outside because they're visible get overchosen; the less visible paths that compound better get underchosen." },
+    ],
+    munger: "I constantly see people rise in life who are not the smartest, sometimes not even the most diligent, but they are learning machines. They go to bed every night a little wiser than they were when they got up. That's the compounding machine.",
+    checks: [
+      "Am I building skills that compound, or skills that plateau?",
+      "What would I learn if I weren't afraid of finding out I was wrong about my current path?",
+      "Who is doing what I want to do, and have I actually talked to them about the reality of it?",
+      "In five years, will today's work make me significantly more valuable — or just safer?",
+      "What is the hardest, most honest feedback I've received recently — and have I actually acted on it?",
+    ],
+  },
+  relationships: {
+    keywords: ['relation', 'partner', 'friend', 'family', 'trust', 'love', 'marriage', 'conflict', 'communication', 'colleague', 'collaborat', 'network', 'community'],
+    label: "Relationships",
+    failures: [
+      "Overlooking serious character flaws early because you're in the intoxicating early phase",
+      "Assuming you can change someone's fundamental nature with enough patience or love",
+      "Keeping score in a relationship — the ledger destroys what it measures",
+      "Confusing admiration, attraction, or dependency for the kind of trust that lasts decades",
+      "Choosing people at their best rather than evaluating how they behave under genuine adversity",
+    ],
+    biases: [
+      { name: "Liking/Loving Bias", desc: "The very intensity of your affection for someone makes it structurally harder to see their flaws clearly. This is by design. You have to compensate deliberately." },
+      { name: "Commitment & Consistency", desc: "Once you've publicly committed — announced the relationship, introduced them to your family — leaving feels like admitting defeat. This locks people into wrong choices." },
+      { name: "Contrast Misreaction", desc: "Someone who is merely good can seem exceptional when you're comparing them to a terrible recent alternative. Evaluate against an absolute standard, not a relative one." },
+    ],
+    munger: "You want to associate with people who are better than you are, who have better values, better practices. And they rub off on you. Hang out with people who behave better than you do and you'll drift in that direction.",
+    checks: [
+      "How does this person behave when things go wrong — under real stress, not minor inconvenience?",
+      "Am I choosing this person for who they are, or for who I imagine they might become?",
+      "Would I trust this person's judgment on something important to me if I had no emotional stake?",
+      "What would a wise friend say if I described this situation to them honestly?",
+      "Is this relationship making both of us better people — or is one of us carrying the other?",
+    ],
+  },
+  health: {
+    keywords: ['health', 'fitness', 'diet', 'exercise', 'weight', 'sleep', 'body', 'stress', 'mental', 'wellbeing', 'energy', 'nutrition', 'medical'],
+    label: "Health",
+    failures: [
+      "Availability bias toward dramatic interventions over boring, consistent habits that actually work",
+      "Optimizing for metrics — weight, steps, scores — rather than the underlying state of health they're supposed to measure",
+      "Underestimating the compounding cost of chronic stress, poor sleep, or sedentary behavior",
+      "Treating health as a problem to solve once rather than a system to maintain continuously",
+      "Deferring to authority on things you have enough evidence to know for yourself",
+    ],
+    biases: [
+      { name: "Availability Misweighing", desc: "Dramatic new diets, high-intensity protocols, and miracle supplements get outsized attention. Boring things like sleep and daily walking that actually compound don't feel like they're doing enough." },
+      { name: "Social Proof", desc: "Fitness is especially susceptible to trend-following. What everyone in your community does feels validated by their doing it, independent of whether it works." },
+      { name: "Reward/Punishment Superresponse", desc: "Short feedback loops (feeling energized after a workout) override long feedback loops (the disease you won't get in 20 years). We optimize for the near term." },
+    ],
+    munger: "Take care of your body as if you're going to live to be 100; take care of your mind as if it's the only computer you'll ever have. Both statements are probably true.",
+    checks: [
+      "Am I optimizing for health outcomes or for health performance metrics?",
+      "If I do exactly what I'm doing now for the next 20 years, where does that put me?",
+      "What do the people I want to be like at 70 have in common? Am I building those habits now?",
+      "What is the single highest-leverage health behavior I'm currently neglecting?",
+      "Am I using expertise — doctors, researchers — to inform my decisions or to outsource them?",
+    ],
+  },
+};
+
+const DEFAULT_DOMAIN = {
+  label: "General Decision",
+  failures: [
+    "Treating a reversible decision as irreversible — and therefore not making it at all",
+    "Ignoring the base rate: how often do situations like this resolve the way you expect?",
+    "Acting under time pressure that is either artificial or could be reduced",
+    "Consulting only people who are likely to agree with you",
+    "Confusing confidence with correctness — your certainty is not evidence of your accuracy",
+  ],
+  biases: [
+    { name: "Commitment & Consistency", desc: "If you've leaned toward one option, your mind is already working to justify it. Name your lean explicitly, then search for reasons you're wrong." },
+    { name: "Availability Misweighing", desc: "The most vivid, recent, or emotionally salient outcome you can imagine is probably not the most likely one. Find the base rate." },
+    { name: "Social Proof", desc: "What are the people around you doing or recommending? If their recommendation is the same as yours, that's not additional evidence — it's the same evidence recycled." },
+  ],
+  munger: "Invert, always invert. Before you ask how to get to where you want to go, ask what guarantees you'll never get there — then make sure you're not doing any of those things.",
+  checks: [
+    "Have I inverted this problem — what would guarantee it fails?",
+    "Am I inside my circle of competence, or just near enough to feel comfortable?",
+    "What is the base rate for situations like this resolving the way I expect?",
+    "What would a wise, disinterested friend say if I described this to them honestly?",
+    "Is this decision reversible? If so, am I treating it with more gravity than it deserves?",
+  ],
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let principleIdx = Math.floor(Math.random() * PRINCIPLES.length);
+let activeModelFilter = 'all';
+let activeWisdomFilter = 'all';
+let savedWisdom = new Set();
+let biasVals = {};
+let expandedModel = null;
+
+// ── TICKER ────────────────────────────────────────────────────────────────
+function buildTicker() {
+  const items = PRINCIPLES.slice(0, 10).map(p => `<span>· ${p}</span>`).join('');
+  const el = document.getElementById('tickerInner');
+  el.innerHTML = items + items;
+}
+
+// ── DAILY PRINCIPLE ───────────────────────────────────────────────────────
+function renderPrinciple() {
+  document.getElementById('principleQuote').textContent = PRINCIPLES[principleIdx];
+}
+function nextPrinciple() {
+  principleIdx = (principleIdx + 1) % PRINCIPLES.length;
+  const el = document.getElementById('principleQuote');
+  el.style.opacity = 0;
+  setTimeout(() => { renderPrinciple(); el.style.transition = 'opacity 0.4s'; el.style.opacity = 1; }, 220);
+}
+
+// ── MENTAL MODELS ─────────────────────────────────────────────────────────
+function buildModelFilter() {
+  const discs = ['all', ...new Set(MENTAL_MODELS.map(m => m.discipline))];
+  const wrap = document.getElementById('modelFilter');
+  discs.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (d === 'all' ? ' active' : '');
+    btn.textContent = d === 'all' ? 'All' : d.charAt(0).toUpperCase() + d.slice(1);
+    btn.onclick = () => {
+      document.querySelectorAll('#modelFilter .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeModelFilter = d;
+      renderModels();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function renderModels() {
+  const filtered = activeModelFilter === 'all'
+    ? MENTAL_MODELS
+    : MENTAL_MODELS.filter(m => m.discipline === activeModelFilter);
+  const grid = document.getElementById('modelsGrid');
+  grid.innerHTML = '';
+  filtered.forEach((m, i) => {
+    const card = document.createElement('div');
+    card.className = 'model-card' + (expandedModel === m.name ? ' expanded' : '');
+    card.innerHTML = `
+      <div class="model-disc disc-${m.discipline}">${m.discipline}</div>
+      <div class="model-name">${m.name}</div>
+      <div class="model-core">${m.core}</div>
+      <div class="model-tag">${expandedModel === m.name ? '− collapse' : '+ expand'}</div>
+      <div class="model-expanded">
+        <div class="model-munger">"${m.munger}"</div>
+        <div class="model-application">→ ${m.application}</div>
+      </div>`;
+    card.onclick = () => {
+      expandedModel = expandedModel === m.name ? null : m.name;
+      renderModels();
+    };
+    grid.appendChild(card);
+  });
+}
+
+// ── INVERSION ENGINE ──────────────────────────────────────────────────────
+function detectDomain(text) {
+  const lower = text.toLowerCase();
+  let best = null, bestScore = 0;
+  for (const [key, domain] of Object.entries(DOMAINS)) {
+    const score = domain.keywords.reduce((s, kw) => s + (lower.includes(kw) ? 1 : 0), 0);
+    if (score > bestScore) { bestScore = score; best = { key, ...domain }; }
+  }
+  return best || { ...DEFAULT_DOMAIN, key: 'general', label: 'General Decision' };
+}
+
+function buildInversionQ(goalText) {
+  const text = goalText.trim();
+  if (!text) return "What would guarantee the OPPOSITE of your goal?";
+  const clean = text.replace(/^(i want to |i'm trying to |we want to |we need to |my goal is to |i need to )/i, '').trim();
+  const lower = clean.toLowerCase();
+  if (lower.startsWith('i ') || lower.startsWith('we ')) {
+    return `What would guarantee ${lower.replace(/\.$/, '')} NEVER happens?`;
+  }
+  return `What would guarantee that "${clean.replace(/\.$/, '')}" completely fails?`;
+}
+
+function runInversion() {
+  const goal = document.getElementById('invGoal').value.trim();
+  if (!goal) { alert('Describe your goal or decision first.'); return; }
+
+  const domain = detectDomain(goal + ' ' + document.getElementById('invStakes').value);
+
+  document.getElementById('inversionQ').textContent = buildInversionQ(goal);
+  document.getElementById('invDomainBadge').textContent = domain.label;
+
+  const failList = document.getElementById('invFailures');
+  failList.innerHTML = domain.failures.map((f, i) =>
+    `<li><span class="fail-num">0${i+1}</span><span>${f}</span></li>`
+  ).join('');
+
+  const biasesDiv = document.getElementById('invBiases');
+  biasesDiv.innerHTML = domain.biases.map(b => `
+    <div class="inv-bias-item">
+      <div class="inv-bias-name">${b.name}</div>
+      <div class="inv-bias-desc">${b.desc}</div>
+    </div>`
+  ).join('');
+
+  document.getElementById('invMungerQ').textContent = '"' + domain.munger + '"';
+
+  const checkList = document.getElementById('invChecklist');
+  checkList.innerHTML = domain.checks.map(c => `
+    <li onclick="this.classList.toggle('checked')">
+      <div class="check-box">✓</div>
+      <div class="check-text">${c}</div>
+    </li>`
+  ).join('');
+
+  const result = document.getElementById('invResult');
+  result.classList.add('visible');
+  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── BIAS AUDIT ────────────────────────────────────────────────────────────
+function buildBiasGrid() {
+  const grid = document.getElementById('biasGrid');
+  BIASES.forEach((b, i) => {
+    biasVals[i] = 0;
+    const card = document.createElement('div');
+    card.className = 'bias-card';
+    card.innerHTML = `
+      <div class="bias-header">
+        <div class="bias-num">BIAS ${String(i+1).padStart(2,'0')}</div>
+        <div class="bias-val-label" id="bval${i}">0</div>
+      </div>
+      <div class="bias-name">${b.name}</div>
+      <div class="bias-question">"${b.question}"</div>
+      <div class="bias-slider-wrap">
+        <input type="range" min="0" max="10" value="0"
+          oninput="updateBias(${i}, this.value)">
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function updateBias(idx, val) {
+  biasVals[idx] = parseInt(val);
+  document.getElementById('bval' + idx).textContent = val;
+  renderBiasScore();
+}
+
+function renderBiasScore() {
+  const total = Object.values(biasVals).reduce((s, v) => s + v, 0);
+  const max = BIASES.length * 10;
+  const pct = Math.round((total / max) * 100);
+
+  document.getElementById('biasRingNum').textContent = pct + '%';
+  const fill = document.getElementById('biasRingFill');
+  fill.style.strokeDashoffset = 440 - (pct / 100) * 440;
+
+  const verdicts = [
+    [0, "You either have extraordinary self-discipline, or you haven't answered honestly. Revisit."],
+    [15, "Unusually low. Awareness this strong is rare — hold it with appropriate humility."],
+    [30, "Healthy. You have bias vulnerabilities but you're aware of them. Awareness is the first layer of defense."],
+    [50, "Average human territory. These tendencies will cost you — the question is where and when."],
+    [70, "High vulnerability. In high-stakes decisions, these biases are likely to produce regrettable outcomes. Build structural defenses."],
+    [85, "A persuasive salesman's dream. In designed-to-persuade environments, you will be systematically exploited."],
+  ];
+  const v = verdicts.slice().reverse().find(([min]) => pct >= min);
+  document.getElementById('biasVerdict').textContent = v[1];
+
+  const sorted = Object.entries(biasVals)
+    .sort((a, b) => b[1] - a[1])
+    .filter(([, val]) => val > 0)
+    .slice(0, 3);
+
+  const top3 = document.getElementById('biasTop3');
+  if (sorted.length === 0) { top3.style.display = 'none'; return; }
+  top3.style.display = 'block';
+
+  document.getElementById('antidotesList').innerHTML = sorted.map(([idx]) => {
+    const b = BIASES[parseInt(idx)];
+    return `
+      <div class="bias-antidote">
+        <div class="antidote-name">${b.name} — ${biasVals[idx]}/10</div>
+        <div class="antidote-text">${b.question}</div>
+        <div class="antidote-fix">Munger's antidote: ${b.antidote}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── WISDOM ARCHIVE ────────────────────────────────────────────────────────
+function buildWisdomFilter() {
+  const themes = ['all', ...new Set(WISDOM_QUOTES.map(q => q.theme))];
+  const wrap = document.getElementById('wisdomFilter');
+  themes.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (t === 'all' ? ' active' : '');
+    btn.textContent = t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1);
+    btn.onclick = () => {
+      document.querySelectorAll('#wisdomFilter .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeWisdomFilter = t;
+      renderWisdom();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function renderWisdom() {
+  const filtered = activeWisdomFilter === 'all'
+    ? WISDOM_QUOTES
+    : WISDOM_QUOTES.filter(q => q.theme === activeWisdomFilter);
+  const grid = document.getElementById('wisdomGrid');
+  grid.innerHTML = '';
+  filtered.forEach((q, i) => {
+    const idx = WISDOM_QUOTES.indexOf(q);
+    const card = document.createElement('div');
+    card.className = 'wisdom-card' + (savedWisdom.has(idx) ? ' saved' : '');
+    card.innerHTML = `
+      <div class="wisdom-text">"${q.text}"</div>
+      <div class="wisdom-meta">
+        <div class="wisdom-theme">${q.theme}</div>
+        <div class="wisdom-saved-label">${savedWisdom.has(idx) ? '✓ saved' : 'click to save'}</div>
+      </div>`;
+    card.onclick = () => {
+      if (savedWisdom.has(idx)) savedWisdom.delete(idx); else savedWisdom.add(idx);
+      renderWisdom();
+    };
+    grid.appendChild(card);
+  });
+}
+
+// ── SMOOTH SCROLL ─────────────────────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const el = document.querySelector(a.getAttribute('href'));
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+buildTicker();
+renderPrinciple();
+buildModelFilter();
+renderModels();
+buildBiasGrid();
+renderBiasScore();
+buildWisdomFilter();
+renderWisdom();
+</script>
+</body>
+</html>
