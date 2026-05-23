@@ -372,9 +372,9 @@
 <!-- Hero -->
 <section class="hero">
   <div class="hero-label">Evolutionary Psychology · Empirical Study</div>
-  <h1>37 Cultures,<br>One <em>Pattern</em></h1>
+  <h1>37 Cultures Study</h1>
   <p class="hero-sub">
-    Sex differences in human mate preferences, tested across 10,047 participants in 37 cultures on six continents — revealing what is universal and what varies.
+    Sex differences in human mate preferences, tested across 10,047 participants in 37 cultures on six continents, revealing what is universal and what varies.
   </p>
   <div class="hero-meta">Buss (1989) · Behavioral and Brain Sciences, 12, 1–49</div>
 </section>
@@ -401,6 +401,7 @@
     <button class="tab" data-char="ambition">Ambition</button>
     <button class="tab" data-char="looks">Good Looks</button>
     <button class="tab" data-char="chastity">Chastity</button>
+    <button class="tab" data-char="age">Age Preference</button>
   </div>
 
   <!-- Panels -->
@@ -408,6 +409,19 @@
   <div id="panel-ambition" class="chart-panel"></div>
   <div id="panel-looks" class="chart-panel"></div>
   <div id="panel-chastity" class="chart-panel"></div>
+  <div id="panel-age" class="chart-panel">
+    <div class="insight-box">
+      <div class="insight-badge">Finding</div>
+      <div class="insight-text"><strong>Most universal finding — confirmed in all 37 samples (p &lt; .001).</strong> Men preferred mates an average of 2.66 years younger; women preferred mates 3.42 years older. Where marriage records were available, the actual age gap averaged 2.99 years — sitting between the two expressed preferences. Predicted direction: men prefer younger, women prefer older. Counts reflect statistical significance, not just directional agreement.</div>
+    </div>
+    <div class="legend">
+      <div class="legend-line"><span class="legend-dot" style="background:#3b82f6"></span>Men's preferred gap (negative = prefer younger)</div>
+      <div class="legend-line"><span class="legend-dot" style="background:#f59e0b"></span>Women's preferred gap (positive = prefer older)</div>
+      <div class="legend-line"><span style="display:inline-block;width:10px;height:10px;background:rgba(255,255,255,0.35);transform:rotate(45deg);margin-right:6px;flex-shrink:0"></span>Actual marriage age gap</div>
+    </div>
+    <canvas id="canvas-age" class="dumbbell"></canvas>
+    <div class="region-legend" id="regions-age"></div>
+  </div>
 </div>
 
 <!-- Culture Profile -->
@@ -497,96 +511,140 @@ const REGION_COLORS = {
 const CHARS = [
   { key:'finance',  label:'Good Financial Prospect',             short:'Financial Prospect',
     xmin:0, xmax:3, prediction:'F > M', supported:'36 / 37 samples',
-    note:'<strong>Most universally confirmed sex difference.</strong> Women valued earning capacity more in 36 of 37 cultures. Sole exception: Spain, where ratings were virtually identical (M=1.35, F=1.39).' },
+    note:'<strong>Most universally confirmed sex difference.</strong> Women valued earning capacity more in 36 of 37 cultures. Spain\'s means show F marginally above M (1.39 vs 1.25) but the gap did not reach statistical significance. <em>Counts reflect statistical significance, not just directional agreement.</em>' },
   { key:'ambition', label:'Ambition &amp; Industriousness',      short:'Ambition',
     xmin:0, xmax:3, prediction:'F > M', supported:'29 / 37 samples',
-    note:'<strong>Broadly confirmed but not universal.</strong> Women consistently placed greater importance on ambition as a proxy for future resource acquisition. Notable reversals: Iran and S. Africa (Zulu).' },
+    note:'<strong>Broadly confirmed but not universal.</strong> Women consistently placed greater importance on ambition as a proxy for future resource acquisition. Directionally, 34 of 37 means show F &gt; M; the gap reached statistical significance in 29 of 37. <em>Counts reflect statistical significance, not just directional agreement.</em>' },
   { key:'looks',    label:'Good Looks',                           short:'Good Looks',
     xmin:0, xmax:3, prediction:'M > F', supported:'34 / 37 samples',
-    note:'<strong>Men valued physical attractiveness significantly more</strong> across virtually all cultures — the second most universal finding. Statistically significant in 34 of 37 samples.' },
+    note:'<strong>Men valued physical attractiveness more across all 37 cultures</strong> — every mean shows M &gt; F. The gap reached statistical significance in 34 of 37 samples. The three non-significant cases (India, Poland, Sweden) still show the predicted direction. <em>Counts reflect statistical significance, not just directional agreement.</em>' },
   { key:'chastity', label:'Chastity: No Prior Sexual Experience', short:'Chastity',
     xmin:0, xmax:3, prediction:'M > F', supported:'23 / 37 samples',
-    note:'<strong>Most culturally variable characteristic.</strong> Ranges from near-zero importance (Japan, Scandinavia, France) to near-maximum (China, Iran, Taiwan). Men > Women in 23/37; reversed in 14 — reflecting local norms around sexuality.' },
+    note:'<strong>Most culturally variable characteristic.</strong> Ranges from near-zero importance (Scandinavia, France) to near-maximum (China, Iran, Taiwan). Directionally, 32 of 37 means show M &gt; F; the gap reached statistical significance in 23 of 37. <em>Counts reflect statistical significance, not just directional agreement.</em>' },
 ];
 
 const SAMPLES = [
-  {name:'Nigeria',           region:'Africa'},
-  {name:'S. Africa (White)', region:'Africa'},
-  {name:'S. Africa (Zulu)',  region:'Africa'},
-  {name:'Zambia',            region:'Africa'},
-  {name:'China',             region:'Asia'},
-  {name:'India',             region:'Asia'},
-  {name:'Indonesia',         region:'Asia'},
-  {name:'Iran',              region:'Asia'},
-  {name:'Israel (Jewish)',   region:'Asia'},
-  {name:'Israel (Arab)',     region:'Asia'},
-  {name:'Japan',             region:'Asia'},
-  {name:'Taiwan',            region:'Asia'},
-  {name:'Bulgaria',          region:'E. Europe'},
-  {name:'Estonia',           region:'E. Europe'},
-  {name:'Poland',            region:'E. Europe'},
-  {name:'Yugoslavia',        region:'E. Europe'},
-  {name:'Belgium',           region:'W. Europe'},
-  {name:'France',            region:'W. Europe'},
-  {name:'Finland',           region:'W. Europe'},
-  {name:'Germany (W.)',      region:'W. Europe'},
-  {name:'Great Britain',     region:'W. Europe'},
-  {name:'Greece',            region:'W. Europe'},
-  {name:'Ireland',           region:'W. Europe'},
-  {name:'Italy',             region:'W. Europe'},
-  {name:'Netherlands',       region:'W. Europe'},
-  {name:'Norway',            region:'W. Europe'},
-  {name:'Spain',             region:'W. Europe'},
-  {name:'Sweden',            region:'W. Europe'},
-  {name:'Canada (English)',  region:'N. America'},
-  {name:'Canada (French)',   region:'N. America'},
-  {name:'USA (Mainland)',    region:'N. America'},
-  {name:'USA (Hawaii)',      region:'N. America'},
-  {name:'Australia',         region:'Oceania'},
-  {name:'New Zealand',       region:'Oceania'},
-  {name:'Brazil',            region:'S. America'},
-  {name:'Colombia',          region:'S. America'},
-  {name:'Venezuela',         region:'S. America'},
+  {name:'Nigeria',               region:'Africa'},
+  {name:'S. Africa (whites)',    region:'Africa'},
+  {name:'S. Africa (Zulu)',      region:'Africa'},
+  {name:'Zambia',                region:'Africa'},
+  {name:'China',                 region:'Asia'},
+  {name:'India',                 region:'Asia'},
+  {name:'Indonesia',             region:'Asia'},
+  {name:'Iran',                  region:'Asia'},
+  {name:'Israel (Jewish)',       region:'Asia'},
+  {name:'Israel (Palestinian)',  region:'Asia'},
+  {name:'Japan',                 region:'Asia'},
+  {name:'Taiwan',                region:'Asia'},
+  {name:'Bulgaria',              region:'E. Europe'},
+  {name:'Estonian S.S.R.',       region:'E. Europe'},
+  {name:'Poland',                region:'E. Europe'},
+  {name:'Yugoslavia',            region:'E. Europe'},
+  {name:'Belgium',               region:'W. Europe'},
+  {name:'France',                region:'W. Europe'},
+  {name:'Finland',               region:'W. Europe'},
+  {name:'Germany-West',          region:'W. Europe'},
+  {name:'Great Britain',         region:'W. Europe'},
+  {name:'Greece',                region:'W. Europe'},
+  {name:'Ireland',               region:'W. Europe'},
+  {name:'Italy',                 region:'W. Europe'},
+  {name:'Netherlands',           region:'W. Europe'},
+  {name:'Norway',                region:'W. Europe'},
+  {name:'Spain',                 region:'W. Europe'},
+  {name:'Sweden',                region:'W. Europe'},
+  {name:'Canada (English)',      region:'N. America'},
+  {name:'Canada (French)',       region:'N. America'},
+  {name:'USA (Mainland)',        region:'N. America'},
+  {name:'USA (Hawaii)',          region:'N. America'},
+  {name:'Australia',             region:'Oceania'},
+  {name:'New Zealand',           region:'Oceania'},
+  {name:'Brazil',                region:'S. America'},
+  {name:'Colombia',              region:'S. America'},
+  {name:'Venezuela',             region:'S. America'},
 ];
 
 const DATA = {
-  'Nigeria':           { finance:{m:1.37,f:2.30}, ambition:{m:2.25,f:2.61}, looks:{m:2.24,f:1.72}, chastity:{m:2.31,f:0.97} },
-  'S. Africa (White)': { finance:{m:0.94,f:1.73}, ambition:{m:1.73,f:2.16}, looks:{m:1.58,f:1.22}, chastity:{m:1.06,f:0.84} },
-  'S. Africa (Zulu)':  { finance:{m:0.70,f:1.14}, ambition:{m:2.41,f:2.10}, looks:{m:1.17,f:1.06}, chastity:{m:1.31,f:0.62} },
-  'Zambia':            { finance:{m:1.46,f:2.31}, ambition:{m:1.97,f:2.14}, looks:{m:2.23,f:1.65}, chastity:{m:1.56,f:1.03} },
-  'China':             { finance:{m:1.10,f:1.56}, ambition:{m:2.22,f:2.63}, looks:{m:2.06,f:1.59}, chastity:{m:2.54,f:2.45} },
-  'India':             { finance:{m:1.60,f:2.00}, ambition:{m:1.70,f:2.44}, looks:{m:2.03,f:1.97}, chastity:{m:1.54,f:1.98} },
-  'Indonesia':         { finance:{m:1.42,f:2.55}, ambition:{m:1.97,f:2.29}, looks:{m:1.81,f:1.36}, chastity:{m:2.06,f:1.98} },
-  'Iran':              { finance:{m:1.25,f:2.04}, ambition:{m:2.68,f:2.55}, looks:{m:2.07,f:1.97}, chastity:{m:2.67,f:2.23} },
-  'Israel (Jewish)':   { finance:{m:0.91,f:1.61}, ambition:{m:1.78,f:2.36}, looks:{m:2.39,f:1.47}, chastity:{m:0.41,f:0.29} },
-  'Israel (Arab)':     { finance:{m:1.28,f:1.65}, ambition:{m:2.28,f:2.58}, looks:{m:1.56,f:0.81}, chastity:{m:2.24,f:1.18} },
-  'Japan':             { finance:{m:0.92,f:2.20}, ambition:{m:1.92,f:2.17}, looks:{m:1.50,f:1.09}, chastity:{m:0.25,f:0.28} },
-  'Taiwan':            { finance:{m:1.55,f:2.21}, ambition:{m:2.14,f:2.81}, looks:{m:1.76,f:1.28}, chastity:{m:2.32,f:0.85} },
-  'Bulgaria':          { finance:{m:1.16,f:2.04}, ambition:{m:1.67,f:2.04}, looks:{m:2.39,f:1.95}, chastity:{m:0.69,f:0.44} },
-  'Estonia':           { finance:{m:1.31,f:1.51}, ambition:{m:2.31,f:2.46}, looks:{m:2.27,f:1.63}, chastity:{m:0.48,f:0.28} },
-  'Poland':            { finance:{m:1.09,f:1.74}, ambition:{m:1.93,f:2.29}, looks:{m:1.93,f:1.77}, chastity:{m:1.23,f:0.93} },
-  'Yugoslavia':        { finance:{m:1.27,f:1.66}, ambition:{m:1.82,f:2.24}, looks:{m:2.20,f:1.74}, chastity:{m:0.47,f:0.36} },
-  'Belgium':           { finance:{m:0.95,f:1.36}, ambition:{m:1.67,f:1.97}, looks:{m:1.78,f:1.28}, chastity:{m:0.67,f:0.02} },
-  'France':            { finance:{m:1.22,f:1.68}, ambition:{m:1.75,f:2.00}, looks:{m:2.06,f:1.76}, chastity:{m:0.27,f:0.14} },
-  'Finland':           { finance:{m:0.62,f:1.19}, ambition:{m:1.44,f:1.66}, looks:{m:1.56,f:0.90}, chastity:{m:0.34,f:0.40} },
-  'Germany (W.)':      { finance:{m:1.14,f:1.81}, ambition:{m:1.40,f:1.66}, looks:{m:1.02,f:0.90}, chastity:{m:0.34,f:0.17} },
-  'Great Britain':     { finance:{m:0.67,f:1.16}, ambition:{m:1.15,f:1.78}, looks:{m:1.94,f:1.64}, chastity:{m:0.49,f:0.93} },
-  'Greece':            { finance:{m:1.16,f:1.92}, ambition:{m:1.96,f:2.59}, looks:{m:2.22,f:1.94}, chastity:{m:1.49,f:1.47} },
-  'Ireland':           { finance:{m:0.82,f:1.67}, ambition:{m:1.44,f:1.76}, looks:{m:1.87,f:0.69}, chastity:{m:0.83,f:0.88} },
-  'Italy':             { finance:{m:0.87,f:1.33}, ambition:{m:1.61,f:2.04}, looks:{m:2.00,f:1.64}, chastity:{m:0.25,f:0.27} },
-  'Netherlands':       { finance:{m:0.69,f:0.94}, ambition:{m:1.28,f:1.41}, looks:{m:1.76,f:1.21}, chastity:{m:0.29,f:0.09} },
-  'Norway':            { finance:{m:1.10,f:1.42}, ambition:{m:1.60,f:1.70}, looks:{m:1.57,f:1.32}, chastity:{m:0.66,f:0.36} },
-  'Spain':             { finance:{m:1.35,f:1.39}, ambition:{m:1.73,f:1.90}, looks:{m:1.91,f:1.24}, chastity:{m:0.66,f:0.96} },
-  'Sweden':            { finance:{m:1.18,f:1.75}, ambition:{m:1.97,f:2.04}, looks:{m:1.65,f:1.46}, chastity:{m:0.25,f:0.28} },
-  'Canada (English)':  { finance:{m:1.02,f:1.91}, ambition:{m:1.82,f:2.32}, looks:{m:1.96,f:1.50}, chastity:{m:0.55,f:0.78} },
-  'Canada (French)':   { finance:{m:1.47,f:1.94}, ambition:{m:1.79,f:2.08}, looks:{m:1.68,f:1.41}, chastity:{m:0.33,f:0.43} },
-  'USA (Mainland)':    { finance:{m:1.03,f:1.96}, ambition:{m:1.84,f:2.45}, looks:{m:2.11,f:1.67}, chastity:{m:0.62,f:0.52} },
-  'USA (Hawaii)':      { finance:{m:1.50,f:2.10}, ambition:{m:1.95,f:2.24}, looks:{m:2.06,f:1.49}, chastity:{m:0.91,f:0.94} },
-  'Australia':         { finance:{m:0.69,f:1.54}, ambition:{m:1.38,f:1.82}, looks:{m:1.65,f:1.24}, chastity:{m:0.73,f:0.45} },
-  'New Zealand':       { finance:{m:1.35,f:1.63}, ambition:{m:1.37,f:1.96}, looks:{m:1.29,f:0.99}, chastity:{m:0.88,f:0.72} },
-  'Brazil':            { finance:{m:1.24,f:1.91}, ambition:{m:1.70,f:2.31}, looks:{m:1.89,f:1.68}, chastity:{m:0.61,f:0.30} },
-  'Colombia':          { finance:{m:1.72,f:2.21}, ambition:{m:2.36,f:2.50}, looks:{m:1.56,f:1.22}, chastity:{m:1.27,f:0.30} },
-  'Venezuela':         { finance:{m:1.66,f:2.25}, ambition:{m:2.18,f:2.43}, looks:{m:1.76,f:1.27}, chastity:{m:0.57,f:0.39} },
+  'Nigeria':               { finance:{m:1.37,f:2.30}, ambition:{m:2.25,f:2.61}, looks:{m:2.24,f:1.82}, chastity:{m:1.22,f:0.51} },
+  'S. Africa (whites)':    { finance:{m:0.94,f:1.73}, ambition:{m:1.73,f:2.16}, looks:{m:1.58,f:1.22}, chastity:{m:1.06,f:0.84} },
+  'S. Africa (Zulu)':      { finance:{m:0.70,f:1.14}, ambition:{m:2.41,f:2.10}, looks:{m:1.17,f:0.88}, chastity:{m:1.17,f:0.31} },
+  'Zambia':                { finance:{m:1.46,f:2.33}, ambition:{m:1.97,f:2.14}, looks:{m:2.23,f:1.65}, chastity:{m:1.66,f:0.98} },
+  'China':                 { finance:{m:1.10,f:1.56}, ambition:{m:2.22,f:2.63}, looks:{m:2.06,f:1.59}, chastity:{m:2.54,f:2.61} },
+  'India':                 { finance:{m:1.60,f:2.00}, ambition:{m:1.79,f:2.44}, looks:{m:2.03,f:1.97}, chastity:{m:2.44,f:2.17} },
+  'Indonesia':             { finance:{m:1.42,f:2.55}, ambition:{m:1.97,f:2.29}, looks:{m:1.81,f:1.36}, chastity:{m:2.06,f:1.98} },
+  'Iran':                  { finance:{m:1.25,f:2.04}, ambition:{m:2.68,f:2.81}, looks:{m:2.07,f:1.69}, chastity:{m:2.67,f:2.23} },
+  'Israel (Jewish)':       { finance:{m:1.31,f:1.82}, ambition:{m:1.78,f:2.43}, looks:{m:1.77,f:1.56}, chastity:{m:0.93,f:0.58} },
+  'Israel (Palestinian)':  { finance:{m:1.28,f:1.67}, ambition:{m:2.28,f:2.58}, looks:{m:2.38,f:1.47}, chastity:{m:2.24,f:0.96} },
+  'Japan':                 { finance:{m:0.92,f:2.29}, ambition:{m:1.92,f:2.37}, looks:{m:1.50,f:1.09}, chastity:{m:1.42,f:0.78} },
+  'Taiwan':                { finance:{m:1.25,f:2.21}, ambition:{m:2.24,f:2.81}, looks:{m:1.76,f:1.28}, chastity:{m:2.32,f:2.20} },
+  'Bulgaria':              { finance:{m:1.16,f:1.64}, ambition:{m:1.67,f:2.15}, looks:{m:2.39,f:1.95}, chastity:{m:0.69,f:0.44} },
+  'Estonian S.S.R.':       { finance:{m:1.31,f:1.51}, ambition:{m:2.31,f:2.46}, looks:{m:2.27,f:1.63}, chastity:{m:1.25,f:0.84} },
+  'Poland':                { finance:{m:1.09,f:1.74}, ambition:{m:1.93,f:2.29}, looks:{m:1.93,f:1.77}, chastity:{m:1.23,f:0.99} },
+  'Yugoslavia':            { finance:{m:1.27,f:1.66}, ambition:{m:1.82,f:2.24}, looks:{m:2.20,f:1.74}, chastity:{m:0.47,f:0.08} },
+  'Belgium':               { finance:{m:0.95,f:1.36}, ambition:{m:1.67,f:1.97}, looks:{m:1.78,f:1.28}, chastity:{m:0.67,f:0.38} },
+  'France':                { finance:{m:1.22,f:1.68}, ambition:{m:1.75,f:2.00}, looks:{m:2.08,f:1.76}, chastity:{m:0.45,f:0.41} },
+  'Finland':               { finance:{m:0.65,f:1.18}, ambition:{m:1.44,f:1.56}, looks:{m:1.56,f:0.99}, chastity:{m:0.27,f:0.29} },
+  'Germany-West':          { finance:{m:1.14,f:1.81}, ambition:{m:1.40,f:1.66}, looks:{m:1.92,f:1.32}, chastity:{m:0.34,f:0.17} },
+  'Great Britain':         { finance:{m:0.67,f:1.16}, ambition:{m:1.15,f:1.59}, looks:{m:1.96,f:1.36}, chastity:{m:0.46,f:0.49} },
+  'Greece':                { finance:{m:1.16,f:1.92}, ambition:{m:1.96,f:2.25}, looks:{m:2.22,f:1.94}, chastity:{m:0.48,f:0.40} },
+  'Ireland':               { finance:{m:0.82,f:1.67}, ambition:{m:1.44,f:1.76}, looks:{m:1.87,f:1.22}, chastity:{m:1.49,f:1.47} },
+  'Italy':                 { finance:{m:0.87,f:1.33}, ambition:{m:1.63,f:2.07}, looks:{m:2.00,f:1.64}, chastity:{m:0.65,f:0.27} },
+  'Netherlands':           { finance:{m:0.69,f:0.94}, ambition:{m:1.28,f:1.41}, looks:{m:1.76,f:1.21}, chastity:{m:0.29,f:0.29} },
+  'Norway':                { finance:{m:1.10,f:1.42}, ambition:{m:1.60,f:1.70}, looks:{m:1.87,f:1.32}, chastity:{m:0.31,f:0.30} },
+  'Spain':                 { finance:{m:1.25,f:1.39}, ambition:{m:1.73,f:1.69}, looks:{m:1.91,f:1.24}, chastity:{m:0.66,f:0.36} },
+  'Sweden':                { finance:{m:1.18,f:1.75}, ambition:{m:1.97,f:2.04}, looks:{m:1.65,f:1.46}, chastity:{m:0.25,f:0.28} },
+  'Canada (English)':      { finance:{m:1.02,f:1.91}, ambition:{m:1.82,f:2.32}, looks:{m:1.96,f:1.64}, chastity:{m:0.55,f:0.33} },
+  'Canada (French)':       { finance:{m:1.47,f:1.94}, ambition:{m:1.79,f:2.08}, looks:{m:1.68,f:1.41}, chastity:{m:0.62,f:0.33} },
+  'USA (Mainland)':        { finance:{m:1.08,f:1.96}, ambition:{m:1.84,f:2.45}, looks:{m:2.11,f:1.67}, chastity:{m:0.85,f:0.52} },
+  'USA (Hawaii)':          { finance:{m:1.50,f:2.10}, ambition:{m:1.95,f:2.24}, looks:{m:2.06,f:1.49}, chastity:{m:0.91,f:0.58} },
+  'Australia':             { finance:{m:0.69,f:1.54}, ambition:{m:1.38,f:1.82}, looks:{m:1.65,f:1.24}, chastity:{m:0.73,f:0.45} },
+  'New Zealand':           { finance:{m:1.35,f:1.63}, ambition:{m:1.57,f:1.86}, looks:{m:1.99,f:1.29}, chastity:{m:0.88,f:0.72} },
+  'Brazil':                { finance:{m:1.24,f:1.91}, ambition:{m:1.70,f:2.21}, looks:{m:1.89,f:1.68}, chastity:{m:0.93,f:0.36} },
+  'Colombia':              { finance:{m:1.72,f:2.21}, ambition:{m:2.36,f:2.24}, looks:{m:1.56,f:1.22}, chastity:{m:1.27,f:0.30} },
+  'Venezuela':             { finance:{m:1.66,f:2.26}, ambition:{m:2.18,f:2.42}, looks:{m:1.76,f:1.27}, chastity:{m:0.93,f:0.59} },
+};
+
+// ── Age preference data ────────────────────────────────────────────────────────
+// m = years men prefer partner to be younger (stored as negative)
+// f = years women prefer partner to be older (positive)
+// actual = real marriage age gap where census data available, null otherwise
+const AGE_DATA = {
+  'Nigeria':               { m: -6.45, f:  4.90, actual: null },
+  'S. Africa (whites)':    { m: -2.30, f:  3.50, actual: 3.13 },
+  'S. Africa (Zulu)':      { m: -3.33, f:  3.76, actual: 2.38 },
+  'Zambia':                { m: -7.38, f:  4.14, actual: null },
+  'China':                 { m: -2.05, f:  3.45, actual: null },
+  'India':                 { m: -3.06, f:  3.29, actual: null },
+  'Indonesia':             { m: -2.72, f:  4.69, actual: null },
+  'Iran':                  { m: -4.02, f:  5.10, actual: null },
+  'Israel (Jewish)':       { m: -2.88, f:  3.95, actual: 3.57 },
+  'Israel (Palestinian)':  { m: -3.75, f:  3.71, actual: 3.57 },
+  'Japan':                 { m: -2.37, f:  3.05, actual: 2.92 },
+  'Taiwan':                { m: -3.13, f:  3.78, actual: 3.50 },
+  'Bulgaria':              { m: -3.13, f:  4.18, actual: 3.54 },
+  'Estonian S.S.R.':       { m: -2.19, f:  2.85, actual: 2.49 },
+  'Poland':                { m: -2.85, f:  3.38, actual: 2.10 },
+  'Yugoslavia':            { m: -2.47, f:  3.61, actual: 3.55 },
+  'Belgium':               { m: -2.53, f:  2.46, actual: 2.37 },
+  'France':                { m: -1.94, f:  4.00, actual: 2.28 },
+  'Finland':               { m: -0.38, f:  2.83, actual: 2.30 },
+  'Germany-West':          { m: -2.52, f:  3.70, actual: 3.19 },
+  'Great Britain':         { m: -1.92, f:  2.26, actual: 2.61 },
+  'Greece':                { m: -3.36, f:  4.54, actual: 4.92 },
+  'Ireland':               { m: -2.07, f:  2.78, actual: 2.17 },
+  'Italy':                 { m: -2.76, f:  3.24, actual: 3.68 },
+  'Netherlands':           { m: -1.01, f:  2.72, actual: 2.58 },
+  'Norway':                { m: -1.91, f:  3.12, actual: 2.87 },
+  'Spain':                 { m: -1.46, f:  2.60, actual: 2.45 },
+  'Sweden':                { m: -2.34, f:  2.91, actual: 2.97 },
+  'Canada (English)':      { m: -1.53, f:  2.72, actual: 2.51 },
+  'Canada (French)':       { m: -1.22, f:  1.82, actual: 2.51 },
+  'USA (Mainland)':        { m: -1.65, f:  2.54, actual: 2.71 },
+  'USA (Hawaii)':          { m: -1.92, f:  3.30, actual: null },
+  'Australia':             { m: -1.77, f:  2.86, actual: 2.73 },
+  'New Zealand':           { m: -1.59, f:  2.91, actual: 2.78 },
+  'Brazil':                { m: -2.94, f:  3.94, actual: 3.52 },
+  'Colombia':              { m: -4.45, f:  4.51, actual: 4.53 },
+  'Venezuela':             { m: -2.99, f:  3.62, actual: 3.47 },
 };
 
 // ── Drawing constants ──────────────────────────────────────────────────────────
@@ -735,6 +793,176 @@ function drawDumbbell(canvasEl, char, hoveredRow) {
   });
 
   return { sorted, xScale, PAD_L, PAD_T, ROW_H, plotW };
+}
+
+// ── Age chart ──────────────────────────────────────────────────────────────────
+// Populate region legend for age panel
+Object.entries(REGION_COLORS).forEach(([region, color]) => {
+  const el = document.getElementById('regions-age');
+  if (el) {
+    const div = document.createElement('div');
+    div.className = 'region-item';
+    div.innerHTML = `<span class="region-dot" style="background:${color}"></span>${region}`;
+    el.appendChild(div);
+  }
+});
+
+function drawAgeChart(canvasEl, hoveredRow) {
+  const dpr   = window.devicePixelRatio || 1;
+  const ROW_H = 26;
+  const N     = SAMPLES.length;
+  const PAD_L = 160;
+  const PAD_R = 20;
+  const PAD_T = 44;
+  const PAD_B = 24;
+  const W     = canvasEl.offsetWidth;
+  const H     = PAD_T + N * ROW_H + PAD_B;
+
+  canvasEl.width  = W * dpr;
+  canvasEl.height = H * dpr;
+  canvasEl.style.height = H + 'px';
+
+  const ctx   = canvasEl.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const XMIN  = -9;
+  const XMAX  =  6;
+  const plotW = W - PAD_L - PAD_R;
+  const xScale = v => PAD_L + (v - XMIN) / (XMAX - XMIN) * plotW;
+  const x0    = xScale(0);
+
+  // sorted by total gap magnitude (f - |m|), largest at top
+  const sorted = [...SAMPLES].sort((a, b) => {
+    const da = AGE_DATA[a.name], db = AGE_DATA[b.name];
+    return (db.f - db.m) - (da.f - da.m);
+  });
+
+  // gridlines + axis labels
+  const ticks = [-8, -6, -4, -2, 0, 2, 4, 6];
+  ctx.font = `10px 'Courier New', monospace`;
+  ctx.textAlign = 'center';
+  ticks.forEach(t => {
+    const x = xScale(t);
+    ctx.strokeStyle = t === 0 ? 'rgba(255,255,255,0.2)' : BORDER;
+    ctx.lineWidth   = t === 0 ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(x, PAD_T - 8);
+    ctx.lineTo(x, PAD_T + N * ROW_H);
+    ctx.stroke();
+    ctx.fillStyle = t === 0 ? TEXT : TEXT_DIM;
+    ctx.fillText(t === 0 ? '0' : (t > 0 ? `+${t}` : `${t}`), x, PAD_T - 14);
+  });
+
+  // axis direction labels
+  ctx.font = `10px 'Courier New', monospace`;
+  ctx.fillStyle = TEXT_DIM;
+  ctx.textAlign = 'left';
+  ctx.fillText('← prefer younger', PAD_L + 4, PAD_T + N * ROW_H + 16);
+  ctx.textAlign = 'right';
+  ctx.fillText('prefer older →', W - PAD_R - 4, PAD_T + N * ROW_H + 16);
+  ctx.textAlign = 'center';
+  ctx.fillText('years', PAD_L + plotW / 2, PAD_T - 28);
+
+  // rows
+  sorted.forEach((sample, i) => {
+    const d   = AGE_DATA[sample.name];
+    const y   = PAD_T + i * ROW_H + ROW_H / 2;
+    const xm  = xScale(d.m);
+    const xf  = xScale(d.f);
+    const rc  = REGION_COLORS[sample.region] || '#94a3b8';
+    const isHovered = hoveredRow === i;
+
+    if (isHovered) {
+      ctx.fillStyle = 'rgba(167,139,250,0.06)';
+      ctx.fillRect(0, PAD_T + i * ROW_H, W, ROW_H);
+    }
+
+    // culture label
+    ctx.font = `12px Georgia, serif`;
+    ctx.fillStyle = isHovered ? TEXT : rc;
+    ctx.textAlign = 'right';
+    ctx.fillText(sample.name, PAD_L - 10, y + 4);
+
+    // connector (male dot to female dot)
+    ctx.strokeStyle = isHovered ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = isHovered ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(xm, y);
+    ctx.lineTo(xf, y);
+    ctx.stroke();
+
+    // actual marriage age gap — white diamond
+    if (d.actual !== null) {
+      const xa = xScale(d.actual);
+      const s  = isHovered ? 5 : 4;
+      ctx.save();
+      ctx.translate(xa, y);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = isHovered ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)';
+      ctx.fillRect(-s / 2, -s / 2, s, s);
+      ctx.restore();
+    }
+
+    // male dot (left, negative)
+    ctx.beginPath();
+    ctx.arc(xm, y, isHovered ? 5 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = MALE_COLOR;
+    ctx.fill();
+
+    // female dot (right, positive)
+    ctx.beginPath();
+    ctx.arc(xf, y, isHovered ? 5 : 4, 0, Math.PI * 2);
+    ctx.fillStyle = FEMALE_COLOR;
+    ctx.fill();
+  });
+
+  return { sorted, xScale, PAD_L, PAD_T, ROW_H };
+}
+
+function setupAgeCanvas() {
+  const canvas = document.getElementById('canvas-age');
+  if (!canvas) return;
+  let meta = drawAgeChart(canvas, null);
+  chartState['age'] = { meta, hovered: null };
+
+  function getRow(e) {
+    const rect = canvas.getBoundingClientRect();
+    const my   = e.clientY - rect.top;
+    const i    = Math.floor((my - meta.PAD_T) / meta.ROW_H);
+    return (i < 0 || i >= SAMPLES.length) ? -1 : i;
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    const i = getRow(e);
+    if (i === chartState['age'].hovered) {
+      if (i >= 0) { tooltip.style.left = (e.clientX + 16) + 'px'; tooltip.style.top = (e.clientY - 20) + 'px'; }
+      return;
+    }
+    chartState['age'].hovered = i;
+    meta = drawAgeChart(canvas, i >= 0 ? i : null);
+    chartState['age'].meta = meta;
+
+    if (i >= 0) {
+      const sample = meta.sorted[i];
+      const d      = AGE_DATA[sample.name];
+      ttName.textContent = sample.name;
+      ttM.textContent    = `Men prefer: ${Math.abs(d.m).toFixed(2)} yrs younger`;
+      ttF.textContent    = `Women prefer: ${d.f.toFixed(2)} yrs older`;
+      ttDiff.textContent = d.actual !== null ? `Actual gap: ${d.actual.toFixed(2)} yrs` : 'Actual gap: no data';
+      tooltip.style.display = 'block';
+      tooltip.style.left    = (e.clientX + 16) + 'px';
+      tooltip.style.top     = (e.clientY - 20) + 'px';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    chartState['age'].hovered = null;
+    drawAgeChart(canvas, null);
+    tooltip.style.display = 'none';
+  });
 }
 
 // ── Wire up canvases ───────────────────────────────────────────────────────────
@@ -907,6 +1135,7 @@ document.querySelectorAll('.tab').forEach(btn => {
 
     // re-draw on next frame so offsetWidth is valid
     requestAnimationFrame(() => {
+      if (key === 'age') { setupAgeCanvas(); return; }
       const char = CHARS.find(c => c.key === key);
       setupCanvas(char);
     });
@@ -934,6 +1163,7 @@ window.addEventListener('resize', () => {
       const panel = document.getElementById(`panel-${ch.key}`);
       if (panel.classList.contains('active')) setupCanvas(ch);
     });
+    if (document.getElementById('panel-age').classList.contains('active')) setupAgeCanvas();
     drawProfile(select.value);
   }, 150);
 });
