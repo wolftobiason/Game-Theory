@@ -74,6 +74,63 @@
     letter-spacing: 1px;
   }
 
+  /* ── Methodology strip ── */
+  .method-strip {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: start;
+    border-bottom: 1px solid var(--border);
+  }
+  .method-left p {
+    font-size: .875rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+    max-width: 560px;
+  }
+  .method-left p + p { margin-top: 8px; }
+  .method-scale {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .method-scale-title {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .scale-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+  }
+  .scale-num {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .scale-label { color: var(--text-dim); }
+  @media (max-width: 600px) {
+    .method-strip { grid-template-columns: 1fr; }
+  }
+
   /* ── Tabs ── */
   .tabs-wrap {
     max-width: 1100px;
@@ -321,6 +378,21 @@
   </p>
   <div class="hero-meta">Buss (1989) · Behavioral and Brain Sciences, 12, 1–49</div>
 </section>
+
+<!-- Methodology strip -->
+<div class="method-strip">
+  <div class="method-left">
+    <p>This data comes from a <strong style="color:var(--text)">self-reported survey</strong>, not behavioral observation. Participants were asked to rate the importance of 18 mate characteristics when choosing a long-term partner.</p>
+    <p>Surveys were administered locally in the native language across 37 cultures by ~50 collaborating researchers. Most samples were drawn from university students, averaging ~272 participants per culture (total N = 10,047). Because samples skew young and educated, they may not fully represent their broader population.</p>
+  </div>
+  <div class="method-scale">
+    <div class="method-scale-title">Rating scale</div>
+    <div class="scale-row"><span class="scale-num">0</span><span class="scale-label">Unimportant / irrelevant</span></div>
+    <div class="scale-row"><span class="scale-num">1</span><span class="scale-label">Slightly important</span></div>
+    <div class="scale-row"><span class="scale-num">2</span><span class="scale-label">Important</span></div>
+    <div class="scale-row"><span class="scale-num">3</span><span class="scale-label">Indispensable</span></div>
+  </div>
+</div>
 
 <!-- Main tabs -->
 <div class="tabs-wrap">
