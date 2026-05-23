@@ -543,7 +543,7 @@ const STRATEGIES = [
   {
     id:'tft', name:'Tit for Tat', emoji:'🤝',
     color:'#3b82f6', tag:'Reciprocal',
-    desc:'Cooperates first, then copies the opponent\'s last move. Submitted by Anatol Rapoport  -  it won <em>both</em> of Axelrod\'s tournaments. Nice, provokable, forgiving  -  but fragile to noise.',
+    desc:'Cooperates first, then copies the opponent\'s last move. Submitted by Anatol Rapoport: it won <em>both</em> of Axelrod\'s tournaments. Nice, provokable, forgiving, but fragile to noise.',
     rule:'decide() → C on round 1, else copy their last move',
     decide:(mH,tH)=>{
       if(tH.length===0)return'C';
