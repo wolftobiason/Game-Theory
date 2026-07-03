@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evolutionary Psychology — A Cheat Sheet (Buss)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050509;
+    --surface: #0d0d18;
+    --surface2: #11111f;
+    --border: #1e1e35;
+    --muted: #3a3a5c;
+    --text: #e2e2f0;
+    --text-dim: #8888aa;
+    --male: #3b82f6;
+    --female: #f59e0b;
+    --accent: #a78bfa;
+    --green: #4ade80;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 48px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(167,139,250,.07), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 18px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto 24px;
+    line-height: 1.65;
+  }
+  .hero-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── Layout ── */
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  /* ── TOC ── */
+  nav.toc {
+    position: sticky;
+    top: 24px;
+    padding: 32px 0;
+    font-family: 'Courier New', monospace;
+  }
+  nav.toc .toc-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  nav.toc a {
+    display: block;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 12.5px;
+    padding: 5px 0;
+    border-left: 2px solid transparent;
+    padding-left: 12px;
+    transition: color .15s, border-color .15s;
+  }
+  nav.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+
+  /* ── Content ── */
+  main { padding: 40px 0 100px; min-width: 0; }
+
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  section > h2 {
+    font-size: 1.7rem;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  section > h2 .num {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  section > .sec-sub {
+    color: var(--text-dim);
+    font-size: .98rem;
+    margin-bottom: 24px;
+    max-width: 720px;
+  }
+
+  h3 {
+    font-size: 1.08rem;
+    font-weight: 400;
+    color: var(--accent);
+    margin: 26px 0 10px;
+    font-style: italic;
+  }
+
+  p { margin-bottom: 12px; }
+  p.lead { color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .card h4 {
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .card p:last-child { margin-bottom: 0; }
+
+  .term { color: var(--accent); font-style: italic; }
+  .study {
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    letter-spacing: .3px;
+  }
+
+  ul.clean { list-style: none; margin: 8px 0 12px; }
+  ul.clean li {
+    padding: 4px 0 4px 20px;
+    position: relative;
+    color: var(--text);
+  }
+  ul.clean li::before {
+    content: '›';
+    position: absolute;
+    left: 2px;
+    color: var(--accent);
+  }
+  ul.clean li b { color: var(--text); font-weight: 400; border-bottom: 1px dotted var(--muted); }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 18px;
+    font-size: .95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  td:first-child { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  .m { color: var(--male); }
+  .f { color: var(--female); }
+  th.m, th.f { color: inherit; }
+  th.m { color: var(--male); }
+  th.f { color: var(--female); }
+
+  /* three products / definition grid */
+  .grid3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .grid3 .card { margin-bottom: 0; }
+
+  .pill {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .pill.m { color: var(--male); border-color: rgba(59,130,246,.4); }
+  .pill.f { color: var(--female); border-color: rgba(245,158,11,.4); }
+
+  .callout {
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 18px;
+    margin: 16px 0;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  code {
+    font-family: 'Courier New', monospace;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: .9em;
+    color: var(--green);
+    font-style: normal;
+  }
+
+  footer {
+    text-align: center;
+    padding: 40px 24px 60px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    letter-spacing: .5px;
+    line-height: 1.9;
+  }
+  footer a { color: var(--text-dim); text-decoration: none; }
+  footer a:hover { color: var(--accent); }
+
+  @media (max-width: 860px) {
+    .wrap { grid-template-columns: 1fr; gap: 0; }
+    nav.toc { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero-label">Study Reference</div>
+    <h1>Evolutionary <em>Psychology</em></h1>
+    <p class="hero-sub">A skimmable cheat sheet of the core theories, sex differences, and landmark findings from David M. Buss's <em>Evolutionary Psychology: The New Science of the Mind</em>.</p>
+    <div class="hero-meta">THE ADAPTED MIND · SURVIVAL · MATING · PARENTING · CONFLICT</div>
+  </header>
+
+  <div class="wrap">
+
+    <nav class="toc">
+      <div class="toc-label">Contents</div>
+      <a href="#foundations">01 · Foundations</a>
+      <a href="#toolbox">02 · Theory Toolbox</a>
+      <a href="#survival">03 · Survival</a>
+      <a href="#long-term">04 · Long-Term Mating</a>
+      <a href="#short-term">05 · Short-Term Mating</a>
+      <a href="#conflict">06 · Sexual Conflict</a>
+      <a href="#parenting">07 · Parenting & Kin</a>
+      <a href="#group">08 · Group Living</a>
+      <a href="#glossary">09 · Glossary</a>
+    </nav>
+
+    <main>
+
+      <!-- 01 FOUNDATIONS -->
+      <section id="foundations">
+        <h2><span class="num">01</span> Foundations</h2>
+        <p class="sec-sub">The logic underneath everything else: how selection builds minds, and what those minds are made of.</p>
+
+        <h3>The three products of evolution</h3>
+        <div class="grid3">
+          <div class="card">
+            <h4>Adaptations</h4>
+            <p>Inherited, reliably-developing features that solved a recurrent ancestral problem and were retained because they aided survival or reproduction. <span class="study">e.g. sweat glands, fear of snakes, taste for sugar.</span></p>
+          </div>
+          <div class="card">
+            <h4>Byproducts</h4>
+            <p>Traits carried along by an adaptation but with no function of their own. <span class="study">e.g. the belly button (byproduct of the umbilical cord); the whiteness of bone.</span></p>
+          </div>
+          <div class="card">
+            <h4>Noise</h4>
+            <p>Random variation from mutation, chance environmental effects, or genetic drift — not designed, not functional. <span class="study">e.g. exact navel shape.</span></p>
+          </div>
+        </div>
+
+        <h3>Selection: three flavors</h3>
+        <table>
+          <tr><th>Type</th><th>Currency</th><th>Drives</th></tr>
+          <tr><td><b>Natural selection</b></td><td>Survival</td><td>Anti-predator, food, thermoregulation, disease avoidance.</td></tr>
+          <tr><td><b>Sexual selection</b></td><td>Mating success</td><td>Traits that win mates, even at a survival cost (peacock's tail).</td></tr>
+          <tr><td><b>Inclusive fitness</b></td><td>Gene copies</td><td>Own reproduction <em>plus</em> effects on genetic relatives (Hamilton, 1964).</td></tr>
+        </table>
+        <p>Sexual selection runs through two routes: <span class="term">intrasexual competition</span> (same-sex rivals fight/compete for access) and <span class="term">intersexual selection</span> (one sex chooses; preferred traits spread).</p>
+
+        <h3>Evolved psychological mechanisms (EPMs)</h3>
+        <p>Buss's central unit. The mind is not one general-purpose computer but a large set of specialized programs, each shaped to solve a specific adaptive problem.</p>
+        <ul class="clean">
+          <li><b>Domain-specific</b> — each is activated by a narrow slice of information (cues of a snake, a rival, a fertile mate).</li>
+          <li><b>Numerous</b> — many mechanisms, because there were many distinct problems.</li>
+          <li><b>Functional</b> — structured as <code>input → decision rule → output</code> (physiology, behavior, or information to another mechanism).</li>
+        </ul>
+
+        <h3>Levels of explanation</h3>
+        <p>An <span class="term">ultimate</span> (why) explanation names the adaptive function; a <span class="term">proximate</span> (how) explanation names the immediate mechanism. They're complementary, not rival. "We crave sugar because it signaled scarce calories" (ultimate) vs. "sweet receptors trigger dopamine" (proximate).</p>
+
+        <div class="callout">Key idea: our minds were built for the ancestral environment (the EEA — Environment of Evolutionary Adaptedness), not the modern world. Mismatch explains junk-food cravings, phobias of snakes over cars, and more.</div>
+      </section>
+
+      <!-- 02 TOOLBOX -->
+      <section id="toolbox">
+        <h2><span class="num">02</span> The Theory Toolbox</h2>
+        <p class="sec-sub">Five mid-level theories do most of the explanatory work across the book. Learn these and most findings become predictable.</p>
+
+        <table>
+          <tr><th>Theory</th><th>Author</th><th>One-line logic</th></tr>
+          <tr><td><b>Parental Investment</b></td><td class="study">Trivers 1972</td><td>The sex that invests more per offspring becomes the choosier one; the lesser-investing sex competes for access.</td></tr>
+          <tr><td><b>Sexual Selection</b></td><td class="study">Darwin 1871</td><td>Traits spread if they win mates — via rival competition or mate choice — even at a survival cost.</td></tr>
+          <tr><td><b>Inclusive Fitness / Kin Selection</b></td><td class="study">Hamilton 1964</td><td>Help kin when <code>rb &gt; c</code>: relatedness × benefit to them exceeds cost to you.</td></tr>
+          <tr><td><b>Reciprocal Altruism</b></td><td class="study">Trivers 1971</td><td>Help non-kin who will help back; requires memory, cheater-detection, repeated interaction.</td></tr>
+          <tr><td><b>Error Management Theory</b></td><td class="study">Haselton &amp; Buss 2000</td><td>When the two errors have unequal costs, selection biases judgment toward the cheaper mistake.</td></tr>
+        </table>
+
+        <div class="callout"><b>Hamilton's rule</b> in words: a gene for helping spreads when the benefit to the recipient, weighted by how related they are to you, outweighs the cost to yourself. Full siblings and parent–child share <code>r = 0.5</code>; grandparent/grandchild and half-siblings <code>r = 0.25</code>; first cousins <code>r = 0.125</code>.</div>
+      </section>
+
+      <!-- 03 SURVIVAL -->
+      <section id="survival">
+        <h2><span class="num">03</span> Problems of Survival</h2>
+        <p class="sec-sub">Staying alive long enough to reproduce: food, predators, disease, and the landscapes we're drawn to.</p>
+
+        <h3>Food & foraging</h3>
+        <ul class="clean">
+          <li>Universal <b>taste preferences</b> for sugar, fat, and salt — all rare and calorie/nutrient-dense ancestrally, now overabundant (mismatch → obesity).</li>
+          <li><b>Disgust</b> as a disease-avoidance adaptation — the "behavioral immune system." Strongly triggered by rotten food, bodily waste, disease cues; intensifies during pregnancy's first trimester when the immune system is suppressed.</li>
+          <li><b>Pregnancy sickness</b> plausibly protects the vulnerable embryo from toxins/teratogens (aversion peaks in the first trimester). <span class="study">Profet.</span></li>
+        </ul>
+
+        <h3>Fears & phobias</h3>
+        <p>Human fears cluster around ancestral dangers, not modern ones. We readily learn to fear <span class="term">snakes, spiders, heights, darkness, strangers, deep water</span> — but rarely cars or electrical outlets, which kill far more people today.</p>
+        <ul class="clean">
+          <li><b>Prepared learning</b> — snake/spider fears are acquired after minimal exposure and resist extinction. <span class="study">Öhman &amp; Mineka.</span></li>
+          <li>Fears peak developmentally when the danger was most relevant (e.g. fear of strangers emerges ~ when infants begin to crawl).</li>
+        </ul>
+
+        <h3>Landscape preference</h3>
+        <p>The <span class="term">savanna hypothesis</span>: people across cultures prefer scenes with features of the African savanna — open grassland with scattered trees, water, and signs of game. Trees people like most have the low, spreading canopy of savanna acacias (refuge + prospect).</p>
+      </section>
+
+      <!-- 04 LONG-TERM MATING -->
+      <section id="long-term">
+        <h2><span class="num">04</span> Long-Term Mating</h2>
+        <p class="sec-sub">Where sex differences are sharpest. Parental investment asymmetry predicts who competes and who chooses — and for what.</p>
+
+        <p class="lead">Because a woman's minimum obligate investment (gestation, lactation) far exceeds a man's, ancestral women faced steeper reproductive costs and evolved to be the choosier sex. Both sexes invest heavily in long-term mating, so both are choosy here — but they weight different qualities.</p>
+
+        <table>
+          <tr><th>Prefer in a partner</th><th class="f">Women weight ↑</th><th class="m">Men weight ↑</th></tr>
+          <tr><td>Resources & status</td><td class="f">Strongly — good financial prospects, ambition, industriousness</td><td class="m">Less</td></tr>
+          <tr><td>Age</td><td class="f">Slightly older</td><td class="m">Slightly younger</td></tr>
+          <tr><td>Physical attractiveness / youth</td><td class="f">Valued, less central</td><td class="m">Strongly — cues to fertility</td></tr>
+          <tr><td>Dependability, stability, love</td><td class="f">High</td><td class="m">High</td></tr>
+          <tr><td>Kindness & intelligence</td><td>Top-ranked by <b>both</b> sexes across cultures</td><td></td></tr>
+        </table>
+
+        <h3>What men's attraction tracks</h3>
+        <p>Cues that ancestrally correlated with <b>fertility and reproductive value</b>: youth, clear skin, symmetry, and a waist-to-hip ratio near <span class="term">0.7</span> (Singh) — a cue to health, hormonal profile, and not currently pregnant. Standards of weight vary by culture and food scarcity, but the WHR signal is remarkably consistent.</p>
+
+        <h3>What women's attraction tracks</h3>
+        <p>Cues to <b>ability and willingness to invest</b>: resources, status, ambition, slightly older age, plus <b>good genes</b> markers (symmetry, masculinity, health) and, critically, signals of <b>commitment</b> — love is read as a hard-to-fake sign that investment will be directed to her and her children.</p>
+
+        <div class="callout">The landmark evidence is Buss's <b>37 Cultures study (1989)</b>, n ≈ 10,000 across 6 continents — the first large cross-cultural test of these predictions. <a style="color:var(--accent)" href="buss-37-cultures.html">See the dedicated visualization →</a></div>
+      </section>
+
+      <!-- 05 SHORT-TERM MATING -->
+      <section id="short-term">
+        <h2><span class="num">05</span> Short-Term Mating</h2>
+        <p class="sec-sub">Sexual Strategies Theory: both sexes pursue short- and long-term mating, but the adaptive problems — and payoffs — differ.</p>
+        <p class="study">Buss &amp; Schmitt, 1993 — Sexual Strategies Theory.</p>
+
+        <div class="grid3">
+          <div class="card">
+            <span class="pill m">Male short-term</span>
+            <h4>Adaptive problem: partner number</h4>
+            <p>Reproductive payoff scaled with number of fertile partners. Predicted psychology: desire for variety, larger desired partner counts, <b>lower</b> minimum standards for a fling, and faster consent to sex.</p>
+          </div>
+          <div class="card">
+            <span class="pill f">Female short-term</span>
+            <h4>Adaptive problem: which benefits?</h4>
+            <p>Extra offspring don't follow from extra partners, so short-term mating must pay another way: resources/gifts, mate insurance/switching, or <b>good genes</b>. Choosiness stays high.</p>
+          </div>
+          <div class="card">
+            <span class="pill">Both sexes</span>
+            <h4>Context-sensitive strategies</h4>
+            <p>Everyone has the whole menu; which strategy activates depends on sex ratio, own mate value, relationship status, and cues in the environment.</p>
+          </div>
+        </div>
+
+        <h3>The "good genes" / ovulation angle</h3>
+        <p>Some evidence that women's mating psychology shifts across the ovulatory cycle — near ovulation, relatively greater attraction to symmetry and masculine cues (the dual-mating hypothesis). Note: several of these effects have been contested in later replications, so treat as suggestive rather than settled.</p>
+      </section>
+
+      <!-- 06 SEXUAL CONFLICT -->
+      <section id="conflict">
+        <h2><span class="num">06</span> Conflict Between the Sexes</h2>
+        <p class="sec-sub">Different mating strategies create predictable friction — deception, jealousy, and mate guarding.</p>
+
+        <h3>Sexual overperception bias</h3>
+        <p>A textbook application of <b>Error Management Theory</b>. For ancestral men, missing a real mating opportunity was costlier than a wasted approach, so selection favored a bias to <b>over</b>-infer sexual interest from ambiguous female cues. Women show the mirror-image <span class="term">commitment skepticism bias</span> — under-inferring men's commitment, since falsely trusting a low-investing man was very costly.</p>
+
+        <h3>Jealousy — the classic sex difference</h3>
+        <p>Because fertilization is internal, ancestral men (unlike women) faced <b>paternity uncertainty</b> — the risk of investing in another man's child. Women always know the child is theirs but risk <b>losing a mate's investment</b> to a rival.</p>
+        <table>
+          <tr><th></th><th class="m">Men</th><th class="f">Women</th></tr>
+          <tr><td>Greater distress from</td><td class="m">Sexual infidelity</td><td class="f">Emotional infidelity</td></tr>
+          <tr><td>Ancestral threat</td><td class="m">Cuckoldry / misplaced paternity</td><td class="f">Diversion of resources & commitment</td></tr>
+        </table>
+        <p class="study">Buss, Larsen, Westen &amp; Semmelroth, 1992 — forced-choice & physiological data. The size and interpretation of the effect are debated, but the qualitative sex difference replicates widely.</p>
+
+        <h3>Mate retention & guarding</h3>
+        <p>Tactics range from <span class="term">vigilance and concealment</span> (monopolizing time, guarding) to <span class="term">benefit-provisioning</span> (gifts, affection, resource display). Men's guarding tends to track partner youth/attractiveness; women's tends to track partner income/status — mirroring what each sex most values and can least afford to lose.</p>
+      </section>
+
+      <!-- 07 PARENTING & KIN -->
+      <section id="parenting">
+        <h2><span class="num">07</span> Parenting & Kinship</h2>
+        <p class="sec-sub">Investment follows genetic relatedness and expected reproductive return — with some sharp, testable asymmetries.</p>
+
+        <h3>Genetic relatedness shapes investment</h3>
+        <ul class="clean">
+          <li><b>Cinderella effect</b> — children are dramatically more at risk of abuse and homicide from a <b>stepparent</b> than a genetic parent; stepparents invest less on average. <span class="study">Daly &amp; Wilson.</span></li>
+          <li><b>Paternity uncertainty gradient</b> in grandparents: maternal grandmother invests most (two certain links), paternal grandfather least (two uncertain links); the two mixed grandparents fall in between.</li>
+          <li><b>Trivers–Willard</b> — parents in good condition may bias investment toward sons (who can out-reproduce if they thrive); parents in poor condition toward daughters (safer reproductive floor).</li>
+        </ul>
+
+        <h3>Parent–offspring conflict</h3>
+        <p><span class="study">Trivers, 1974.</span> Parent and child are only 50% related, so their genetic interests overlap but don't coincide. The child is selected to demand more investment than the parent is selected to give — weaning conflict, sibling rivalry, and tantrums are predicted consequences.</p>
+
+        <h3>Kin selection in action</h3>
+        <p>Altruism is steeply graded by relatedness and by the recipient's reproductive value: help flows most to close kin, and (among kin) more toward those with high remaining reproductive potential. Life-or-death help is especially kin-biased. <span class="study">Burnstein, Crandall &amp; Kitayama.</span></p>
+      </section>
+
+      <!-- 08 GROUP LIVING -->
+      <section id="group">
+        <h2><span class="num">08</span> Problems of Group Living</h2>
+        <p class="sec-sub">Cooperation, status, and aggression — the adaptive problems of living among others.</p>
+
+        <h3>Reciprocal altruism & cheater detection</h3>
+        <p>Sustained cooperation among non-kin requires spotting free-riders. On the <b>Wason selection task</b>, people reason poorly with abstract logic but sharply when the same problem is framed as detecting a <b>cheater</b> in a social contract — evidence of a specialized cheater-detection mechanism. <span class="study">Cosmides &amp; Tooby.</span></p>
+
+        <h3>Status & hierarchy</h3>
+        <p>Two routes to rank: <span class="term">dominance</span> (coercion, intimidation) and <span class="term">prestige</span> (freely conferred respect for skill/knowledge). Higher status ancestrally converted into resources and, especially for men, mating access — so status striving is predicted to be more intense in men.</p>
+
+        <h3>Aggression & warfare</h3>
+        <ul class="clean">
+          <li>Aggression is <b>strategic</b>, not random — deployed to co-opt resources, defend against attack, inflict costs on rivals, deter mates' infidelity, and negotiate status.</li>
+          <li><b>Homicide data</b>: perpetrators and victims are overwhelmingly young men killing young men — a signature of intrasexual competition. <span class="study">Daly &amp; Wilson, <em>Homicide</em>.</span></li>
+          <li>Women more often use <b>indirect aggression</b> (reputation attack, exclusion) — lower physical risk, protecting their higher parental investment.</li>
+        </ul>
+      </section>
+
+      <!-- 09 GLOSSARY -->
+      <section id="glossary">
+        <h2><span class="num">09</span> Quick Glossary</h2>
+        <p class="sec-sub">Fast definitions for the terms that recur most.</p>
+        <table>
+          <tr><th style="width:32%">Term</th><th>Meaning</th></tr>
+          <tr><td><b>EEA</b></td><td>Environment of Evolutionary Adaptedness — the statistical composite of ancestral conditions a mechanism was shaped for.</td></tr>
+          <tr><td><b>Adaptation</b></td><td>A trait built by selection to solve a specific recurrent problem.</td></tr>
+          <tr><td><b>EPM</b></td><td>Evolved psychological mechanism — a domain-specific information-processing program (input → rule → output).</td></tr>
+          <tr><td><b>Reproductive value</b></td><td>Expected future reproduction given current age/state — high in young adults.</td></tr>
+          <tr><td><b>Parental investment</b></td><td>Any investment in one offspring that reduces the parent's capacity to invest in others.</td></tr>
+          <tr><td><b>Intrasexual competition</b></td><td>Members of one sex competing for sexual access to the other.</td></tr>
+          <tr><td><b>Intersexual selection</b></td><td>One sex's choices making certain traits in the other more common.</td></tr>
+          <tr><td><b>Inclusive fitness</b></td><td>Reproductive success of one's genes, counting effects on relatives (weighted by relatedness).</td></tr>
+          <tr><td><b>Error Management Theory</b></td><td>Under uncertainty with asymmetric error costs, judgment is biased toward the less costly mistake.</td></tr>
+          <tr><td><b>Mismatch</b></td><td>An adaptation misfiring in modern environments unlike the EEA (junk food, phobias, low fertility cues online).</td></tr>
+        </table>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    Compiled from David M. Buss · <em>Evolutionary Psychology: The New Science of the Mind</em><br>
+    A study reference — findings are summarized; several sex-difference effects remain actively debated.<br>
+    Part of the <a href="index.html">Game Theory</a> collection.
+  </footer>
+
+</body>
+</html>
