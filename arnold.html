@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Wolf Playbook — Lessons from Arnold</title>
+<style>
+  :root {
+    --bg: #faf8f4;
+    --ink: #1c1a17;
+    --muted: #6b6558;
+    --accent: #b45309;
+    --accent-soft: #b4530918;
+    --card: #ffffff;
+    --border: #e5dfd3;
+    --quote-bg: #f3efe6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14120f;
+      --ink: #ece7dd;
+      --muted: #9a917f;
+      --accent: #e8963e;
+      --accent-soft: #e8963e1c;
+      --card: #1d1a16;
+      --border: #322d25;
+      --quote-bg: #1f1b15;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 24px 120px; }
+
+  header { padding: 90px 0 60px; text-align: center; }
+  .kicker {
+    font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 18px;
+  }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(34px, 6vw, 52px);
+    line-height: 1.12; font-weight: 400; letter-spacing: -0.01em;
+  }
+  .subtitle { margin-top: 20px; color: var(--muted); font-size: 18px; max-width: 520px; margin-left: auto; margin-right: auto; }
+
+  .rules-strip {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-top: 36px;
+  }
+  .rules-strip span {
+    font-size: 12.5px; letter-spacing: 0.04em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px; padding: 5px 13px;
+    background: var(--card);
+  }
+
+  .intro { margin: 30px 0 10px; }
+  .intro p { margin-bottom: 18px; }
+
+  section { margin-top: 90px; }
+  .ch-num {
+    font-family: Georgia, serif; font-size: 15px; color: var(--accent);
+    letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 10px;
+  }
+  h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(26px, 4.5vw, 34px); font-weight: 400;
+    line-height: 1.2; margin-bottom: 26px;
+  }
+  h3 {
+    font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; margin: 34px 0 12px;
+  }
+  p { margin-bottom: 16px; }
+  em { font-style: italic; }
+  strong { font-weight: 650; }
+
+  blockquote {
+    font-family: Georgia, serif; font-size: 21px; line-height: 1.45;
+    background: var(--quote-bg); border-left: 3px solid var(--accent);
+    padding: 22px 26px; margin: 30px 0; border-radius: 0 8px 8px 0;
+  }
+  blockquote cite {
+    display: block; font-family: -apple-system, sans-serif; font-style: normal;
+    font-size: 13px; color: var(--muted); margin-top: 12px; letter-spacing: 0.03em;
+  }
+
+  .prompt {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin: 34px 0 0;
+  }
+  .prompt-label {
+    font-size: 12.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); font-weight: 650; margin-bottom: 10px;
+  }
+  .prompt p { font-size: 15.5px; color: var(--muted); margin-bottom: 14px; }
+  textarea {
+    width: 100%; min-height: 84px; resize: vertical;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font: inherit; font-size: 15.5px; line-height: 1.55;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); }
+
+  .saved {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--ink); color: var(--bg);
+    font-size: 13px; padding: 7px 16px; border-radius: 999px;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .saved.show { opacity: 0.85; }
+
+  footer {
+    margin-top: 110px; padding-top: 30px; border-top: 1px solid var(--border);
+    font-size: 14px; color: var(--muted);
+  }
+  footer p { margin-bottom: 10px; }
+  hr.sep { border: none; border-top: 1px solid var(--border); margin: 60px auto; width: 80px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Lessons from Total Recall &amp; Be Useful</div>
+  <h1>The Wolf Playbook</h1>
+  <p class="subtitle">Arnold ran one operating system in four different domains — bodybuilding, business, Hollywood, politics. This page is that system, mapped onto your actual life. July 2026.</p>
+  <div class="rules-strip">
+    <span>Trust yourself</span><span>Break the rules</span><span>Don't fear failure</span>
+    <span>Ignore the naysayers</span><span>Work like hell</span><span>Give back</span>
+  </div>
+</header>
+
+<div class="intro">
+  <p>Five things you named: nerves before interviews, nerves before approaching women, letting opportunities pass, no compass since graduating, and the question of Dodge &amp; Cox versus building your own thing. Arnold's life has a direct answer to every one of them — but not always the answer you'd expect. Some of his advice applies to you cleanly. Some of it needs translating, because his fuel was desperation and yours can't be.</p>
+</div>
+
+<!-- ================= CHAPTER 1 ================= -->
+<section>
+  <div class="ch-num">Chapter 01</div>
+  <h2>Nerves are a rep-count problem, not a personality trait</h2>
+
+  <p>Arnold was not born confident on stage. Early in his career he shook before competitions like everyone else. His solution was mechanical: he treated stage presence as a muscle. He practiced posing for hours in front of mirrors, then in front of friends, then entered every small exhibition he could find — including posing in freezing gyms and at minor shows nobody remembers — so that by the time Mr. Universe mattered, standing nearly naked in front of thousands of people judging his body was <em>routine</em>.</p>
+
+  <p>The deeper story is his calves. In the late 1960s his calves were his glaring weakness, and he knew it. So he cut the legs off his sweatpants and trained with his calves exposed, so every person in the gym could see the worst part of his physique every single day. He deliberately maximized the exact exposure most people spend their lives avoiding. Two years later his calves were a strength.</p>
+
+  <blockquote>You can't be paralyzed by fear of failure or you will never push yourself. You keep pushing because you believe in yourself and in your vision, and you know that it is the right thing to do.
+  <cite>— Arnold, Total Recall</cite></blockquote>
+
+  <h3>Translation for you</h3>
+  <p><strong>Interviews:</strong> the Dodge &amp; Cox interview is not a verdict, it's a rep. The people who interview well are almost never smarter — they've just logged more interviews. Book interviews you don't even want. Do mock interviews out loud, not in your head. Your nervousness will not be talked away; it will be repped away, and surprisingly fast — the curve is steep in the first ten reps.</p>
+
+  <p><strong>Approaching women:</strong> same muscle, same math. The rep is the approach itself, not her response. You're abroad — this is the cheapest training environment that will ever exist for you: every rejection evaporates, you never see anyone twice, and the downside rounds to zero. Score yourself on attempts, never outcomes. Arnold's frame: the guy who approaches ten times and gets rejected nine is infinitely ahead of the guy who approached zero times, and next month the gap widens.</p>
+
+  <div class="prompt">
+    <div class="prompt-label">Log the reps</div>
+    <p>What are three specific reps you can log this week? (An approach, a mock interview, a cold email — anything where the attempt itself is the win.)</p>
+    <textarea data-key="ch1-reps" placeholder="1.&#10;2.&#10;3."></textarea>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 2 ================= -->
+<section>
+  <div class="ch-num">Chapter 02</div>
+  <h2>Walk through the open door — decide later whether to stay</h2>
+
+  <p>1965. Arnold is eighteen, serving his mandatory year in the Austrian army as a tank driver. The Junior Mr. Europe contest is in Stuttgart, and leaving base is forbidden. He goes anyway — crawls over the wall, rides trains overnight with almost no money, borrows posing trunks, competes, and <em>wins</em>. He gets caught coming back and spends time in military detention. He calls it one of the best trades of his life: a week in the brig for the title that started everything.</p>
+
+  <p>Three years later, Joe Weider invites him to America. Arnold speaks barely functional English, has no money and no plan for the details. He says yes and figures out the details from inside the opportunity. Same pattern with <em>Hercules in New York</em> — his English was so bad they dubbed his voice. Objectively he wasn't ready. He took the role because the door was open, and doors do not stay open.</p>
+
+  <p>Notice what he did <strong>not</strong> do: he did not resolve all his doubts first. The rule that falls out of his life is simple: <strong>when the door opens, you walk through it. Walking through is cheap. You can always walk back out. But a door that closes while you're deliberating is gone, and you don't even get to know what was behind it.</strong></p>
+
+  <p>Your version of not following through is usually not a decision — it's a <em>non-decision</em>. The opportunity expires while you're still thinking. The fix Arnold used was making commitments external and visible: every New Year he wrote his goals on index cards — specific, countable things. Once written, a goal stopped being a mood and became a debt.</p>
+
+  <div class="prompt">
+    <div class="prompt-label">The open door</div>
+    <p>What door is open for you right now — this week — that you've been standing in front of instead of walking through?</p>
+    <textarea data-key="ch2-door" placeholder="Name it. Then name the first physical action that counts as walking through."></textarea>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 3 ================= -->
+<section>
+  <div class="ch-num">Chapter 03</div>
+  <h2>You don't need Arnold's vision. You need a mountain.</h2>
+
+  <p>Here's the part of the Arnold myth that's misleading if you take it straight: he talks about vision like he sat down and designed one. He didn't. At fourteen, in Graz, he saw Reg Park — Mr. Universe, star of Hercules movies — in a muscle magazine, and something detonated. He <em>recognized</em> his vision; he didn't invent it. Reg Park had literally run the route Arnold wanted: bodybuilding, then movies, then wealth. Arnold's genius was committing totally to a map someone else had already drawn.</p>
+
+  <p>So the honest lesson for someone without a vision is not "get a vision." It's this: <strong>visions are found through exposure, not introspection.</strong> You will not think your way to a compass while sitting still. You find it the way Arnold did — by putting yourself in front of enough lives, industries, and people that one of them detonates. Envy is data here: the twinge you feel about someone else's life is your compass twitching.</p>
+
+  <p>Second honest point: you don't lack a vision as much as you think. Listen to what you told me: <em>"Five years from now, I need to be some money-making engine — and it can't just be my investments, because I want to keep those compounding."</em> That is a vision. It's specific, it has a deadline, and it's yours. It doesn't involve a stage or fame — and that's fine, because fame was Arnold's <em>fuel</em>, not his lesson. His lesson is total commitment to a concrete target. The target is allowed to be quiet.</p>
+
+  <blockquote>If you don't have a vision of where you're going, you're going to drift and you're never going to end up anywhere. People become successful the minute they decide to be.
+  <cite>— Arnold, Be Useful (paraphrased)</cite></blockquote>
+
+  <p>Until the detonation happens, run a placeholder: <strong>pick the mountain range, not the summit.</strong> "Own a cash-flowing thing that runs without me" is a range. Analyst skills, your HTML apps, sales ability, the abroad experiments — those are all switchbacks up the same range. The exact summit resolves as you climb. Drifting and climbing-without-a-named-summit look similar from outside; they are completely different from inside.</p>
+
+  <div class="prompt">
+    <div class="prompt-label">The mountain</div>
+    <p>Write the five-year sentence. One sentence, concrete, countable. Draft it badly — you'll rewrite it every New Year like Arnold did.</p>
+    <textarea data-key="ch3-fiveyear" placeholder="In five years (July 2031), I..."></textarea>
+  </div>
+  <div class="prompt">
+    <div class="prompt-label">Envy as data</div>
+    <p>Name three people whose life gives you the twinge. Not who you admire — who you envy a little. What exactly is the enviable part?</p>
+    <textarea data-key="ch3-envy" placeholder="1.&#10;2.&#10;3."></textarea>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 4 ================= -->
+<section>
+  <div class="ch-num">Chapter 04</div>
+  <h2>Dodge &amp; Cox: platforms vs. plans</h2>
+
+  <p>People forget that Arnold — the ultimate "do your own thing" guy — spent his twenties doing jobs. After the 1971 San Fernando earthquake, he and Franco Columbu ran a bricklaying and masonry company ("European bricklayers — special!"). He ran a mail-order business selling training booklets. He took business classes at Santa Monica College and UCLA extension. He bought an apartment building. By the time <em>Pumping Iron</em> made him famous, he was already a millionaire from real estate — <strong>which meant he never had to take a desperate movie role, and could wait years for Conan.</strong></p>
+
+  <p>None of those jobs were the vision. All of them were scaffolding: cash, skills, and independence that <em>funded</em> the vision. He never confused the platform with the plan — but he also never turned down a platform out of purity.</p>
+
+  <h3>Applied to the offer you might get</h3>
+  <p>An analyst seat at Dodge &amp; Cox is bricklaying, in the best sense. It teaches exactly the skills your five-year engine needs: how professionals evaluate whether a business is any good, how capital actually compounds, how money people think and talk. Plus credibility and a network you can't buy. If it's offered, your instinct — "it opens more doors than it closes" — is right. Take it <strong>with a tenure</strong>: decide in advance it's a 2–3 year skill-extraction operation, not an identity. And protect a slice of time for your own things — the HTML apps are your mail-order booklet phase, and Arnold would tell you they matter more than they look like they do.</p>
+
+  <h3>And about "I don't think I'm going to get it"</h3>
+  <p>Arnold spent his competitive career psyching out <em>opponents</em> — famously rattling Lou Ferrigno at the 1975 Mr. Olympia. He never once aimed that weapon at himself. He did not enter contests he had pre-conceded. You've pre-conceded this interview, which does two bad things: it makes you interview worse, and it lets you skip full preparation with a clean conscience. Flip it: prepare like the offer is yours to lose, walk in as someone deciding whether <em>they're</em> good enough for your five-year plan. Worst case, you logged the single highest-quality interview rep available to you this year.</p>
+
+  <div class="prompt">
+    <div class="prompt-label">The extraction list</div>
+    <p>If you got the offer, what would you want to extract from the job in the first year — skills, people, knowledge? (Writing this also tells you what to say when they ask why you want it.)</p>
+    <textarea data-key="ch4-extract" placeholder="Skills:&#10;People:&#10;Knowledge:"></textarea>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 5 ================= -->
+<section>
+  <div class="ch-num">Chapter 05</div>
+  <h2>Hunger without desperation</h2>
+
+  <p>Time to be honest about the difference between you and Arnold, because pretending it away would make this whole page useless. Arnold's hunger was partly desperation: a village with no plumbing, a harsh policeman father, postwar Austria pressing down on him. Escape was the engine. You don't have that engine — your family is comfortable, and money isn't the thing at stake. If you try to run on borrowed desperation, it won't fire.</p>
+
+  <p>But look at Arnold <em>after</em> he had money. Millionaire by 28 — he could have stopped. He didn't, and the fuel that replaced desperation is the fuel available to you:</p>
+
+  <p><strong>Standards.</strong> Arnold's real horror was never poverty — it was being ordinary. "The worst thing I can be is the same as everybody else." When need is gone, you run on a self-imposed definition of an unacceptable life. Comfort is your actual opponent, and comfort is more dangerous for you than it ever was for him, because your environment will never force you to fight it.</p>
+
+  <p><strong>Usefulness.</strong> The one thing Arnold's father said that he kept for life: <em>be useful</em>. It became the title of his last book. This matters for you specifically: usefulness is a compass that works even when vision is foggy. You may not know what you want to be in five years, but you can always tell whether what you did this week was useful to anyone. Point yourself there and walk; it never points nowhere.</p>
+
+  <p><strong>The machine itself.</strong> Arnold plainly loved building — the body, the businesses, the career — more than he loved having built. You already show the same trait: you keep making things nobody asked for. Trust that. A money engine built by someone who enjoys engine-building will beat one built from obligation.</p>
+
+  <div class="prompt">
+    <div class="prompt-label">The standard</div>
+    <p>Forget what you want. What would make the next twelve months unacceptable to you? Define the floor, and comfort loses its main weapon.</p>
+    <textarea data-key="ch5-floor" placeholder="It would be unacceptable if, by July 2027, I..."></textarea>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- ================= CHAPTER 6 ================= -->
+<section>
+  <div class="ch-num">Chapter 06 — Workbook</div>
+  <h2>Your index cards</h2>
+
+  <p>Every New Year, Arnold wrote the year's goals on index cards — physical, specific, countable. Not "get into movies" but the actual concrete moves. The card turned a vague intention into a debt he owed himself. These are yours. Everything you type here is saved in your browser and will be here when you come back. Rewrite them every January. Reread them when you're drifting.</p>
+
+  <div class="prompt">
+    <div class="prompt-label">This week — the reps</div>
+    <p>Three attempts you will log before Sunday. Attempts, not outcomes.</p>
+    <textarea data-key="plan-week" placeholder="1.&#10;2.&#10;3."></textarea>
+  </div>
+
+  <div class="prompt">
+    <div class="prompt-label">This year — the card</div>
+    <p>What must be true by December 31, 2026? Specific and countable, like Arnold wrote it.</p>
+    <textarea data-key="plan-year" placeholder="By the end of 2026..."></textarea>
+  </div>
+
+  <div class="prompt">
+    <div class="prompt-label">Five years — the mountain</div>
+    <p>The engine sentence. Copy it from Chapter 3 once you've drafted it, and refine it here over time.</p>
+    <textarea data-key="plan-fiveyear" placeholder="By July 2031..."></textarea>
+  </div>
+
+  <div class="prompt">
+    <div class="prompt-label">The naysayer you're retiring</div>
+    <p>Arnold ignored the naysayers. Yours is internal. Write the exact sentence your inner naysayer says (you already know one: "I don't think I'm going to get it") — naming it out loud is how you notice it next time.</p>
+    <textarea data-key="plan-naysayer" placeholder="The sentence I'm retiring is..."></textarea>
+  </div>
+</section>
+
+<footer>
+  <p><strong>Sources:</strong> <em>Total Recall: My Unbelievably True Life Story</em> (2012), <em>Be Useful: Seven Tools for Life</em> (2023), and Arnold's "6 Rules of Success" commencement speech (USC, 2009). Quotes are lightly paraphrased from memory of these sources.</p>
+  <p>Answers are stored only in this browser via localStorage — nothing leaves your machine.</p>
+</footer>
+
+</div>
+
+<div class="saved" id="saved">Saved</div>
+
+<script>
+  const PREFIX = "arnold-playbook:";
+  const savedBadge = document.getElementById("saved");
+  let badgeTimer = null;
+
+  document.querySelectorAll("textarea[data-key]").forEach(ta => {
+    const key = PREFIX + ta.dataset.key;
+    const existing = localStorage.getItem(key);
+    if (existing !== null) ta.value = existing;
+
+    let saveTimer = null;
+    ta.addEventListener("input", () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        localStorage.setItem(key, ta.value);
+        savedBadge.classList.add("show");
+        clearTimeout(badgeTimer);
+        badgeTimer = setTimeout(() => savedBadge.classList.remove("show"), 1200);
+      }, 400);
+    });
+  });
+</script>
+</body>
+</html>
