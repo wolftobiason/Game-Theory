@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Number</title>
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0e0e1a;
+  --card: #121224;
+  --border: #1e1e38;
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.12);
+  --gold: #f59e0b;
+  --gold-dim: rgba(245,158,11,0.12);
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --soft: #94a3b8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Georgia', serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+.hero {
+  text-align: center;
+  padding: 90px 24px 60px;
+  background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(245,158,11,0.06), transparent);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-label {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: clamp(2.6rem, 7vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #fcd34d, #e2e8f0, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  color: var(--soft);
+  max-width: 560px;
+  margin: 0 auto;
+  font-style: italic;
+}
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 100px; }
+
+.section-label {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 70px 0 8px;
+}
+
+h2 { font-weight: 400; font-size: 1.7rem; margin-bottom: 6px; }
+.section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; max-width: 640px; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.card h3 {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+  margin-bottom: 18px;
+}
+
+.slider-row { margin-bottom: 18px; }
+.slider-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.slider-head label { font-size: 0.9rem; color: var(--soft); }
+.slider-head .val {
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--blue);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+}
+input[type="range"].gold::-webkit-slider-thumb { background: var(--gold); }
+
+.hint { font-size: 0.78rem; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.chip {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--soft);
+  cursor: pointer;
+  background: none;
+  transition: all 0.15s;
+}
+.chip:hover { border-color: var(--blue); color: var(--text); }
+.chip.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+.toggle-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.toggle {
+  position: relative; width: 40px; height: 22px;
+  background: var(--border); border-radius: 11px;
+  cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle.on { background: var(--green); }
+.toggle::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text); transition: left 0.2s;
+}
+.toggle.on::after { left: 21px; }
+.toggle-label { font-size: 0.88rem; color: var(--soft); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 28px 0; }
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+  text-align: center;
+}
+.stat .big {
+  font-family: 'Courier New', monospace;
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+.stat .big.gold { color: var(--gold); }
+.stat .big.blue { color: var(--blue); }
+.stat .big.green { color: var(--green); }
+.stat .big.red { color: var(--red); }
+.stat .label {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+canvas { width: 100%; height: auto; display: block; border-radius: 8px; }
+
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-top: 20px; }
+
+.legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px; padding: 0 4px; }
+.legend span { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+.stepper-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 18px 0; }
+button.btn {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 26px;
+  border-radius: 8px;
+  border: 1px solid var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+button.btn:hover { background: rgba(245,158,11,0.22); }
+button.btn.secondary { border-color: var(--border); background: none; color: var(--soft); }
+button.btn.secondary:hover { border-color: var(--blue); color: var(--text); }
+button.btn:disabled { opacity: 0.35; cursor: default; }
+
+.life-log {
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  line-height: 2;
+  color: var(--soft);
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 16px;
+  padding: 14px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.life-log .up { color: var(--green); }
+.life-log .down { color: var(--red); }
+.life-log .dead { color: var(--red); font-weight: bold; }
+.life-log .cut { color: var(--gold); }
+
+.footnote {
+  margin-top: 70px;
+  padding-top: 30px;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.footnote strong { color: var(--soft); font-weight: 400; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">A Thought Experiment in Enough</div>
+  <h1 id="heroNumber">$—</h1>
+  <div class="hero-sub">The all-in cost of the life you described — and whether it survives sixty years of real markets.</div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ SECTION 1: THE LIFESTYLE ============ -->
+  <div class="section-label">Part I — The Lifestyle</div>
+  <h2>What the life costs</h2>
+  <p class="section-sub">The liquid number is annual spending divided by the withdrawal rate. The houses sit on top — they're homes, not portfolio.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Spending</h3>
+      <div class="slider-row">
+        <div class="slider-head"><label>Annual spend (today's dollars)</label><span class="val" id="spendVal"></span></div>
+        <input type="range" id="spend" class="gold" min="100000" max="800000" step="25000" value="400000">
+        <div class="hint">Five-star travel, restaurants, everything — with no mortgage or rent.</div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head"><label>Withdrawal rate</label><span class="val" id="swrVal"></span></div>
+        <input type="range" id="swr" class="gold" min="0.02" max="0.05" step="0.0025" value="0.03">
+        <div class="hint">4% is calibrated to 30-year retirements. At 23, your horizon is twice that — 3% or lower is the honest range. 2% ≈ the riskless TIPS floor.</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Real Estate</h3>
+      <div class="slider-row">
+        <div class="slider-head"><label>Copenhagen apartment</label><span class="val" id="cphVal"></span></div>
+        <input type="range" id="cph" min="0" max="5000000" step="250000" value="2000000">
+        <div class="hint">Non-EU buyers generally need permission or 5 years' residence. And Danish tax residence taxes worldwide income — a real asterisk.</div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head"><label>US house</label><span class="val" id="usVal"></span></div>
+        <input type="range" id="us" min="0" max="5000000" step="250000" value="2500000">
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="big blue" id="statLiquid">—</div><div class="label">Liquid Portfolio</div></div>
+    <div class="stat"><div class="big" id="statHouses" style="color:var(--soft)">—</div><div class="label">Real Estate</div></div>
+    <div class="stat"><div class="big gold" id="statAllIn">—</div><div class="label">The Number (All-In)</div></div>
+  </div>
+
+  <!-- ============ SECTION 2: THE MARKET ============ -->
+  <div class="section-label">Part II — Sixty Years of Real Markets</div>
+  <h2>Does the number survive?</h2>
+  <p class="section-sub">1,000 simulated lifetimes. Each year the portfolio earns a random real return, pays California taxes on dividends, interest, and the gains in what you sell, then funds your spending. The fan shows where the middle 80% of lives end up. This is the ergodicity problem: you only get one path.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Portfolio &amp; Taxes</h3>
+      <div class="slider-row">
+        <div class="slider-head"><label>Stock allocation</label><span class="val" id="allocVal"></span></div>
+        <input type="range" id="alloc" min="0" max="1" step="0.05" value="0.7">
+        <div class="hint">Stocks: ~6.5% real, 17% vol. Bonds: ~1.8% real, 6.5% vol. Rest in bonds.</div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head"><label>Tax drag on gains</label><span class="val" id="taxVal"></span></div>
+        <input type="range" id="tax" min="0" max="0.5" step="0.01" value="0.37">
+        <div class="hint">Default 37% ≈ CA top bracket: 20% federal LTCG + 3.8% NIIT + 13.3% CA (which taxes gains as ordinary income). Applied yearly to dividends &amp; bond interest, and to the gains embedded in each withdrawal — unrealized gains keep compounding untaxed.</div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head"><label>Inflation</label><span class="val" id="inflVal"></span></div>
+        <input type="range" id="infl" min="0" max="0.05" step="0.005" value="0.025">
+      </div>
+    </div>
+    <div class="card">
+      <h3>Spending Path</h3>
+      <div class="slider-row">
+        <div class="slider-head"><label>Real spending growth / yr</label><span class="val" id="growVal"></span></div>
+        <input type="range" id="grow" min="-0.02" max="0.02" step="0.005" value="0">
+        <div class="chips">
+          <button class="chip" data-g="-0.015">Robot Deflation −1.5%</button>
+          <button class="chip active" data-g="0">Flat</button>
+          <button class="chip" data-g="0.01">Lifestyle Creep +1%</button>
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head"><label>Horizon</label><span class="val" id="yearsVal"></span></div>
+        <input type="range" id="years" min="30" max="70" step="5" value="60">
+      </div>
+      <div class="toggle-row">
+        <div class="toggle on" id="flexToggle"></div>
+        <div class="toggle-label"><strong style="color:var(--text)">Flexible spending.</strong> When withdrawals exceed 5% of the portfolio, cut spending 15% (floor: 60% of plan). Restore when things recover.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="big green" id="statFlex">—</div><div class="label">Success — Flexible</div></div>
+    <div class="stat"><div class="big blue" id="statRigid">—</div><div class="label">Success — Rigid Spend</div></div>
+    <div class="stat"><div class="big gold" id="statMedian">—</div><div class="label">Median Ending Wealth</div></div>
+    <div class="stat"><div class="big" id="statP10" style="color:var(--soft)">—</div><div class="label">Unlucky (10th pctile)</div></div>
+  </div>
+
+  <div class="chart-card">
+    <canvas id="fanChart" width="1040" height="420"></canvas>
+    <div class="legend">
+      <span><i style="background:var(--gold)"></i> Median life</span>
+      <span><i style="background:rgba(59,130,246,0.5)"></i> Middle 50% of lives</span>
+      <span><i style="background:rgba(59,130,246,0.22)"></i> Middle 80% of lives</span>
+      <span><i style="background:var(--red)"></i> Broke</span>
+    </div>
+  </div>
+
+  <!-- ============ SECTION 3: WALK ONE LIFE ============ -->
+  <div class="section-label">Part III — Walk One Life</div>
+  <h2>Live it year by year</h2>
+  <p class="section-sub">The fan chart is the ensemble. This is one draw — your actual deal. Advance through the decades and watch what sequence-of-returns risk feels like from inside. Same assumptions as above.</p>
+
+  <div class="card">
+    <div class="slider-row" style="max-width:360px">
+      <div class="slider-head"><label>Years per step</label><span class="val" id="stepVal"></span></div>
+      <input type="range" id="step" class="gold" min="1" max="10" step="1" value="5">
+    </div>
+    <div class="stepper-controls">
+      <button class="btn" id="advanceBtn">Advance →</button>
+      <button class="btn secondary" id="newLifeBtn">↺ New Life</button>
+      <span class="toggle-label" id="lifeStatus"></span>
+    </div>
+    <div class="chart-card" style="margin-top:10px">
+      <canvas id="lifeChart" width="1040" height="360"></canvas>
+    </div>
+    <div class="life-log" id="lifeLog"></div>
+  </div>
+
+  <!-- ============ FOOTNOTES ============ -->
+  <div class="footnote">
+    <strong>What this is:</strong> an estimating toy, not financial advice. The model draws annual real returns from correlated normals (stocks ~N(6.5%, 17%), bonds ~N(1.8%, 6.5%), ρ=0.1) — real markets have fatter tails than this, which means the bad scenarios here are, if anything, too kind. Taxes are modeled as cash flows: dividends (1.8% yield) and bond interest are taxed every year; spending beyond that after-tax income is funded by selling shares, and the embedded gain in each sale is taxed — starting near zero (fresh basis) and ramping to 70% of each sale by year 28. Unrealized gains compound untaxed, as in life. Withdrawals happen at the start of each year; everything is in today's dollars. The houses are excluded from the portfolio and assumed to roughly hold real value. Danish taxation, currency risk, and citizenship logistics are real complications this page waves at but does not model.
+    <br><br>
+    <strong>The point of Part III:</strong> the ensemble average is not your average — you live one path, once. If the one you're walking dies at 70, it is no comfort that the median life ended rich. That asymmetry is why the flexible-spending result matters more than any other number on this page: the willingness to cut back is worth more than an extra few million up front.
+  </div>
+
+</div>
+
+<script>
+// ---------- utilities ----------
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function makeGauss(rng) {
+  let spare = null;
+  return function() {
+    if (spare !== null) { const v = spare; spare = null; return v; }
+    let u, v, s;
+    do { u = rng() * 2 - 1; v = rng() * 2 - 1; s = u*u + v*v; } while (s >= 1 || s === 0);
+    const m = Math.sqrt(-2 * Math.log(s) / s);
+    spare = v * m;
+    return u * m;
+  };
+}
+function fmtMoney(x) {
+  if (x >= 1e6) {
+    const m = x / 1e6;
+    return '$' + (m >= 100 ? m.toFixed(0) : m.toFixed(1)) + 'M';
+  }
+  return '$' + Math.round(x / 1000) + 'k';
+}
+function fmtPct(x, dp) { return (x * 100).toFixed(dp === undefined ? 0 : dp) + '%'; }
+
+// ---------- parameters ----------
+const STOCK_MU = 0.065, STOCK_SD = 0.17;
+const BOND_MU = 0.018, BOND_SD = 0.065;
+const RHO = 0.10;
+const START_AGE = 23;
+const N_SIMS = 1000;
+const FLEX_CUT_TRIGGER = 0.05, FLEX_CUT = 0.85, FLEX_FLOOR = 0.6, FLEX_RESTORE = 0.035;
+const DIV_YIELD = 0.018;   // stock dividend yield, taxed annually
+// embedded-gain share of sales: starts near 0 (fresh basis), ramps to 70% by ~year 28
+function gainFrac(t) { return Math.min(0.7, 0.025 * t); }
+
+function readParams() {
+  return {
+    spend0: +document.getElementById('spend').value,
+    swr: +document.getElementById('swr').value,
+    cph: +document.getElementById('cph').value,
+    us: +document.getElementById('us').value,
+    alloc: +document.getElementById('alloc').value,
+    tax: +document.getElementById('tax').value,
+    infl: +document.getElementById('infl').value,
+    grow: +document.getElementById('grow').value,
+    years: +document.getElementById('years').value,
+    flex: document.getElementById('flexToggle').classList.contains('on'),
+  };
+}
+
+// one year of the simulation; returns {W, f, r} (wealth, flex factor, realized after-tax real return)
+function stepYear(W, t, f, p, useFlex, gauss) {
+  const sched = p.spend0 * Math.pow(1 + p.grow, t);
+  let spend = sched * f;
+  if (useFlex && W > 0) {
+    if (spend / W > FLEX_CUT_TRIGGER) f = Math.max(FLEX_FLOOR, f * FLEX_CUT);
+    else if (f < 1 && sched * f / W < FLEX_RESTORE) f = Math.min(1, f / FLEX_CUT);
+    spend = sched * f;
+  }
+  const z1 = gauss(), z2 = gauss();
+  const rs = STOCK_MU + STOCK_SD * z1;
+  const rb = BOND_MU + BOND_SD * (RHO * z1 + Math.sqrt(1 - RHO * RHO) * z2);
+  const rbNom = (1 + rb) * (1 + p.infl) - 1;
+  // cash flows: dividends + interest arrive (taxed), sales cover the rest (gains taxed)
+  const incomeNom = W * (p.alloc * DIV_YIELD + (1 - p.alloc) * Math.max(0, rbNom));
+  const taxOnIncome = p.tax * incomeNom;
+  const g = gainFrac(t);
+  const sales = Math.max(0, spend - (incomeNom - taxOnIncome)) / (1 - p.tax * g);
+  const taxOnGains = sales * p.tax * g;
+  W -= spend + taxOnIncome + taxOnGains;
+  if (W <= 0) return { W: 0, f, r: 0, spend, dead: true };
+  const rp = p.alloc * rs + (1 - p.alloc) * rb;   // real, pre-tax total return
+  W *= (1 + rp);
+  return { W, f, r: rp, spend, dead: W <= 0 };
+}
+
+function runMC(p, useFlex, seed) {
+  const rng = mulberry32(seed);
+  const gauss = makeGauss(rng);
+  const W0 = p.spend0 / p.swr;
+  const paths = [];   // wealth at each year for percentiles
+  let successes = 0;
+  for (let s = 0; s < N_SIMS; s++) {
+    let W = W0, f = 1;
+    const path = [W];
+    for (let t = 0; t < p.years; t++) {
+      if (W > 0) {
+        const out = stepYear(W, t, f, p, useFlex, gauss);
+        W = out.W; f = out.f;
+      }
+      path.push(W);
+    }
+    if (W > 0) successes++;
+    paths.push(path);
+  }
+  // percentiles per year
+  const pct = { p10: [], p25: [], p50: [], p75: [], p90: [] };
+  for (let t = 0; t <= p.years; t++) {
+    const col = paths.map(pa => pa[t]).sort((a, b) => a - b);
+    pct.p10.push(col[Math.floor(0.10 * N_SIMS)]);
+    pct.p25.push(col[Math.floor(0.25 * N_SIMS)]);
+    pct.p50.push(col[Math.floor(0.50 * N_SIMS)]);
+    pct.p75.push(col[Math.floor(0.75 * N_SIMS)]);
+    pct.p90.push(col[Math.floor(0.90 * N_SIMS)]);
+  }
+  return { successRate: successes / N_SIMS, pct, W0 };
+}
+
+// ---------- fan chart ----------
+function drawFan(mc, p) {
+  const cv = document.getElementById('fanChart');
+  const ctx = cv.getContext('2d');
+  const Wd = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, Wd, H);
+  const padL = 70, padR = 20, padT = 20, padB = 40;
+  const pw = Wd - padL - padR, ph = H - padT - padB;
+
+  const FLOOR = 1e5; // plot floor for log scale
+  const maxW = Math.max(mc.pct.p90[p.years], mc.W0) * 1.3;
+  const logMin = Math.log10(FLOOR), logMax = Math.log10(maxW);
+  const x = t => padL + pw * t / p.years;
+  const y = w => padT + ph * (1 - (Math.log10(Math.max(w, FLOOR)) - logMin) / (logMax - logMin));
+
+  // gridlines: powers of 10 and 3x
+  ctx.font = '11px Courier New';
+  ctx.fillStyle = '#64748b';
+  ctx.strokeStyle = '#1e1e38';
+  ctx.lineWidth = 1;
+  for (let e = 5; e <= Math.ceil(logMax); e++) {
+    for (const m of [1, 3]) {
+      const v = m * Math.pow(10, e);
+      if (v < FLOOR || v > maxW) continue;
+      const yy = y(v);
+      ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(Wd - padR, yy); ctx.stroke();
+      ctx.fillText(fmtMoney(v), 8, yy + 4);
+    }
+  }
+  // x labels: ages every 10y
+  ctx.textAlign = 'center';
+  for (let t = 0; t <= p.years; t += 10) {
+    ctx.fillText('age ' + (START_AGE + t), x(t), H - 14);
+  }
+  ctx.textAlign = 'left';
+
+  function band(lo, hi, color) {
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(lo[0]));
+    for (let t = 1; t <= p.years; t++) ctx.lineTo(x(t), y(lo[t]));
+    for (let t = p.years; t >= 0; t--) ctx.lineTo(x(t), y(hi[t]));
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+  band(mc.pct.p10, mc.pct.p90, 'rgba(59,130,246,0.14)');
+  band(mc.pct.p25, mc.pct.p75, 'rgba(59,130,246,0.22)');
+
+  // broke floor line
+  ctx.strokeStyle = 'rgba(239,68,68,0.6)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(padL, y(FLOOR)); ctx.lineTo(Wd - padR, y(FLOOR)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // median
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(mc.pct.p50[0]));
+  for (let t = 1; t <= p.years; t++) ctx.lineTo(x(t), y(mc.pct.p50[t]));
+  ctx.stroke();
+
+  // starting wealth marker
+  ctx.fillStyle = '#e2e8f0';
+  ctx.beginPath(); ctx.arc(x(0), y(mc.W0), 4, 0, Math.PI * 2); ctx.fill();
+}
+
+// ---------- single life (Part III) ----------
+let life = null;
+
+function newLife() {
+  const p = readParams();
+  const seed = Math.floor(Math.random() * 2 ** 31);
+  life = {
+    p, seed,
+    rng: mulberry32(seed),
+    t: 0, W: p.spend0 / p.swr, f: 1,
+    history: [p.spend0 / p.swr],
+    dead: false,
+  };
+  life.gauss = makeGauss(life.rng);
+  document.getElementById('lifeLog').innerHTML =
+    `<div>Age ${START_AGE} — you walk away with <span style="color:var(--gold)">${fmtMoney(life.W)}</span> liquid. The market does not know your name.</div>`;
+  document.getElementById('advanceBtn').disabled = false;
+  updateLifeStatus();
+  drawLife();
+}
+
+function advanceLife() {
+  if (!life || life.dead || life.t >= life.p.years) return;
+  const k = +document.getElementById('step').value;
+  const log = document.getElementById('lifeLog');
+  const startW = life.W;
+  const startT = life.t;
+  let cuts = 0;
+  for (let i = 0; i < k && life.t < life.p.years && !life.dead; i++) {
+    const fBefore = life.f;
+    const out = stepYear(life.W, life.t, life.f, life.p, life.p.flex, life.gauss);
+    life.W = out.W; life.f = out.f; life.t++;
+    if (out.f < fBefore) cuts++;
+    life.history.push(life.W);
+    if (out.dead || life.W <= 0) { life.dead = true; life.W = 0; }
+  }
+  const age = START_AGE + life.t;
+  const yrs = life.t - startT;
+  let line;
+  if (life.dead) {
+    line = `<div class="dead">Age ${age} — the portfolio is gone. In this life, the sequence got you.</div>`;
+    document.getElementById('advanceBtn').disabled = true;
+  } else {
+    const chg = life.W / startW - 1;
+    const cls = chg >= 0 ? 'up' : 'down';
+    const sign = chg >= 0 ? '+' : '';
+    line = `<div>Age ${age} — <span style="color:var(--text)">${fmtMoney(life.W)}</span> ` +
+      `<span class="${cls}">(${sign}${fmtPct(chg)} over ${yrs}y, real, after tax &amp; spending)</span>` +
+      (cuts ? ` <span class="cut">· cut spending ${cuts}×</span>` : '') +
+      (life.f < 1 ? ` <span class="cut">· living at ${fmtPct(life.f)} of plan</span>` : '') +
+      `</div>`;
+    if (life.t >= life.p.years) {
+      line += `<div style="color:var(--green)">Age ${age} — end of horizon. You made it, with ${fmtMoney(life.W)} to spare.</div>`;
+      document.getElementById('advanceBtn').disabled = true;
+    }
+  }
+  log.innerHTML += line;
+  log.scrollTop = log.scrollHeight;
+  updateLifeStatus();
+  drawLife();
+}
+
+function updateLifeStatus() {
+  const el = document.getElementById('lifeStatus');
+  if (!life) { el.textContent = ''; return; }
+  el.textContent = `Age ${START_AGE + life.t} · ${life.dead ? 'broke' : fmtMoney(life.W)}`;
+}
+
+function drawLife() {
+  const cv = document.getElementById('lifeChart');
+  const ctx = cv.getContext('2d');
+  const Wd = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, Wd, H);
+  if (!life) return;
+  const p = life.p;
+  const padL = 70, padR = 20, padT = 20, padB = 40;
+  const pw = Wd - padL - padR, ph = H - padT - padB;
+  const FLOOR = 1e5;
+  const maxW = Math.max(...life.history, life.history[0]) * 1.4;
+  const logMin = Math.log10(FLOOR), logMax = Math.log10(maxW);
+  const x = t => padL + pw * t / p.years;
+  const y = w => padT + ph * (1 - (Math.log10(Math.max(w, FLOOR)) - logMin) / (logMax - logMin));
+
+  ctx.font = '11px Courier New';
+  ctx.fillStyle = '#64748b';
+  ctx.strokeStyle = '#1e1e38';
+  for (let e = 5; e <= Math.ceil(logMax); e++) {
+    for (const m of [1, 3]) {
+      const v = m * Math.pow(10, e);
+      if (v < FLOOR || v > maxW) continue;
+      const yy = y(v);
+      ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(Wd - padR, yy); ctx.stroke();
+      ctx.fillText(fmtMoney(v), 8, yy + 4);
+    }
+  }
+  ctx.textAlign = 'center';
+  for (let t = 0; t <= p.years; t += 10) ctx.fillText('age ' + (START_AGE + t), x(t), H - 14);
+  ctx.textAlign = 'left';
+
+  // starting wealth reference
+  ctx.strokeStyle = 'rgba(226,232,240,0.25)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(padL, y(life.history[0])); ctx.lineTo(Wd - padR, y(life.history[0])); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle = life.dead ? '#ef4444' : '#f59e0b';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(life.history[0]));
+  for (let t = 1; t < life.history.length; t++) ctx.lineTo(x(t), y(life.history[t]));
+  ctx.stroke();
+
+  const lastT = life.history.length - 1;
+  ctx.fillStyle = life.dead ? '#ef4444' : '#f59e0b';
+  ctx.beginPath(); ctx.arc(x(lastT), y(life.history[lastT]), 5, 0, Math.PI * 2); ctx.fill();
+}
+
+// ---------- main recompute ----------
+let debounceTimer = null;
+function scheduleRecompute() {
+  updateLabels();
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(recompute, 120);
+}
+
+function updateLabels() {
+  const p = readParams();
+  document.getElementById('spendVal').textContent = fmtMoney(p.spend0) + '/yr';
+  document.getElementById('swrVal').textContent = fmtPct(p.swr, 2);
+  document.getElementById('cphVal').textContent = fmtMoney(p.cph);
+  document.getElementById('usVal').textContent = fmtMoney(p.us);
+  document.getElementById('allocVal').textContent = fmtPct(p.alloc) + ' stocks';
+  document.getElementById('taxVal').textContent = fmtPct(p.tax);
+  document.getElementById('inflVal').textContent = fmtPct(p.infl, 1);
+  document.getElementById('growVal').textContent = (p.grow >= 0 ? '+' : '') + fmtPct(p.grow, 1) + '/yr';
+  document.getElementById('yearsVal').textContent = p.years + ' years (to age ' + (START_AGE + p.years) + ')';
+  document.getElementById('stepVal').textContent = document.getElementById('step').value + ' yr/click';
+}
+
+function recompute() {
+  const p = readParams();
+  const liquid = p.spend0 / p.swr;
+  const houses = p.cph + p.us;
+  document.getElementById('statLiquid').textContent = fmtMoney(liquid);
+  document.getElementById('statHouses').textContent = fmtMoney(houses);
+  document.getElementById('statAllIn').textContent = fmtMoney(liquid + houses);
+  document.getElementById('heroNumber').textContent = fmtMoney(liquid + houses);
+
+  const seed = 12345; // fixed seed: sliders move results, not luck
+  const mcFlex = runMC(p, true, seed);
+  const mcRigid = runMC(p, false, seed);
+  const shown = p.flex ? mcFlex : mcRigid;
+
+  document.getElementById('statFlex').textContent = fmtPct(mcFlex.successRate, 1);
+  document.getElementById('statRigid').textContent = fmtPct(mcRigid.successRate, 1);
+  document.getElementById('statMedian').textContent = fmtMoney(shown.pct.p50[p.years]);
+  const p10end = shown.pct.p10[p.years];
+  const p10el = document.getElementById('statP10');
+  p10el.textContent = p10end > 0 ? fmtMoney(p10end) : 'BROKE';
+  p10el.style.color = p10end > 0 ? 'var(--soft)' : 'var(--red)';
+
+  drawFan(shown, p);
+}
+
+// ---------- wiring ----------
+document.querySelectorAll('input[type="range"]').forEach(el => {
+  el.addEventListener('input', () => {
+    if (el.id === 'step') { updateLabels(); return; }
+    scheduleRecompute();
+    if (el.id === 'grow') syncChips();
+  });
+});
+document.getElementById('flexToggle').addEventListener('click', function () {
+  this.classList.toggle('on');
+  scheduleRecompute();
+});
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.getElementById('grow').value = chip.dataset.g;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    scheduleRecompute();
+  });
+});
+function syncChips() {
+  const g = +document.getElementById('grow').value;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', +c.dataset.g === g));
+}
+document.getElementById('advanceBtn').addEventListener('click', advanceLife);
+document.getElementById('newLifeBtn').addEventListener('click', newLife);
+
+updateLabels();
+recompute();
+newLife();
+</script>
+</body>
+</html>
