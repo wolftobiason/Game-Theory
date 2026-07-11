@@ -761,8 +761,9 @@ function recompute() {
     'The all-in cost of the life you described — sized so you make it in ' + targetLabel(p.target) + ' simulated lifetimes.';
 
   if (!lifeW0Touched) {
-    document.getElementById('lifeW0').value = Math.min(1e8, liquid);
-    document.getElementById('lifeW0Val').textContent = fmtMoney(liquid);
+    const s = document.getElementById('lifeW0');
+    s.value = Math.min(1e8, liquid);
+    document.getElementById('lifeW0Val').textContent = fmtMoney(+s.value);
   }
   updateAssumptions(p);
 
