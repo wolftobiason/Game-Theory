@@ -303,7 +303,7 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
   <!-- ============ SECTION 2: THE MARKET ============ -->
   <div class="section-label">Part II — Sixty Years of Real Markets</div>
   <h2>Does the number survive?</h2>
-  <p class="section-sub">1,000 simulated lifetimes. Each year the portfolio earns a random real return, pays California taxes on dividends, interest, and the gains in what you sell, then funds your spending. The fan shows where the middle 80% of lives end up. This is the ergodicity problem: you only get one path.</p>
+  <p class="section-sub">1,000 simulated lifetimes. Each year the portfolio earns a random real return, pays California taxes on dividends and the gains in what you sell (muni coupons are tax-exempt), then funds your spending. The fan shows where the middle 80% of lives end up. This is the ergodicity problem: you only get one path.</p>
 
   <div class="grid">
     <div class="card">
@@ -311,12 +311,12 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
       <div class="slider-row">
         <div class="slider-head"><label>Stock allocation</label><span class="val" id="allocVal"></span></div>
         <input type="range" id="alloc" min="0" max="1" step="0.05" value="0.7">
-        <div class="hint">Stocks: ~6.5% real, 17% vol. Bonds: ~1.8% real, 6.5% vol. Rest in bonds.</div>
+        <div class="hint">Stocks: ~6.5% real, 17% vol. Rest in CA municipal bonds: ~3.5% coupon exempt from federal &amp; CA tax, ~1.2% real total return, 6% vol.</div>
       </div>
       <div class="slider-row">
         <div class="slider-head"><label>Tax drag on gains</label><span class="val" id="taxVal"></span></div>
         <input type="range" id="tax" min="0" max="0.5" step="0.01" value="0.37">
-        <div class="hint">Default 37% ≈ CA top bracket: 20% federal LTCG + 3.8% NIIT + 13.3% CA (which taxes gains as ordinary income). Applied yearly to dividends &amp; bond interest, and to the gains embedded in each withdrawal — unrealized gains keep compounding untaxed.</div>
+        <div class="hint">Default 37% ≈ CA top bracket: 20% federal LTCG + 3.8% NIIT + 13.3% CA (which taxes gains as ordinary income). Applied yearly to stock dividends and to the gains embedded in each withdrawal — muni coupons are exempt, and unrealized gains keep compounding untaxed.</div>
       </div>
       <div class="slider-row">
         <div class="slider-head"><label>Inflation</label><span class="val" id="inflVal"></span></div>
@@ -394,7 +394,7 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
 
   <!-- ============ FOOTNOTES ============ -->
   <div class="footnote">
-    <strong>What this is:</strong> an estimating toy, not financial advice. The model draws annual real returns from correlated normals (stocks ~N(6.5%, 17%), bonds ~N(1.8%, 6.5%), ρ=0.1) — real markets have fatter tails than this, which means the bad scenarios here are, if anything, too kind. Taxes are modeled as cash flows: dividends (1.8% yield) and bond interest are taxed every year; spending beyond that after-tax income is funded by selling shares, and the embedded gain in each sale is taxed — starting near zero (fresh basis) and ramping to 70% of each sale by year 28. Unrealized gains compound untaxed, as in life. Withdrawals happen at the start of each year; everything is in today's dollars. The liquid Number is found by bisection: the smallest starting portfolio whose simulated success rate (2,000–4,000 lives, common random numbers) meets the certainty target. Treat the 999/1000 setting with suspicion — extreme-tail certainty is exactly where the thin-tailed return assumption lies most. The houses are excluded from the portfolio and assumed to roughly hold real value. Danish taxation, currency risk, and citizenship logistics are real complications this page waves at but does not model.
+    <strong>What this is:</strong> an estimating toy, not financial advice. The model draws annual real returns from correlated normals (stocks ~N(6.5%, 17%), CA munis ~N(1.2%, 6%), ρ=0.1) — real markets have fatter tails than this, which means the bad scenarios here are, if anything, too kind. Taxes are modeled as cash flows: stock dividends (1.8% yield) are taxed every year, while muni coupons (3.5% nominal) are exempt from federal and California tax; spending beyond that income is funded by selling shares, and the embedded gain in each sale is taxed — starting near zero (fresh basis) and ramping to 70% of each sale by year 28. Unrealized gains compound untaxed, as in life. The muni sleeve ignores credit risk and single-state concentration — a real if modest simplification. Withdrawals happen at the start of each year; everything is in today's dollars. The liquid Number is found by bisection: the smallest starting portfolio whose simulated success rate (2,000–4,000 lives, common random numbers) meets the certainty target. Treat the 999/1000 setting with suspicion — extreme-tail certainty is exactly where the thin-tailed return assumption lies most. The houses are excluded from the portfolio and assumed to roughly hold real value. Danish taxation, currency risk, and citizenship logistics are real complications this page waves at but does not model.
     <br><br>
     <strong>The point of Part III:</strong> the ensemble average is not your average — you live one path, once. If the one you're walking dies at 70, it is no comfort that the median life ended rich. That asymmetry is why the flexible-spending result matters more than any other number on this page: the willingness to cut back is worth more than an extra few million up front.
   </div>
@@ -433,7 +433,8 @@ function fmtPct(x, dp) { return (x * 100).toFixed(dp === undefined ? 0 : dp) + '
 
 // ---------- parameters ----------
 const STOCK_MU = 0.065, STOCK_SD = 0.17;
-const BOND_MU = 0.018, BOND_SD = 0.065;
+const BOND_MU = 0.012, BOND_SD = 0.06;   // CA municipal bonds: ~1.2% real total return
+const MUNI_YIELD = 0.035;                // nominal coupon, exempt from federal + CA tax
 const RHO = 0.10;
 const START_AGE = 23;
 const N_SIMS = 1000;
@@ -469,12 +470,12 @@ function stepYear(W, t, f, p, useFlex, gauss) {
   const z1 = gauss(), z2 = gauss();
   const rs = STOCK_MU + STOCK_SD * z1;
   const rb = BOND_MU + BOND_SD * (RHO * z1 + Math.sqrt(1 - RHO * RHO) * z2);
-  const rbNom = (1 + rb) * (1 + p.infl) - 1;
-  // cash flows: dividends + interest arrive (taxed), sales cover the rest (gains taxed)
-  const incomeNom = W * (p.alloc * DIV_YIELD + (1 - p.alloc) * Math.max(0, rbNom));
-  const taxOnIncome = p.tax * incomeNom;
+  // cash flows: stock dividends (taxed) + muni coupons (tax-exempt) fund spending first
+  const divInc = W * p.alloc * DIV_YIELD;
+  const muniInc = W * (1 - p.alloc) * MUNI_YIELD;
+  const taxOnIncome = p.tax * divInc;
   const g = gainFrac(t);
-  const sales = Math.max(0, spend - (incomeNom - taxOnIncome)) / (1 - p.tax * g);
+  const sales = Math.max(0, spend - (divInc - taxOnIncome + muniInc)) / (1 - p.tax * g);
   const taxOnGains = sales * p.tax * g;
   W -= spend + taxOnIncome + taxOnGains;
   if (W <= 0) return { W: 0, f, r: 0, spend, dead: true };
@@ -791,8 +792,8 @@ function updateAssumptions(p) {
     Math.pow(p.alloc * STOCK_SD, 2) + Math.pow((1 - p.alloc) * BOND_SD, 2) +
     2 * p.alloc * (1 - p.alloc) * RHO * STOCK_SD * BOND_SD
   );
-  const bondNom = (1 + BOND_MU) * (1 + p.infl) - 1;
-  const income1 = W0 * (p.alloc * DIV_YIELD + (1 - p.alloc) * bondNom);
+  const div1 = W0 * p.alloc * DIV_YIELD;
+  const muni1 = W0 * (1 - p.alloc) * MUNI_YIELD;
   const flexLine = p.flex
     ? `if spending tops ${fmtPct(FLEX_CUT_TRIGGER)} of the portfolio, cut it 15% (floor: 60% of plan); restore when it falls under ${fmtPct(FLEX_RESTORE, 1)}`
     : `never cut — rigid spending (toggle in Part II)`;
@@ -802,9 +803,9 @@ function updateAssumptions(p) {
     `<div>· Start: age ${START_AGE}, ${fmtMoney(W0)} liquid (${src}). Houses excluded — never sold, never taxed.</div>` +
     `<div>· Each year, in order:</div>` +
     `<div>&nbsp;&nbsp;1. Withdraw ${fmtMoney(p.spend0)} of spending (growing ${(p.grow >= 0 ? '+' : '') + fmtPct(p.grow, 1)}/yr real); ${flexLine}</div>` +
-    `<div>&nbsp;&nbsp;2. Pay ${fmtPct(p.tax)} tax on dividends &amp; bond interest (≈ ${fmtMoney(income1)} of income in year one)</div>` +
+    `<div>&nbsp;&nbsp;2. Collect ≈ ${fmtMoney(div1)} of dividends (taxed at ${fmtPct(p.tax)}) and ≈ ${fmtMoney(muni1)} of muni coupons (tax-free) in year one</div>` +
     `<div>&nbsp;&nbsp;3. Sell shares to cover the rest; pay ${fmtPct(p.tax)} on the embedded gain — 0% of each sale at first, ramping to 70% by year 28</div>` +
-    `<div>&nbsp;&nbsp;4. Portfolio earns a random real return: mean ${fmtPct(muP, 1)}, typical swing ±${fmtPct(sdP, 1)} (${fmtPct(p.alloc)} stocks / ${fmtPct(1 - p.alloc)} bonds, drawn fresh every year)</div>` +
+    `<div>&nbsp;&nbsp;4. Portfolio earns a random real return: mean ${fmtPct(muP, 1)}, typical swing ±${fmtPct(sdP, 1)} (${fmtPct(p.alloc)} stocks / ${fmtPct(1 - p.alloc)} CA munis, drawn fresh every year)</div>` +
     `<div>· Broke = portfolio hits $0. No wages, no inheritance, no bailout.</div>` +
     `<div>· Every life is a new random draw. The Monte Carlo in Part II is 1,000 of these exact lives.</div>`;
 }
