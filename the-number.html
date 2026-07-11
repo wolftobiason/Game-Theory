@@ -250,7 +250,7 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
 <div class="hero">
   <div class="hero-label">A Thought Experiment in Enough</div>
   <h1 id="heroNumber">$—</h1>
-  <div class="hero-sub">The all-in cost of the life you described — and whether it survives sixty years of real markets.</div>
+  <div class="hero-sub" id="heroSub">The all-in cost of the life you described — sized so you make it in 99 out of 100 simulated lifetimes.</div>
 </div>
 
 <div class="wrap">
@@ -258,7 +258,7 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
   <!-- ============ SECTION 1: THE LIFESTYLE ============ -->
   <div class="section-label">Part I — The Lifestyle</div>
   <h2>What the life costs</h2>
-  <p class="section-sub">The liquid number is annual spending divided by the withdrawal rate. The houses sit on top — they're homes, not portfolio.</p>
+  <p class="section-sub">The liquid number is solved by simulation: the smallest portfolio that survives 60 years in your chosen share of lives, under all the Part II assumptions. The houses sit on top — they're homes, not portfolio.</p>
 
   <div class="grid">
     <div class="card">
@@ -269,9 +269,14 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
         <div class="hint">Five-star travel, restaurants, everything — with no mortgage or rent.</div>
       </div>
       <div class="slider-row">
-        <div class="slider-head"><label>Withdrawal rate</label><span class="val" id="swrVal"></span></div>
-        <input type="range" id="swr" class="gold" min="0.02" max="0.05" step="0.0025" value="0.03">
-        <div class="hint">4% is calibrated to 30-year retirements. At 23, your horizon is twice that — 3% or lower is the honest range. 2% ≈ the riskless TIPS floor.</div>
+        <div class="slider-head"><label>Certainty target</label><span class="val" id="targetVal"></span></div>
+        <div class="chips" id="targetChips">
+          <button class="chip" data-t="0.90">90/100</button>
+          <button class="chip" data-t="0.95">95/100</button>
+          <button class="chip active" data-t="0.99">99/100</button>
+          <button class="chip" data-t="0.999">999/1000</button>
+        </div>
+        <div class="hint">The liquid number is <em>solved</em>: the smallest portfolio where at least this share of simulated 60-year lives end with money left, under all the Part II assumptions (taxes, allocation, flexible spending). The withdrawal rate below is the result, not a choice.</div>
       </div>
     </div>
     <div class="card">
@@ -289,7 +294,8 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
   </div>
 
   <div class="stats">
-    <div class="stat"><div class="big blue" id="statLiquid">—</div><div class="label">Liquid Portfolio</div></div>
+    <div class="stat"><div class="big blue" id="statLiquid">—</div><div class="label">Liquid Portfolio (Solved)</div></div>
+    <div class="stat"><div class="big" id="statSWR" style="color:var(--soft)">—</div><div class="label">Implied Withdrawal Rate</div></div>
     <div class="stat"><div class="big" id="statHouses" style="color:var(--soft)">—</div><div class="label">Real Estate</div></div>
     <div class="stat"><div class="big gold" id="statAllIn">—</div><div class="label">The Number (All-In)</div></div>
   </div>
@@ -362,15 +368,24 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
   <p class="section-sub">The fan chart is the ensemble. This is one draw — your actual deal. Advance through the decades and watch what sequence-of-returns risk feels like from inside. Same assumptions as above.</p>
 
   <div class="card">
-    <div class="slider-row" style="max-width:360px">
-      <div class="slider-head"><label>Years per step</label><span class="val" id="stepVal"></span></div>
-      <input type="range" id="step" class="gold" min="1" max="10" step="1" value="5">
+    <div class="grid" style="margin-bottom:6px">
+      <div class="slider-row">
+        <div class="slider-head"><label>Starting wealth (liquid)</label><span class="val" id="lifeW0Val"></span></div>
+        <input type="range" id="lifeW0" class="gold" min="1000000" max="100000000" step="500000" value="13000000">
+        <div class="hint" id="lifeW0Hint">Tracks The Number from Part I until you move it — then it's yours. </div>
+        <div class="chips"><button class="chip" id="lifeW0Reset">↺ reset to The Number</button></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head"><label>Years per step</label><span class="val" id="stepVal"></span></div>
+        <input type="range" id="step" class="gold" min="1" max="10" step="1" value="5">
+      </div>
     </div>
     <div class="stepper-controls">
       <button class="btn" id="advanceBtn">Advance →</button>
       <button class="btn secondary" id="newLifeBtn">↺ New Life</button>
       <span class="toggle-label" id="lifeStatus"></span>
     </div>
+    <div class="life-log" id="assumptions" style="max-height:none"></div>
     <div class="chart-card" style="margin-top:10px">
       <canvas id="lifeChart" width="1040" height="360"></canvas>
     </div>
@@ -379,7 +394,7 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
 
   <!-- ============ FOOTNOTES ============ -->
   <div class="footnote">
-    <strong>What this is:</strong> an estimating toy, not financial advice. The model draws annual real returns from correlated normals (stocks ~N(6.5%, 17%), bonds ~N(1.8%, 6.5%), ρ=0.1) — real markets have fatter tails than this, which means the bad scenarios here are, if anything, too kind. Taxes are modeled as cash flows: dividends (1.8% yield) and bond interest are taxed every year; spending beyond that after-tax income is funded by selling shares, and the embedded gain in each sale is taxed — starting near zero (fresh basis) and ramping to 70% of each sale by year 28. Unrealized gains compound untaxed, as in life. Withdrawals happen at the start of each year; everything is in today's dollars. The houses are excluded from the portfolio and assumed to roughly hold real value. Danish taxation, currency risk, and citizenship logistics are real complications this page waves at but does not model.
+    <strong>What this is:</strong> an estimating toy, not financial advice. The model draws annual real returns from correlated normals (stocks ~N(6.5%, 17%), bonds ~N(1.8%, 6.5%), ρ=0.1) — real markets have fatter tails than this, which means the bad scenarios here are, if anything, too kind. Taxes are modeled as cash flows: dividends (1.8% yield) and bond interest are taxed every year; spending beyond that after-tax income is funded by selling shares, and the embedded gain in each sale is taxed — starting near zero (fresh basis) and ramping to 70% of each sale by year 28. Unrealized gains compound untaxed, as in life. Withdrawals happen at the start of each year; everything is in today's dollars. The liquid Number is found by bisection: the smallest starting portfolio whose simulated success rate (2,000–4,000 lives, common random numbers) meets the certainty target. Treat the 999/1000 setting with suspicion — extreme-tail certainty is exactly where the thin-tailed return assumption lies most. The houses are excluded from the portfolio and assumed to roughly hold real value. Danish taxation, currency risk, and citizenship logistics are real complications this page waves at but does not model.
     <br><br>
     <strong>The point of Part III:</strong> the ensemble average is not your average — you live one path, once. If the one you're walking dies at 70, it is no comfort that the median life ended rich. That asymmetry is why the flexible-spending result matters more than any other number on this page: the willingness to cut back is worth more than an extra few million up front.
   </div>
@@ -430,7 +445,7 @@ function gainFrac(t) { return Math.min(0.7, 0.025 * t); }
 function readParams() {
   return {
     spend0: +document.getElementById('spend').value,
-    swr: +document.getElementById('swr').value,
+    target: +document.querySelector('#targetChips .chip.active').dataset.t,
     cph: +document.getElementById('cph').value,
     us: +document.getElementById('us').value,
     alloc: +document.getElementById('alloc').value,
@@ -468,36 +483,53 @@ function stepYear(W, t, f, p, useFlex, gauss) {
   return { W, f, r: rp, spend, dead: W <= 0 };
 }
 
-function runMC(p, useFlex, seed) {
+function runMC(p, useFlex, seed, W0, nSims, wantPct) {
   const rng = mulberry32(seed);
   const gauss = makeGauss(rng);
-  const W0 = p.spend0 / p.swr;
-  const paths = [];   // wealth at each year for percentiles
+  const paths = wantPct ? [] : null;
   let successes = 0;
-  for (let s = 0; s < N_SIMS; s++) {
+  for (let s = 0; s < nSims; s++) {
     let W = W0, f = 1;
-    const path = [W];
+    const path = wantPct ? [W] : null;
     for (let t = 0; t < p.years; t++) {
       if (W > 0) {
         const out = stepYear(W, t, f, p, useFlex, gauss);
         W = out.W; f = out.f;
+      } else {
+        gauss(); gauss();   // keep random draws aligned across W0 values
       }
-      path.push(W);
+      if (wantPct) path.push(W);
     }
     if (W > 0) successes++;
-    paths.push(path);
+    if (wantPct) paths.push(path);
   }
-  // percentiles per year
-  const pct = { p10: [], p25: [], p50: [], p75: [], p90: [] };
-  for (let t = 0; t <= p.years; t++) {
-    const col = paths.map(pa => pa[t]).sort((a, b) => a - b);
-    pct.p10.push(col[Math.floor(0.10 * N_SIMS)]);
-    pct.p25.push(col[Math.floor(0.25 * N_SIMS)]);
-    pct.p50.push(col[Math.floor(0.50 * N_SIMS)]);
-    pct.p75.push(col[Math.floor(0.75 * N_SIMS)]);
-    pct.p90.push(col[Math.floor(0.90 * N_SIMS)]);
+  let pct = null;
+  if (wantPct) {
+    pct = { p10: [], p25: [], p50: [], p75: [], p90: [] };
+    for (let t = 0; t <= p.years; t++) {
+      const col = paths.map(pa => pa[t]).sort((a, b) => a - b);
+      pct.p10.push(col[Math.floor(0.10 * nSims)]);
+      pct.p25.push(col[Math.floor(0.25 * nSims)]);
+      pct.p50.push(col[Math.floor(0.50 * nSims)]);
+      pct.p75.push(col[Math.floor(0.75 * nSims)]);
+      pct.p90.push(col[Math.floor(0.90 * nSims)]);
+    }
   }
-  return { successRate: successes / N_SIMS, pct, W0 };
+  return { successRate: successes / nSims, pct, W0 };
+}
+
+// bisection: smallest W0 whose success rate meets the certainty target
+function solveW0(p) {
+  const seed = 777;                                    // common random numbers
+  const nSims = p.target >= 0.999 ? 4000 : 2000;
+  let lo = p.spend0 * 10, hi = p.spend0 * 150;
+  if (runMC(p, p.flex, seed, hi, nSims, false).successRate < p.target) return hi;
+  for (let i = 0; i < 16; i++) {
+    const mid = (lo + hi) / 2;
+    if (runMC(p, p.flex, seed, mid, nSims, false).successRate >= p.target) hi = mid;
+    else lo = mid;
+  }
+  return Math.ceil(hi / 1e5) * 1e5;
 }
 
 // ---------- fan chart ----------
@@ -572,12 +604,13 @@ let life = null;
 
 function newLife() {
   const p = readParams();
+  const W0 = +document.getElementById('lifeW0').value;
   const seed = Math.floor(Math.random() * 2 ** 31);
   life = {
     p, seed,
     rng: mulberry32(seed),
-    t: 0, W: p.spend0 / p.swr, f: 1,
-    history: [p.spend0 / p.swr],
+    t: 0, W: W0, f: 1,
+    history: [W0],
     dead: false,
   };
   life.gauss = makeGauss(life.rng);
@@ -692,10 +725,15 @@ function scheduleRecompute() {
   debounceTimer = setTimeout(recompute, 120);
 }
 
+function targetLabel(t) {
+  return t >= 0.999 ? '999 out of 1,000' : Math.round(t * 100) + ' out of 100';
+}
+
 function updateLabels() {
   const p = readParams();
   document.getElementById('spendVal').textContent = fmtMoney(p.spend0) + '/yr';
-  document.getElementById('swrVal').textContent = fmtPct(p.swr, 2);
+  document.getElementById('targetVal').textContent = targetLabel(p.target) + ' lives';
+  document.getElementById('lifeW0Val').textContent = fmtMoney(+document.getElementById('lifeW0').value);
   document.getElementById('cphVal').textContent = fmtMoney(p.cph);
   document.getElementById('usVal').textContent = fmtMoney(p.us);
   document.getElementById('allocVal').textContent = fmtPct(p.alloc) + ' stocks';
@@ -706,18 +744,31 @@ function updateLabels() {
   document.getElementById('stepVal').textContent = document.getElementById('step').value + ' yr/click';
 }
 
+let lastSolvedLiquid = null;
+let lifeW0Touched = false;
+
 function recompute() {
   const p = readParams();
-  const liquid = p.spend0 / p.swr;
+  const liquid = solveW0(p);
+  lastSolvedLiquid = liquid;
   const houses = p.cph + p.us;
   document.getElementById('statLiquid').textContent = fmtMoney(liquid);
+  document.getElementById('statSWR').textContent = fmtPct(p.spend0 / liquid, 2);
   document.getElementById('statHouses').textContent = fmtMoney(houses);
   document.getElementById('statAllIn').textContent = fmtMoney(liquid + houses);
   document.getElementById('heroNumber').textContent = fmtMoney(liquid + houses);
+  document.getElementById('heroSub').textContent =
+    'The all-in cost of the life you described — sized so you make it in ' + targetLabel(p.target) + ' simulated lifetimes.';
+
+  if (!lifeW0Touched) {
+    document.getElementById('lifeW0').value = Math.min(1e8, liquid);
+    document.getElementById('lifeW0Val').textContent = fmtMoney(liquid);
+  }
+  updateAssumptions(p);
 
   const seed = 12345; // fixed seed: sliders move results, not luck
-  const mcFlex = runMC(p, true, seed);
-  const mcRigid = runMC(p, false, seed);
+  const mcFlex = runMC(p, true, seed, liquid, N_SIMS, true);
+  const mcRigid = runMC(p, false, seed, liquid, N_SIMS, true);
   const shown = p.flex ? mcFlex : mcRigid;
 
   document.getElementById('statFlex').textContent = fmtPct(mcFlex.successRate, 1);
@@ -731,10 +782,43 @@ function recompute() {
   drawFan(shown, p);
 }
 
+// ---------- assumptions panel ----------
+function updateAssumptions(p) {
+  const W0 = +document.getElementById('lifeW0').value;
+  const muP = p.alloc * STOCK_MU + (1 - p.alloc) * BOND_MU;
+  const sdP = Math.sqrt(
+    Math.pow(p.alloc * STOCK_SD, 2) + Math.pow((1 - p.alloc) * BOND_SD, 2) +
+    2 * p.alloc * (1 - p.alloc) * RHO * STOCK_SD * BOND_SD
+  );
+  const bondNom = (1 + BOND_MU) * (1 + p.infl) - 1;
+  const income1 = W0 * (p.alloc * DIV_YIELD + (1 - p.alloc) * bondNom);
+  const flexLine = p.flex
+    ? `if spending tops ${fmtPct(FLEX_CUT_TRIGGER)} of the portfolio, cut it 15% (floor: 60% of plan); restore when it falls under ${fmtPct(FLEX_RESTORE, 1)}`
+    : `never cut — rigid spending (toggle in Part II)`;
+  const src = lifeW0Touched ? 'custom' : 'The Number from Part I';
+  document.getElementById('assumptions').innerHTML =
+    `<div style="color:var(--text)">THE RULES OF THIS LIFE</div>` +
+    `<div>· Start: age ${START_AGE}, ${fmtMoney(W0)} liquid (${src}). Houses excluded — never sold, never taxed.</div>` +
+    `<div>· Each year, in order:</div>` +
+    `<div>&nbsp;&nbsp;1. Withdraw ${fmtMoney(p.spend0)} of spending (growing ${(p.grow >= 0 ? '+' : '') + fmtPct(p.grow, 1)}/yr real); ${flexLine}</div>` +
+    `<div>&nbsp;&nbsp;2. Pay ${fmtPct(p.tax)} tax on dividends &amp; bond interest (≈ ${fmtMoney(income1)} of income in year one)</div>` +
+    `<div>&nbsp;&nbsp;3. Sell shares to cover the rest; pay ${fmtPct(p.tax)} on the embedded gain — 0% of each sale at first, ramping to 70% by year 28</div>` +
+    `<div>&nbsp;&nbsp;4. Portfolio earns a random real return: mean ${fmtPct(muP, 1)}, typical swing ±${fmtPct(sdP, 1)} (${fmtPct(p.alloc)} stocks / ${fmtPct(1 - p.alloc)} bonds, drawn fresh every year)</div>` +
+    `<div>· Broke = portfolio hits $0. No wages, no inheritance, no bailout.</div>` +
+    `<div>· Every life is a new random draw. The Monte Carlo in Part II is 1,000 of these exact lives.</div>`;
+}
+
 // ---------- wiring ----------
 document.querySelectorAll('input[type="range"]').forEach(el => {
   el.addEventListener('input', () => {
     if (el.id === 'step') { updateLabels(); return; }
+    if (el.id === 'lifeW0') {
+      lifeW0Touched = true;
+      updateLabels();
+      updateAssumptions(readParams());
+      newLife();
+      return;
+    }
     scheduleRecompute();
     if (el.id === 'grow') syncChips();
   });
@@ -743,18 +827,33 @@ document.getElementById('flexToggle').addEventListener('click', function () {
   this.classList.toggle('on');
   scheduleRecompute();
 });
-document.querySelectorAll('.chip').forEach(chip => {
+document.querySelectorAll('.chip[data-g]').forEach(chip => {
   chip.addEventListener('click', () => {
     document.getElementById('grow').value = chip.dataset.g;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
+    syncChips();
     scheduleRecompute();
   });
 });
 function syncChips() {
   const g = +document.getElementById('grow').value;
-  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', +c.dataset.g === g));
+  document.querySelectorAll('.chip[data-g]').forEach(c => c.classList.toggle('active', +c.dataset.g === g));
 }
+document.querySelectorAll('#targetChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#targetChips .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    scheduleRecompute();
+  });
+});
+document.getElementById('lifeW0Reset').addEventListener('click', () => {
+  lifeW0Touched = false;
+  if (lastSolvedLiquid !== null) {
+    document.getElementById('lifeW0').value = Math.min(1e8, lastSolvedLiquid);
+  }
+  updateLabels();
+  updateAssumptions(readParams());
+  newLife();
+});
 document.getElementById('advanceBtn').addEventListener('click', advanceLife);
 document.getElementById('newLifeBtn').addEventListener('click', newLife);
 
