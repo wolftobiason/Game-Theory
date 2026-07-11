@@ -340,7 +340,12 @@ button.btn:disabled { opacity: 0.35; cursor: default; }
       </div>
       <div class="toggle-row">
         <div class="toggle on" id="flexToggle"></div>
-        <div class="toggle-label"><strong style="color:var(--text)">Flexible spending.</strong> When withdrawals exceed 5% of the portfolio, cut spending 15% (floor: 60% of plan). Restore when things recover.</div>
+        <div class="toggle-label"><strong style="color:var(--text)">Flexible spending.</strong> When withdrawals exceed 5% of the portfolio, cut spending 15% at a time. Restore when things recover.</div>
+      </div>
+      <div class="slider-row" style="margin-top:16px">
+        <div class="slider-head"><label>How deep you'd cut in a bad decade</label><span class="val" id="floorVal"></span></div>
+        <input type="range" id="floor" min="0.4" max="1" step="0.05" value="0.6">
+        <div class="hint">The lifestyle floor you'd actually accept while markets recover. Deeper honesty here = a smaller Number. At 100% this is the same as rigid spending.</div>
       </div>
     </div>
   </div>
@@ -438,7 +443,7 @@ const MUNI_YIELD = 0.035;                // nominal coupon, exempt from federal 
 const RHO = 0.10;
 const START_AGE = 23;
 const N_SIMS = 1000;
-const FLEX_CUT_TRIGGER = 0.05, FLEX_CUT = 0.85, FLEX_FLOOR = 0.6, FLEX_RESTORE = 0.035;
+const FLEX_CUT_TRIGGER = 0.05, FLEX_CUT = 0.85, FLEX_RESTORE = 0.035;
 const DIV_YIELD = 0.018;   // stock dividend yield, taxed annually
 // embedded-gain share of sales: starts near 0 (fresh basis), ramps to 70% by ~year 28
 function gainFrac(t) { return Math.min(0.7, 0.025 * t); }
@@ -453,6 +458,7 @@ function readParams() {
     tax: +document.getElementById('tax').value,
     infl: +document.getElementById('infl').value,
     grow: +document.getElementById('grow').value,
+    floor: +document.getElementById('floor').value,
     years: +document.getElementById('years').value,
     flex: document.getElementById('flexToggle').classList.contains('on'),
   };
@@ -463,7 +469,7 @@ function stepYear(W, t, f, p, useFlex, gauss) {
   const sched = p.spend0 * Math.pow(1 + p.grow, t);
   let spend = sched * f;
   if (useFlex && W > 0) {
-    if (spend / W > FLEX_CUT_TRIGGER) f = Math.max(FLEX_FLOOR, f * FLEX_CUT);
+    if (spend / W > FLEX_CUT_TRIGGER) f = Math.max(p.floor, f * FLEX_CUT);
     else if (f < 1 && sched * f / W < FLEX_RESTORE) f = Math.min(1, f / FLEX_CUT);
     spend = sched * f;
   }
@@ -741,6 +747,7 @@ function updateLabels() {
   document.getElementById('taxVal').textContent = fmtPct(p.tax);
   document.getElementById('inflVal').textContent = fmtPct(p.infl, 1);
   document.getElementById('growVal').textContent = (p.grow >= 0 ? '+' : '') + fmtPct(p.grow, 1) + '/yr';
+  document.getElementById('floorVal').textContent = fmtPct(p.floor) + ' of plan' + (p.floor >= 1 ? ' (rigid)' : ` (${fmtMoney(p.spend0 * p.floor)}/yr)`);
   document.getElementById('yearsVal').textContent = p.years + ' years (to age ' + (START_AGE + p.years) + ')';
   document.getElementById('stepVal').textContent = document.getElementById('step').value + ' yr/click';
 }
@@ -795,7 +802,7 @@ function updateAssumptions(p) {
   const div1 = W0 * p.alloc * DIV_YIELD;
   const muni1 = W0 * (1 - p.alloc) * MUNI_YIELD;
   const flexLine = p.flex
-    ? `if spending tops ${fmtPct(FLEX_CUT_TRIGGER)} of the portfolio, cut it 15% (floor: 60% of plan); restore when it falls under ${fmtPct(FLEX_RESTORE, 1)}`
+    ? `if spending tops ${fmtPct(FLEX_CUT_TRIGGER)} of the portfolio, cut it 15% at a time — never below ${fmtPct(p.floor)} of plan (${fmtMoney(p.spend0 * p.floor)}/yr); restore when it falls under ${fmtPct(FLEX_RESTORE, 1)}`
     : `never cut — rigid spending (toggle in Part II)`;
   const src = lifeW0Touched ? 'custom' : 'The Number from Part I';
   document.getElementById('assumptions').innerHTML =
