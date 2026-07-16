@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Evidence — What the Research Actually Shows</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050509;
+    --surface: #0d0d18;
+    --surface-2: #12121f;
+    --border: #1e1e35;
+    --muted: #3a3a5c;
+    --text: #e2e2f0;
+    --text-dim: #8888aa;
+    --violet: #a78bfa;
+    --violet-dim: rgba(167,139,250,.12);
+    --gold: #e0b04f;
+    --green: #34d399;
+    --blue: #3b82f6;
+    --red: #f87171;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  .mono { font-family: 'Courier New', monospace; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ── Hero ── */
+  .hero { text-align: center; padding: 72px 24px 56px; border-bottom: 1px solid var(--border); position: relative; }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(167,139,250,.07), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--violet); margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 20px; }
+  .hero h1 em { font-style: italic; color: var(--violet); }
+  .hero-sub { font-size: 1.05rem; color: var(--text-dim); max-width: 640px; margin: 0 auto 28px; line-height: 1.65; }
+  .hero-sub em { color: var(--text); }
+  .hero-meta { font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+  section { max-width: 1100px; margin: 0 auto; padding: 64px 24px 24px; }
+  .sec-label { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--violet); margin-bottom: 12px; }
+  .sec-title { font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 400; margin-bottom: 14px; }
+  .sec-intro { color: var(--text-dim); line-height: 1.7; max-width: 700px; margin-bottom: 36px; font-size: .98rem; }
+  .sec-intro em { color: var(--text); font-style: italic; }
+
+  /* ── How to read ── */
+  .howto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 8px; }
+  .howto .box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .howto .box .mono { font-size: 10px; display: block; margin-bottom: 8px; }
+  .howto .box.claim .mono { color: var(--violet); }
+  .howto .box.evid .mono { color: var(--green); }
+  .howto .box.limit .mono { color: var(--red); }
+  .howto .box p { font-size: .84rem; color: var(--text-dim); line-height: 1.6; }
+
+  /* ── Evidence entries ── */
+  .entry { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px 26px; margin-bottom: 16px; }
+  .entry-top { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 4px; flex-wrap: wrap; }
+  .entry h3 { font-size: 1.2rem; font-weight: 400; }
+  .entry .src { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); white-space: nowrap; }
+  .entry .claim { font-size: .95rem; color: var(--text); font-style: italic; line-height: 1.6; margin: 12px 0 16px; padding-left: 14px; border-left: 2px solid var(--violet); }
+  .entry .block { margin-bottom: 12px; }
+  .entry .block:last-child { margin-bottom: 0; }
+  .entry .tag { font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; margin-right: 8px; }
+  .entry .tag.e { color: var(--green); }
+  .entry .tag.l { color: var(--red); }
+  .entry .block p { display: inline; font-size: .89rem; color: var(--text-dim); line-height: 1.7; }
+  .entry .block p b { color: var(--text); font-weight: 400; font-style: italic; }
+
+  /* ── Calibration ledger ── */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; min-width: 640px; background: var(--surface); }
+  th, td { padding: 12px 14px; text-align: left; font-size: .84rem; line-height: 1.5; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400; color: var(--violet); background: var(--surface-2); }
+  td { color: var(--text-dim); }
+  td:first-child { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  .pill { font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); white-space: nowrap; }
+  .pill.strong { color: var(--green); border-color: rgba(52,211,153,.4); }
+  .pill.mod { color: var(--gold); border-color: rgba(224,176,79,.4); }
+  .pill.weak { color: var(--red); border-color: rgba(248,113,113,.4); }
+
+  /* ── Fallacy note ── */
+  .fallacy { margin-top: 44px; padding: 22px 26px; background: var(--violet-dim); border-left: 3px solid var(--violet); border-radius: 0 10px 10px 0; max-width: 740px; }
+  .fallacy .mono { font-size: 10px; color: var(--violet); display: block; margin-bottom: 10px; }
+  .fallacy p { font-size: .92rem; color: var(--text-dim); line-height: 1.7; }
+  .fallacy p em { color: var(--text); font-style: italic; }
+  .fallacy p + p { margin-top: 12px; }
+
+  /* ── Refs ── */
+  .refs { margin-top: 40px; }
+  .refs ol { list-style: none; counter-reset: r; }
+  .refs li { counter-increment: r; position: relative; padding-left: 34px; font-size: .82rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 10px; }
+  .refs li::before { content: counter(r); position: absolute; left: 0; top: 0; font-family: 'Courier New', monospace; font-size: 10px; color: var(--violet); border: 1px solid var(--border); border-radius: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .refs li b { color: var(--text); font-weight: 400; }
+
+  /* ── Series footer ── */
+  .series { max-width: 1100px; margin: 72px auto 0; padding: 48px 24px 0; border-top: 1px solid var(--border); }
+  .series-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 28px; }
+  .series a.card { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-decoration: none; transition: border-color .2s; }
+  .series a.card:hover { border-color: var(--violet); }
+  .series a.card .mono { font-size: 9px; display: block; margin-bottom: 8px; }
+  .series a.card h4 { font-size: 1.05rem; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .series a.card p { font-size: .82rem; color: var(--text-dim); line-height: 1.55; }
+  .s-gold .mono { color: var(--gold); }
+  .s-green .mono { color: var(--green); }
+  .s-violet .mono { color: var(--violet); }
+  .s-blue .mono { color: var(--blue); }
+
+  @media (max-width: 820px) {
+    .howto, .series-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-label">The Science · Sources · Honest Limits</div>
+  <h1>What the research<br><em>actually</em> shows</h1>
+  <p class="hero-sub">
+    Every mechanism in this series rests on a claim about human behavior. This page traces each
+    one to its evidence — and, just as important, to its <em>limits</em>. Some findings are
+    robustly replicated; some are suggestive; a few are contested or partly folk wisdom.
+    A framework is only as honest as its willingness to say which is which.
+  </p>
+  <div class="hero-meta">CLAIM · EVIDENCE · LIMIT</div>
+</div>
+
+<!-- ═══════════════ HOW TO READ ═══════════════ -->
+<section>
+  <div class="sec-label">How to Read This</div>
+  <h2 class="sec-title">Three parts to every entry</h2>
+  <p class="sec-intro">
+    The point isn't to prove the framework right — it's to show you exactly how much weight each
+    piece can bear, so you can lean on the strong ones and hold the weak ones loosely.
+  </p>
+  <div class="howto">
+    <div class="box claim"><span class="mono">The Claim</span><p>What the series asserts — the mechanism as it appears on the Ladder, the Long Game, or the Channels.</p></div>
+    <div class="box evid"><span class="mono">The Evidence</span><p>The study or literature behind it, and what it actually found. Numbered references below.</p></div>
+    <div class="box limit"><span class="mono">The Limit</span><p>Where the finding stops — replication gaps, alternative explanations, effect sizes, or plain uncertainty.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ CLUSTER 1: STATUS & PRESELECTION ═══════════════ -->
+<section>
+  <div class="sec-label">Cluster I</div>
+  <h2 class="sec-title">Status &amp; Preselection</h2>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Preselection is real</h3><span class="src">Ref 1 · mate-choice copying</span></div>
+    <div class="claim">"The strongest evidence a man is desirable is that other women treat him as desirable." — The Ladder, <em>Preselection</em></div>
+    <div class="block"><span class="tag e">Evidence</span><p>Across experiments, women rate the same man as more attractive when he's shown with, or being smiled at by, another woman than when shown alone. A 2018 systematic review and meta-analysis confirms a reliable female mate-choice-copying effect. <b>The signal is real and measurable.</b></p></div>
+    <div class="block"><span class="tag l">Limit</span><p>Two big caveats. First, it's <b>conditional</b>: copying mainly occurs when the paired woman is herself attractive. Second, and more deflating, one strand of work finds the same social-influence effect for photos of <b>hands and abstract art</b> — suggesting it may be domain-general social learning, not a mate-specific adaptation. The effect holds; the evolutionary story behind it is not settled.</p></div>
+  </div>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Women weight status &amp; resources more</h3><span class="src">Ref 2 · Buss 1989, 37 cultures</span></div>
+    <div class="claim">"Women weight status and resource cues more heavily than men do." — The Long Game, <em>Resource access</em></div>
+    <div class="block"><span class="tag e">Evidence</span><p>Buss's survey of <b>10,000+ people across 37 cultures</b> found a consistent sex difference: women rated "good financial prospect" and ambition/industriousness higher than men did, in the large majority of samples. One of the most replicated findings in the field.</p></div>
+    <div class="block"><span class="tag l">Limit</span><p>It's a difference in <b>average emphasis, not a top ranking</b>. In the same data, <b>both sexes</b> rank mutual attraction–love, dependable character, emotional stability, and kindness <b>above</b> status and money. The status finding is robust but secondary — a page that treats status as the main event overreads it. (This is why the framework puts valence over reach.)</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ CLUSTER 2: THE VETTING BIASES ═══════════════ -->
+<section>
+  <div class="sec-label">Cluster II</div>
+  <h2 class="sec-title">The Vetting Biases</h2>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Commitment skepticism</h3><span class="src">Ref 3 · Haselton &amp; Buss 2000</span></div>
+    <div class="claim">"Her commitment skepticism is evolved and rational — it ignores claims and reads structure." — The Transience Discount</div>
+    <div class="block"><span class="tag e">Evidence</span><p>Error Management Theory predicts, and Haselton &amp; Buss found, that women systematically <b>underestimate</b> men's commitment intent. The logic is asymmetric cost: ancestrally, over-trusting a low-commitment man risked pregnancy without support, so a skeptical bias was protective. This directly underwrites the "why invest in a guy who's leaving" objection as rational pricing, not an excuse.</p></div>
+    <div class="block"><span class="tag l">Limit</span><p>Robust as a lab finding, but it's a bias about <b>reading intent</b>, not a proven formula for what dissolves it. The framework's claim that <b>verifiable structure</b> beats verbal claims is a reasonable extension of the theory, not a directly tested result. Treat "prove, don't promise" as well-motivated, not laboratory-certified.</p></div>
+  </div>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Competitor derogation</h3><span class="src">Ref 4 · Buss &amp; Dedden 1990</span></div>
+    <div class="claim">"A clean record is armor against an attack people actually deploy." — The Vouch, <em>Negativity Veto</em></div>
+    <div class="block"><span class="tag e">Evidence</span><p>Buss &amp; Dedden documented that people derogate rivals <b>precisely on the dimensions the opposite sex values</b> — rivals' reputation, fidelity, and appearance are common targets. Rival-badmouthing is a real, patterned tactic, which is what makes a spotless record defensively valuable.</p></div>
+    <div class="block"><span class="tag l">Limit</span><p>The study shows the tactic <b>exists and is patterned</b>; it doesn't quantify how often derogation actually changes a mate decision. The "one bad report vetoes years of good ones" asymmetry is consistent with negativity-bias research broadly, but the specific veto strength is an inference, not a measured coefficient.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ CLUSTER 3: NETWORKS & REPUTATION ═══════════════ -->
+<section>
+  <div class="sec-label">Cluster III</div>
+  <h2 class="sec-title">Networks &amp; Reputation</h2>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Weak ties &amp; structural holes</h3><span class="src">Ref 5 · Granovetter 1973 · Burt 1992</span></div>
+    <div class="claim">"The bridge into a circle you can't reach is the highest-value tie." — The Option Book, <em>network tie</em></div>
+    <div class="block"><span class="tag e">Evidence</span><p>Granovetter's "strength of weak ties" showed novel opportunities (famously, jobs) flow disproportionately through <b>weak, bridging</b> connections, not close ones — because distant ties carry non-redundant information. Burt's "structural holes" formalized the value of being the bridge between otherwise-disconnected groups.</p></div>
+    <div class="block"><span class="tag l">Limit</span><p>This is <b>sociology of jobs and information</b>, not dating. Applying it to romantic introductions is a well-reasoned analogy — introductions plausibly behave like other opportunities — but it's borrowed, not a mating-specific result. Strong theory, adjacent domain.</p></div>
+  </div>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Reputation / image scoring</h3><span class="src">Ref 6 · Nowak &amp; Sigmund 1998</span></div>
+    <div class="claim">"Cooperation based on a reputation score, not direct experience." — the vouch as indirect reciprocity</div>
+    <div class="block"><span class="tag e">Evidence</span><p>Nowak &amp; Sigmund's indirect-reciprocity models show cooperation can evolve when individuals act on others' <b>reputation ("image score")</b> rather than personal history. Formally, this is exactly what a vouch is: a third party's score standing in for firsthand knowledge. (See your own <em>indirect-reciprocity</em> page.)</p></div>
+    <div class="block"><span class="tag l">Limit</span><p>These are <b>mathematical/evolutionary models and cooperation-game experiments</b>, not studies of human courtship. They establish that reputation-based decisions are a coherent, evolvable strategy — they don't measure how much a vouch actually moves a real dating outcome.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ CLUSTER 4: READING PEOPLE ═══════════════ -->
+<section>
+  <div class="sec-label">Cluster IV</div>
+  <h2 class="sec-title">Reading People</h2>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Thin slices carry real signal</h3><span class="src">Ref 7 · Ambady &amp; Rosenthal 1992</span></div>
+    <div class="claim">"Thin-slice judgment is reliable for warmth and intelligence." — The Read</div>
+    <div class="block"><span class="tag e">Evidence</span><p>Ambady &amp; Rosenthal's meta-analysis showed that judgments from <b>very short observations</b> (seconds to minutes) predict outcomes surprisingly well for some traits — especially expressive, interpersonal ones. First impressions are not noise.</p></div>
+    <div class="block"><span class="tag l">Limit</span><p>Accuracy is <b>trait-dependent</b>. Thin slices do well on extraversion and warmth, poorly on traits people actively <b>conceal</b> or that require behavioral history. "I can read intelligence and kindness fast" is defensible; "I can read anything fast" is not.</p></div>
+  </div>
+
+  <div class="entry">
+    <div class="entry-top"><h3>The narcissism asymmetry</h3><span class="src">Ref 8 · Back, Schmukle &amp; Egloff 2010</span></div>
+    <div class="claim">"Trust the alarm, distrust the silence, let time break the tie." — The Read, screening rule</div>
+    <div class="block"><span class="tag e">Evidence</span><p>Narcissists make <b>more</b> favorable first impressions — but the effect traces to <b>stylish appearance and expressive charm, not likeable character</b>, and popularity <b>declines</b> as acquaintances deepen (confirmed in longitudinal peer-group work). This is exactly the "charm masks it early, time reveals it" structure the gate encodes.</p></div>
+    <div class="block"><span class="tag l">Limit</span><p>The research supports <b>"time reveals narcissism"</b> and <b>"early charm can mask it."</b> It does <b>not</b> validate the stronger personal claim that <b>a sensed hit is always a true positive</b> — that's a calibration statement about one individual's detector, which no study can certify. The <b>directional</b> rule (a hit warrants caution; a clean read isn't safety) is well-supported; the <b>certainty</b> of any given hit is not.</p></div>
+  </div>
+
+  <div class="entry">
+    <div class="entry-top"><h3>Trusting the intuitive danger read</h3><span class="src">Ref 9 · de Becker 1997 (popular)</span></div>
+    <div class="claim">"Don't argue yourself out of a real red flag." — The Read, Stage 1</div>
+    <div class="block"><span class="tag e">Evidence</span><p>de Becker's <em>The Gift of Fear</em> argues intuition often registers danger before conscious reasoning does, and that people frequently <b>override</b> a correct read for social reasons. Widely influential and intuitively resonant.</p></div>
+    <div class="block"><span class="tag l">Limit</span><p><b>This one is the softest.</b> It's a practitioner's book, not peer-reviewed research, and it selects on dramatic cases. Intuition is also demonstrably <b>biased</b> (it encodes prejudice as readily as insight). Use it as a prompt to take a real unease seriously — never as proof that a feeling is correct.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════ CALIBRATION LEDGER ═══════════════ -->
+<section>
+  <div class="sec-label">The Ledger</div>
+  <h2 class="sec-title">How much weight each piece bears</h2>
+  <p class="sec-intro">The honest one-glance summary. <em>Strong</em> = well-replicated, directly on point. <em>Moderate</em> = real finding, but borrowed domain or inferential leap. <em>Soft</em> = suggestive, contested, or folk wisdom.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Mechanism</th><th>Strength</th><th>The catch</th></tr></thead>
+      <tbody>
+        <tr><td>Preselection exists</td><td><span class="pill strong">Strong</span></td><td>Real effect; but maybe domain-general, and only when the consort is attractive</td></tr>
+        <tr><td>Women weight status more</td><td><span class="pill strong">Strong</span></td><td>Replicated — but it's a secondary trait; kindness/stability rank higher for both sexes</td></tr>
+        <tr><td>Commitment skepticism</td><td><span class="pill strong">Strong</span></td><td>Solid bias; "structure beats claims" is a plausible extension, not a tested result</td></tr>
+        <tr><td>Competitor derogation</td><td><span class="pill mod">Moderate</span></td><td>Tactic is documented; its decisive impact on choices is inferred</td></tr>
+        <tr><td>Weak ties / structural holes</td><td><span class="pill mod">Moderate</span></td><td>Robust — but in jobs/information, applied to dating by analogy</td></tr>
+        <tr><td>Reputation / image scoring</td><td><span class="pill mod">Moderate</span></td><td>Elegant models &amp; games, not courtship measurements</td></tr>
+        <tr><td>Thin-slice accuracy</td><td><span class="pill strong">Strong</span></td><td>Real — but only for some traits; weak for concealed ones</td></tr>
+        <tr><td>Narcissism reveals over time</td><td><span class="pill strong">Strong</span></td><td>Supports the direction; can't certify any single "hit"</td></tr>
+        <tr><td>Trust the danger intuition</td><td><span class="pill weak">Soft</span></td><td>Popular book; intuition is also a reliable carrier of bias</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="fallacy">
+    <span class="mono">The Naturalistic Fallacy</span>
+    <p>One warning that governs the whole series. Everything here describes what evolved
+    tendencies <em>are</em> — not what anyone <em>ought</em> to value. That a bias was ancestrally
+    adaptive says nothing about whether acting on it is wise or good today; "natural" is not a
+    synonym for "right." Buss himself is careful about this line, framing his work as description,
+    not prescription.</p>
+    <p>Read the framework the same way: it's a <em>map of the terrain</em>, useful for understanding
+    why a market behaves as it does — not a license, and not an instruction to reduce people to
+    the variables that happen to be measurable. <em>The most-cited traits in the data, remember,
+    are kindness, dependability, and love — the parts hardest to game.</em></p>
+  </div>
+</section>
+
+<!-- ═══════════════ REFERENCES ═══════════════ -->
+<section class="refs">
+  <div class="sec-label">References</div>
+  <h2 class="sec-title">Sources</h2>
+  <ol>
+    <li><b>Street, S. E., et al. (2018).</b> Mate Choice Copying in Humans: A Systematic Review and Meta-Analysis. <em>Adaptive Human Behavior and Physiology.</em> (See also work suggesting domain-general social learning.)</li>
+    <li><b>Buss, D. M. (1989).</b> Sex differences in human mate preferences: Evolutionary hypotheses tested in 37 cultures. <em>Behavioral and Brain Sciences, 12(1), 1–49.</em></li>
+    <li><b>Haselton, M. G., &amp; Buss, D. M. (2000).</b> Error Management Theory: A new perspective on biases in cross-sex mind reading. <em>Journal of Personality and Social Psychology, 78(1), 81–91.</em></li>
+    <li><b>Buss, D. M., &amp; Dedden, L. A. (1990).</b> Derogation of competitors. <em>Journal of Social and Personal Relationships, 7(3), 395–422.</em></li>
+    <li><b>Granovetter, M. (1973).</b> The Strength of Weak Ties. <em>American Journal of Sociology, 78(6).</em> · <b>Burt, R. (1992).</b> <em>Structural Holes.</em></li>
+    <li><b>Nowak, M. A., &amp; Sigmund, K. (1998).</b> Evolution of indirect reciprocity by image scoring. <em>Nature, 393, 573–577.</em></li>
+    <li><b>Ambady, N., &amp; Rosenthal, R. (1992).</b> Thin slices of expressive behavior as predictors of interpersonal consequences. <em>Psychological Bulletin, 111(2).</em></li>
+    <li><b>Back, M. D., Schmukle, S. C., &amp; Egloff, B. (2010).</b> Why are narcissists so charming at first sight? <em>Journal of Personality and Social Psychology, 98(1), 132–145.</em></li>
+    <li><b>de Becker, G. (1997).</b> <em>The Gift of Fear.</em> (Popular, non-peer-reviewed.)</li>
+  </ol>
+</section>
+
+<!-- ═══════════════ SERIES FOOTER ═══════════════ -->
+<div class="series">
+  <div class="sec-label">The Series</div>
+  <h2 class="sec-title">One System, Four Pages</h2>
+  <div class="series-grid">
+    <a class="card s-gold" href="status.html">
+      <span class="mono">I · The Signal</span>
+      <h4>Status — The Ladder &amp; The Wrap</h4>
+      <p>Five tiers of social legibility, and the one-sentence version of a man that travels without him.</p>
+    </a>
+    <a class="card s-green" href="the-long-game.html">
+      <span class="mono">II · The Trust</span>
+      <h4>The Long Game — Vouches, Options &amp; Convergence</h4>
+      <p>Valence over reach: the vouch, the option book, the transience discount, and convergence over years.</p>
+    </a>
+    <a class="card s-blue" href="channels.html">
+      <span class="mono">III · The Strategy</span>
+      <h4>The Channels — Four Ways Into the Market</h4>
+      <p>Network overlap as the master variable, and the portfolio doctrine for running all four channels.</p>
+    </a>
+    <a class="card s-violet" href="the-evidence.html">
+      <span class="mono">IV · The Science</span>
+      <h4>The Evidence — What the Research Actually Shows</h4>
+      <p>This page. Every claim traced to its study — and its limits — with a calibration ledger.</p>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Channels — Four Ways Into the Market</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050509;
+    --surface: #0d0d18;
+    --surface-2: #12121f;
+    --border: #1e1e35;
+    --muted: #3a3a5c;
+    --text: #e2e2f0;
+    --text-dim: #8888aa;
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,.12);
+    --gold: #e0b04f;
+    --green: #34d399;
+    --violet: #a78bfa;
+    --red: #f87171;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  .mono {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 56px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,.07), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--blue); }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 640px;
+    margin: 0 auto 28px;
+    line-height: 1.65;
+  }
+  .hero-sub em { color: var(--text); }
+  .hero-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  section { max-width: 1100px; margin: 0 auto; padding: 64px 24px 24px; }
+  .sec-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 12px;
+  }
+  .sec-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 400;
+    margin-bottom: 14px;
+  }
+  .sec-intro {
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 36px;
+    font-size: .98rem;
+  }
+  .sec-intro em { color: var(--text); font-style: italic; }
+
+  /* ── The axis ── */
+  .axis-strip {
+    margin-bottom: 44px;
+    padding: 26px 24px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .axis-track {
+    position: relative;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--red), var(--gold), var(--green));
+    margin: 34px 40px 12px;
+  }
+  .axis-stop {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--text-dim);
+  }
+  .axis-stop span {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .axis-ends {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 18px 8px 0;
+  }
+  .axis-caption {
+    font-size: .9rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+    max-width: 660px;
+    margin-top: 18px;
+  }
+  .axis-caption em { color: var(--text); font-style: italic; }
+
+  /* ── Channel cards ── */
+  .channels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .chan {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .chan-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+  .chan h3 { font-size: 1.25rem; font-weight: 400; }
+  .chan .overlap {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .overlap.zero { color: var(--red); border-color: rgba(248,113,113,.4); }
+  .overlap.low  { color: var(--gold); border-color: rgba(224,176,79,.4); }
+  .overlap.grow { color: var(--blue); border-color: rgba(59,130,246,.4); }
+  .overlap.full { color: var(--green); border-color: rgba(52,211,153,.4); }
+  .chan .carries {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+  .chan .carries b { color: var(--blue); font-weight: 400; }
+  .chan p { font-size: .88rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 12px; }
+  .chan p em { color: var(--text); font-style: italic; }
+  .chan .rows { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .chan .row { display: grid; grid-template-columns: 120px 1fr; gap: 10px; font-size: .8rem; line-height: 1.5; }
+  .chan .row .k {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 2px;
+  }
+  .chan .row .v { color: var(--text-dim); }
+  .chan .row .v b { color: var(--text); font-weight: 400; font-style: italic; }
+
+  /* ── Table ── */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; min-width: 760px; background: var(--surface); }
+  th, td { padding: 12px 14px; text-align: left; font-size: .82rem; line-height: 1.5; border-bottom: 1px solid var(--border); }
+  th {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--blue);
+    background: var(--surface-2);
+  }
+  td:first-child {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  td { color: var(--text-dim); }
+  tr:last-child td { border-bottom: none; }
+  td b { color: var(--text); font-weight: 400; font-style: italic; }
+
+  /* ── Doctrine ── */
+  .doctrine {
+    margin-top: 44px;
+    padding: 20px 24px;
+    background: var(--blue-dim);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 10px 10px 0;
+    max-width: 720px;
+  }
+  .doctrine .mono { font-size: 10px; color: var(--blue); display: block; margin-bottom: 8px; }
+  .doctrine p { font-size: .92rem; color: var(--text-dim); line-height: 1.7; }
+  .doctrine p em { color: var(--text); font-style: italic; }
+
+  /* ── Series index ── */
+  .series { max-width: 1100px; margin: 72px auto 0; padding: 48px 24px 0; border-top: 1px solid var(--border); }
+  .series-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 28px; }
+  .series a.card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-decoration: none;
+    transition: border-color .2s;
+  }
+  .series a.card:hover { border-color: var(--blue); }
+  .series a.card .mono { font-size: 9px; display: block; margin-bottom: 8px; }
+  .series a.card h4 { font-size: 1.05rem; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .series a.card p { font-size: .82rem; color: var(--text-dim); line-height: 1.55; }
+  .s-gold .mono { color: var(--gold); }
+  .s-green .mono { color: var(--green); }
+  .s-violet .mono { color: var(--violet); }
+  .s-blue .mono { color: var(--blue); }
+
+  @media (max-width: 820px) {
+    .channels, .series-grid { grid-template-columns: 1fr; }
+    .axis-stop span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-label">Strategy · Channels · Network Overlap</div>
+  <h1>Every meeting happens<br>on a <em>channel</em></h1>
+  <p class="hero-sub">
+    Cold approach, the scene, the app, the mutual friend — these aren't just different venues.
+    They're different <em>information environments</em>, defined by one variable:
+    <em>network overlap</em> — how much of what's true about a man her people can find out.
+    Each channel runs on a different fuel, fails a different way, and rewards a different build.
+  </p>
+  <div class="hero-meta">ONE AXIS · FOUR CHANNELS · ONE PORTFOLIO</div>
+</div>
+
+<!-- ═══════════════ THE AXIS ═══════════════ -->
+<section>
+  <div class="sec-label">The Axis</div>
+  <h2 class="sec-title">Network Overlap</h2>
+  <p class="sec-intro">
+    At zero overlap, reputation is <em>unavailable</em> — it can't hurt and can't help.
+    At full overlap, reputation is <em>the entire mechanism</em>. Everything else about a
+    channel follows from where it sits on this line.
+  </p>
+
+  <div class="axis-strip">
+    <div class="axis-track">
+      <div class="axis-stop" style="left:4%"><span>Cold approach</span></div>
+      <div class="axis-stop" style="left:22%"><span>Apps</span></div>
+      <div class="axis-stop" style="left:58%"><span>The scene</span></div>
+      <div class="axis-stop" style="left:94%"><span>The referral</span></div>
+    </div>
+    <div class="axis-ends"><span>Zero overlap — anonymous</span><span>Full overlap — fully vetted</span></div>
+    <p class="axis-caption">
+      Anonymity cuts both ways. Abroad, nobody who knows her knows you: no gossip can reach her —
+      but no vouch can either, and nothing you claim is verifiable. Her evolved
+      <em>commitment skepticism</em> has nothing to check your claims against, so it runs at
+      maximum, and the transience discount stacks on top. The anonymous channel is
+      <em>verification-free in both directions</em> — that's its freedom and its ceiling.
+    </p>
+  </div>
+
+  <div class="channels">
+    <!-- COLD -->
+    <div class="chan">
+      <div class="chan-head">
+        <h3>Cold Approach</h3>
+        <span class="overlap zero">Zero overlap</span>
+      </div>
+      <div class="carries">Signal carrier: <b>the in-person read</b></div>
+      <p>The anonymous market. Reputation doesn't exist here — a spotless record earns nothing,
+      a stained one costs nothing. Everything rides on what's visible in the first minutes:
+      presence, calibration, the wrap if it comes up, and mutual fast screening. The traveler's
+      channel by default, because geography resets overlap to zero.</p>
+      <div class="rows">
+        <div class="row"><span class="k">Runs on</span><span class="v">Nerve, calibration, volume, a legible wrap on delivery</span></div>
+        <div class="row"><span class="k">Strength</span><span class="v">Unlimited volume; full control; works anywhere on earth from a standing start</span></div>
+        <div class="row"><span class="k">Weakness</span><span class="v">Skepticism at maximum — nothing is verifiable; <b>lowest long-term conversion</b> until a tie is built</span></div>
+        <div class="row"><span class="k">Failure mode</span><span class="v">Volume without conversion — meets that never become ties</span></div>
+        <div class="row"><span class="k">Pairs with</span><span class="v">The option book: its real product isn't dates, it's <b>qualified ties</b> that mature</span></div>
+      </div>
+    </div>
+
+    <!-- APPS -->
+    <div class="chan">
+      <div class="chan-head">
+        <h3>Apps</h3>
+        <span class="overlap low">Near-zero overlap</span>
+      </div>
+      <div class="carries">Signal carrier: <b>the wrap, made literal</b></div>
+      <p>Cold approach with the first filter automated. The profile <em>is</em> the wrap —
+      six photos and a line must do what a friend's sentence does elsewhere, with no voice,
+      no presence, no vouch. The evolutionary mismatch at its purest: strangers evaluating
+      strangers on self-report.</p>
+      <div class="rows">
+        <div class="row"><span class="k">Runs on</span><span class="v">Photographic evidence of the wrap — the surfboard, the stage, the summit</span></div>
+        <div class="row"><span class="k">Strength</span><span class="v">Scale and pre-filtering; intent is declared up front</span></div>
+        <div class="row"><span class="k">Weakness</span><span class="v">Everyone discounts unverifiable self-report; charisma doesn't transmit through photos</span></div>
+        <div class="row"><span class="k">Failure mode</span><span class="v">Commodity comparison — being one of a thousand near-identical profiles</span></div>
+        <div class="row"><span class="k">Pairs with</span><span class="v">Strong wrap assets from the ladder; move to in-person fast, where the read works</span></div>
+      </div>
+    </div>
+
+    <!-- SCENE -->
+    <div class="chan">
+      <div class="chan-head">
+        <h3>The Scene</h3>
+        <span class="overlap grow">Overlap under construction</span>
+      </div>
+      <div class="carries">Signal carrier: <b>repeated witnessed behavior</b></div>
+      <p>The recurring shared context — the break, the club, the course, the weekly game.
+      The middle of the axis, and the only channel where overlap <em>grows in real time</em>:
+      every week adds witnesses, preselection gets performed in public, and time — the one
+      instrument that defeats a masked first impression — runs automatically.</p>
+      <div class="rows">
+        <div class="row"><span class="k">Runs on</span><span class="v">Fixture status: same place, same day, months deep</span></div>
+        <div class="row"><span class="k">Strength</span><span class="v">Builds reputation and options <b>simultaneously</b>; screening runs both ways over weeks</span></div>
+        <div class="row"><span class="k">Weakness</span><span class="v">Slow; capped by the scene's size; status may stop at its border</span></div>
+        <div class="row"><span class="k">Failure mode</span><span class="v">One bad in-scene story — the same witnesses that build you can sink you</span></div>
+        <div class="row"><span class="k">Pairs with</span><span class="v">The ladder's organizer role: the one who convenes becomes the hub</span></div>
+      </div>
+    </div>
+
+    <!-- REFERRAL -->
+    <div class="chan">
+      <div class="chan-head">
+        <h3>The Referral</h3>
+        <span class="overlap full">Full overlap</span>
+      </div>
+      <div class="carries">Signal carrier: <b>someone else's staked reputation</b></div>
+      <p>The mutual-friends channel — the ancestral norm, and the highest-conversion channel
+      that exists. When she asks about him, good things get said. When a friend sets him up,
+      the friend is spending their own credibility — a costly signal no self-presentation can
+      fake — on a match already screened from both sides.</p>
+      <div class="rows">
+        <div class="row"><span class="k">Runs on</span><span class="v">Years of clean record + advocates who can describe him <b>and know he's looking</b></span></div>
+        <div class="row"><span class="k">Strength</span><span class="v">Trust imported, vetting pre-passed, intent legible — <b>highest long-term conversion</b></span></div>
+        <div class="row"><span class="k">Weakness</span><span class="v">Lowest volume; can't be rushed; needs the network built years earlier</span></div>
+        <div class="row"><span class="k">Failure mode</span><span class="v">One blown referral — mistreat an introduction and the channel closes for good</span></div>
+        <div class="row"><span class="k">Pairs with</span><span class="v">The vouch machinery: deposits, the negativity veto, the “I'm looking” sentence</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ COMPARISON ═══════════════ -->
+<section>
+  <div class="sec-label">Side by Side</div>
+  <h2 class="sec-title">The Matrix</h2>
+  <p class="sec-intro">Same market, four information environments.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th></th><th>Cold approach</th><th>Apps</th><th>The scene</th><th>The referral</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Reputation</td><td>Unavailable — can't help, can't hurt</td><td>Unavailable</td><td>Accruing weekly</td><td><b>Is the mechanism</b></td></tr>
+        <tr><td>Her verification</td><td>None — skepticism at max</td><td>None</td><td>Growing — she can watch and ask around</td><td>Pre-passed before the first meeting</td></tr>
+        <tr><td>Volume</td><td>Unlimited</td><td>Very high</td><td>Capped by scene size</td><td>Low</td></tr>
+        <tr><td>LT conversion</td><td>Lowest</td><td>Low</td><td>High</td><td><b>Highest</b></td></tr>
+        <tr><td>Geography</td><td>Works anywhere; <b>resets to zero on arrival</b></td><td>Works anywhere</td><td>Bound to place — needs residence or recurrence</td><td>Bound to network — travels only where mutuals exist</td></tr>
+        <tr><td>Time to open</td><td>Instant</td><td>Instant</td><td>Months</td><td>Years</td></tr>
+        <tr><td>What to build</td><td>Nerve + the read</td><td>Wrap assets</td><td>Fixture + organizer status</td><td>Clean record + advocates</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doctrine">
+    <span class="mono">The Portfolio Doctrine</span>
+    <p>The channels aren't rivals — they're <em>stages of the same pipeline, running on different
+    clocks</em>. Cold approach and apps generate raw contacts instantly, anywhere; the scene
+    converts presence into reputation over months; the referral converts reputation into
+    pre-vetted introductions over years. The mistake is living on one channel: all-cold means
+    permanent maximum skepticism; all-referral means waiting years for volume that may never
+    come. <em>Generate cold, qualify through the read, mature in the book, and let the vouch
+    close what the approach opened.</em></p>
+  </div>
+</section>
+
+<!-- ═══════════════ SERIES INDEX ═══════════════ -->
+<div class="series">
+  <div class="sec-label">The Series</div>
+  <h2 class="sec-title">One System, Four Pages</h2>
+  <div class="series-grid">
+    <a class="card s-gold" href="status.html">
+      <span class="mono">I · The Signal</span>
+      <h4>Status — The Ladder &amp; The Wrap</h4>
+      <p>Five tiers of social legibility, and the one-sentence version of a man that travels
+      without him. Reach: how far the signal goes.</p>
+    </a>
+    <a class="card s-green" href="the-long-game.html">
+      <span class="mono">II · The Trust</span>
+      <h4>The Long Game — Vouches, Options &amp; Convergence</h4>
+      <p>Valence over reach: the vouch, the option book, the transience discount, the screening
+      gate, and the math of ties converging over years.</p>
+    </a>
+    <a class="card s-blue" href="channels.html">
+      <span class="mono">III · The Strategy</span>
+      <h4>The Channels — Four Ways Into the Market</h4>
+      <p>This page. Network overlap as the master variable, and the portfolio doctrine for
+      running all four channels at once.</p>
+    </a>
+    <a class="card s-violet" href="the-evidence.html">
+      <span class="mono">IV · The Science</span>
+      <h4>The Evidence — What the Research Actually Shows</h4>
+      <p>Every claim in the series traced to its study: Buss's data, error management,
+      mate-choice copying, and the honest limits of each finding.</p>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

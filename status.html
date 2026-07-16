@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Status — The Ladder & The Wrap</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050509;
+    --surface: #0d0d18;
+    --surface-2: #12121f;
+    --border: #1e1e35;
+    --muted: #3a3a5c;
+    --text: #e2e2f0;
+    --text-dim: #8888aa;
+    --gold: #e0b04f;
+    --gold-dim: rgba(224,176,79,.14);
+    --violet: #a78bfa;
+    --blue: #3b82f6;
+    --green: #34d399;
+    --red: #f87171;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  .mono {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 56px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(224,176,79,.07), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--gold); }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 620px;
+    margin: 0 auto 28px;
+    line-height: 1.65;
+  }
+  .hero-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── Section scaffolding ── */
+  section { max-width: 1100px; margin: 0 auto; padding: 64px 24px 24px; }
+  .sec-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .sec-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 400;
+    margin-bottom: 14px;
+  }
+  .sec-intro {
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 36px;
+    font-size: .98rem;
+  }
+  .sec-intro em { color: var(--text); font-style: italic; }
+
+  /* ── The Ladder ── */
+  .ladder { display: flex; flex-direction: column; gap: 10px; }
+  .tier {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    overflow: hidden;
+    transition: border-color .25s;
+  }
+  .tier.open { border-color: var(--gold); }
+  .tier-head {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .tier-head:hover { background: var(--surface-2); }
+  .tier-num {
+    font-family: 'Courier New', monospace;
+    font-size: 26px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .tier.open .tier-num { color: var(--gold); }
+  .tier-name { font-size: 1.15rem; }
+  .tier-tag {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    display: block;
+    margin-top: 4px;
+  }
+  .tier-toggle {
+    font-family: 'Courier New', monospace;
+    color: var(--muted);
+    font-size: 18px;
+    transition: transform .25s;
+  }
+  .tier.open .tier-toggle { transform: rotate(45deg); color: var(--gold); }
+  .tier-body {
+    display: none;
+    padding: 0 22px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .tier.open .tier-body { display: block; }
+  .tier-arch {
+    margin: 20px 0;
+    padding: 16px 18px;
+    background: var(--gold-dim);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    font-size: .95rem;
+    line-height: 1.65;
+  }
+  .tier-arch .mono { font-size: 10px; color: var(--gold); display: block; margin-bottom: 6px; }
+  .tier-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .tier-col {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .tier-col h4 {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-bottom: 10px;
+  }
+  .tier-col.st h4 { color: var(--red); }
+  .tier-col.lt h4 { color: var(--blue); }
+  .tier-col.bd h4 { color: var(--green); }
+  .tier-col ul { list-style: none; }
+  .tier-col li {
+    font-size: .85rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    padding-left: 14px;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .tier-col li::before { content: '·'; position: absolute; left: 0; color: var(--muted); }
+
+  /* ── Axes cards ── */
+  .axes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 48px; }
+  .axis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .axis h3 { font-size: 1.05rem; font-weight: 400; margin-bottom: 10px; }
+  .axis h3 span {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .axis p { font-size: .87rem; color: var(--text-dim); line-height: 1.65; }
+  .axis p em { color: var(--text); }
+
+  /* ── Wrap lab ── */
+  .lab {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: Georgia, serif;
+    font-size: .9rem;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .chip:hover { border-color: var(--muted); color: var(--text); }
+  .chip.sel {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-dim);
+  }
+  .lab-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin: 14px 0 0;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: sticky;
+    top: 20px;
+  }
+  .panel-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .wrap-sentence {
+    font-size: 1.25rem;
+    font-style: italic;
+    line-height: 1.5;
+    min-height: 60px;
+    margin-bottom: 18px;
+  }
+  .wrap-sentence.empty { color: var(--muted); font-size: 1rem; }
+  .bar-row { margin-bottom: 14px; }
+  .bar-row .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .bar-track {
+    height: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+    transition: width .4s ease;
+  }
+  .bar-fill.leg { background: var(--gold); }
+  .bar-fill.vis { background: var(--violet); }
+  .stage-line {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin: 18px 0 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .stage-line b { color: var(--text); font-weight: 400; }
+  .verdict {
+    font-size: .9rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+  .verdict em { color: var(--gold); font-style: normal; }
+  .item-notes { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .item-note { font-size: .82rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 10px; }
+  .item-note b { color: var(--text); font-weight: 400; font-style: italic; }
+
+  /* ── Mechanisms ── */
+  .mechs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .mech {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .mech h3 { font-size: 1rem; font-weight: 400; margin-bottom: 10px; color: var(--violet); }
+  .mech p { font-size: .86rem; color: var(--text-dim); line-height: 1.65; }
+  .mech p em { color: var(--text); }
+
+  /* ── Principle ── */
+  .principle {
+    max-width: 760px;
+    margin: 72px auto 0;
+    padding: 40px 24px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .principle blockquote {
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .principle blockquote em { color: var(--gold); }
+  .principle .attr {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-top: 18px;
+    text-transform: uppercase;
+  }
+
+  /* ── Series footer ── */
+  .series { max-width: 1100px; margin: 72px auto 0; padding: 48px 24px 0; border-top: 1px solid var(--border); }
+  .series .sec-label { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .series .series-title { font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 400; margin-bottom: 14px; }
+  .series-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 28px; }
+  .series a.card { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-decoration: none; transition: border-color .2s; }
+  .series a.card:hover { border-color: var(--gold); }
+  .series a.card .mono { font-family: 'Courier New', monospace; letter-spacing: 2px; text-transform: uppercase; font-size: 9px; display: block; margin-bottom: 8px; }
+  .series a.card h4 { font-size: 1.05rem; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .series a.card p { font-size: .82rem; color: var(--text-dim); line-height: 1.55; }
+  .series a.card.here { border-color: var(--gold); background: var(--surface-2); }
+  .s-gold .mono { color: var(--gold); }
+  .s-green .mono { color: var(--green); }
+  .s-violet .mono { color: var(--violet); }
+  .s-blue .mono { color: var(--blue); }
+
+  @media (max-width: 820px) {
+    .tier-cols, .axes, .mechs { grid-template-columns: 1fr; }
+    .lab { grid-template-columns: 1fr; }
+    .panel { position: static; }
+    .series-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-label">Mating Markets · Signaling · Hierarchy</div>
+  <h1>Status is a <em>signal</em><br>that travels without you</h1>
+  <p class="hero-sub">
+    In mating markets, status does two jobs. Short-term, it decides who initiates and who
+    responds. Long-term, it sets the size of the option pool — who gets the first look.
+    But status only counts if it can be <em>transmitted</em>: compressed into a sentence
+    someone can say about a person when they're not in the room.
+  </p>
+  <div class="hero-meta">THE LADDER · THE WRAP · THE MECHANISMS</div>
+</div>
+
+<!-- ═══════════════ THE LADDER ═══════════════ -->
+<section>
+  <div class="sec-label">Part I</div>
+  <h2 class="sec-title">The Ladder</h2>
+  <p class="sec-intro">
+    Five tiers of social legibility, from invisible to famous. Each tier changes three things:
+    the <em>short-term market</em> (who approaches whom), the <em>long-term market</em>
+    (option volume and vetting), and life <em>beyond dating</em> (friendships, invitations, pull).
+    Click a tier to expand it.
+  </p>
+
+  <div class="ladder" id="ladder"></div>
+</section>
+
+<!-- ═══════════════ THE WRAP ═══════════════ -->
+<section>
+  <div class="sec-label">Part II</div>
+  <h2 class="sec-title">The Wrap</h2>
+  <p class="sec-intro">
+    A "wrap" is the one-sentence version of a person that circulates without them —
+    what a friend says when asked <em>"so what's he like?"</em> Traits only generate status
+    if they survive that compression. Three axes decide whether a trait travels:
+  </p>
+
+  <div class="axes">
+    <div class="axis">
+      <h3><span>Axis 1</span>Legibility</h3>
+      <p>Does it compress into one vivid sentence? <em>"He surfs"</em> travels — it implies a
+      body, a lifestyle, and a place. <em>"He's smart"</em> doesn't — it's an abstraction with
+      no image attached. Illegible traits can be real and still generate zero status,
+      because no one can repeat them.</p>
+    </div>
+    <div class="axis">
+      <h3><span>Axis 2</span>Visibility</h3>
+      <p>Is it ever <em>witnessed</em>? A skill practiced alone in private is socially
+      invisible no matter how rare it is. A stage, a lineup, a court, a race — anything with
+      an audience converts skill into status. No witnesses, no transmission.</p>
+    </div>
+    <div class="axis">
+      <h3><span>Axis 3</span>Stage of effect</h3>
+      <p><em>Door-openers</em> work at minute one — they start conversations and earn the
+      first look. <em>Slow burns</em> (a serious career, depth, competence) work at month
+      two — they convert interest into commitment. Most traits are one or the other;
+      a strong portfolio needs both.</p>
+    </div>
+  </div>
+
+  <h2 class="sec-title" style="font-size:1.3rem;">The Wrap Lab</h2>
+  <p class="sec-intro" style="margin-bottom:24px;">
+    Select up to three traits and read the wrap they compose. Watch how the profile changes —
+    some combinations open doors but have no floor; others have depth that nobody ever finds.
+  </p>
+
+  <div class="lab">
+    <div>
+      <div class="chip-grid" id="chips"></div>
+      <p class="lab-hint" id="hint">SELECT UP TO 3 TRAITS</p>
+    </div>
+    <div class="panel">
+      <div class="panel-label">The Wrap</div>
+      <div class="wrap-sentence empty" id="sentence">"So what's he like?" — select traits to compose the answer.</div>
+      <div class="bar-row">
+        <div class="bar-label"><span>Legibility</span><span id="legVal">—</span></div>
+        <div class="bar-track"><div class="bar-fill leg" id="legBar"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><span>Visibility</span><span id="visVal">—</span></div>
+        <div class="bar-track"><div class="bar-fill vis" id="visBar"></div></div>
+      </div>
+      <div class="stage-line" id="stageLine">STAGE MIX: —</div>
+      <div class="verdict" id="verdict"></div>
+      <div class="item-notes" id="notes" style="display:none;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MECHANISMS ═══════════════ -->
+<section>
+  <div class="sec-label">Part III</div>
+  <h2 class="sec-title">Why It Works</h2>
+  <p class="sec-intro">
+    Status isn't arbitrary social fashion — it's load-bearing information in a market
+    where direct evaluation is expensive.
+  </p>
+  <div class="mechs">
+    <div class="mech">
+      <h3>Preselection</h3>
+      <p>The strongest evidence that a man is desirable is that other women already treat him
+      as desirable. Mate-choice copying is documented across species — evaluation is costly,
+      so <em>borrowing others' verdicts</em> is efficient. Status is preselection made public.</p>
+    </div>
+    <div class="mech">
+      <h3>Costly signaling</h3>
+      <p>Status is hard to fake because it's expensive to acquire — years of skill, social
+      capital, or achievement. That expense is the point: like the peacock's tail, the cost
+      is what makes the signal <em>honest</em>, and honesty is what makes it persuasive.</p>
+    </div>
+    <div class="mech">
+      <h3>Resource access</h3>
+      <p>Across the 37-cultures data, women weight status and resource cues more heavily than
+      men do — consistent with the asymmetric costs of reproduction. Status predicts
+      <em>future access</em>: allies, protection, provisioning, options. It's a forecast, not a trophy.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PRINCIPLE ═══════════════ -->
+<div class="principle">
+  <blockquote>
+    Pick pursuits worth doing for their own sake<br>
+    that <em>also happen to travel</em> —<br>
+    the double dip is the whole game.
+  </blockquote>
+  <div class="attr">The Closing Principle</div>
+</div>
+
+<!-- ═══════════════ SERIES FOOTER ═══════════════ -->
+<div class="series">
+  <div class="sec-label">The Series</div>
+  <h2 class="series-title">One System, Four Pages</h2>
+  <div class="series-grid">
+    <a class="card s-gold here" href="status.html">
+      <span class="mono">I · The Signal</span>
+      <h4>Status — The Ladder &amp; The Wrap</h4>
+      <p>You are here. Five tiers of social legibility, and the one-sentence version of a man that travels without him.</p>
+    </a>
+    <a class="card s-green" href="the-long-game.html">
+      <span class="mono">II · The Trust</span>
+      <h4>The Long Game — Vouches, Options &amp; Convergence</h4>
+      <p>Valence over reach: the vouch, the option book, the transience discount, and convergence over years.</p>
+    </a>
+    <a class="card s-blue" href="channels.html">
+      <span class="mono">III · The Strategy</span>
+      <h4>The Channels — Four Ways Into the Market</h4>
+      <p>Network overlap as the master variable, and the portfolio doctrine for running all four channels.</p>
+    </a>
+    <a class="card s-violet" href="the-evidence.html">
+      <span class="mono">IV · The Science</span>
+      <h4>The Evidence — What the Research Actually Shows</h4>
+      <p>Every claim in the series traced to its study — and its limits — with a calibration ledger.</p>
+    </a>
+  </div>
+</div>
+
+<script>
+/* ─────────── THE LADDER DATA ─────────── */
+const TIERS = [
+  {
+    name: "Anonymous",
+    tag: "no legible identity",
+    arch: "The genuinely impressive man nobody can describe. Disciplined, sharp, accomplished in private — and it transmits nothing. Asked about him, friends reach for generalities. Everything he gets, he has to generate in person, from a cold start, every time.",
+    st: ["Always the initiator — zero inbound", "Cold opens with no social proof", "Judged entirely on the first 30 seconds"],
+    lt: ["Options limited to direct effort", "No one 'sells' him when he's absent", "Qualities discovered late, if ever"],
+    bd: ["Few unsolicited invitations", "Networks grow slowly, one contact at a time", "Reputation resets in every new room"]
+  },
+  {
+    name: "Legible",
+    tag: "“the ___ guy” — one sentence that travels",
+    arch: "The man with a wrap. “He surfs.” “He plays in a band.” One vivid, repeatable sentence exists about him, and it circulates without his effort. Not famous, not even locally known — but describable, and that alone separates him from the tier below.",
+    st: ["Friends have material to introduce him with", "Conversations start with a hook already in place", "The sentence does the first minute of work"],
+    lt: ["Gets mentioned when someone asks “anyone I should meet?”", "The wrap earns a second look before any meeting", "Identity gives interest somewhere to attach"],
+    bd: ["Easier to include: “invite the surfer”", "The trait recruits its own community", "Strangers arrive with a conversation ready"]
+  },
+  {
+    name: "Locally Known",
+    tag: "a fixture in a scene or place",
+    arch: "The regular everyone recognizes — at the break, the gym, the venue, the neighborhood. People he's never met know who he is. He gets pointed out and vouched for by people he couldn't name.",
+    st: ["Gets approached within his territory", "Third parties make warm introductions unprompted", "Familiarity itself reads as trust"],
+    lt: ["Reputation is verifiable — people can ask around", "Vouching lowers the perceived risk of him", "First look at newcomers to the scene"],
+    bd: ["Default invitations to everything local", "Favors and access flow through recognition", "His name opens small doors on its own"]
+  },
+  {
+    name: "Scene Status",
+    tag: "top of a visible hierarchy",
+    arch: "The frontman, the founder, the captain, the instructor — whoever the room is oriented around. The hierarchy is visible and he's at the top of it, with an audience watching him be at the top of it.",
+    st: ["The room comes to him — approach flips direction", "Preselection on display in real time", "Interest arrives pre-warmed by the stage"],
+    lt: ["Deep option pool within the scene", "Status is re-demonstrated weekly, not claimed", "Caveat: the halo often stops at the scene's edge"],
+    bd: ["Gatekeeper power — he grants access others want", "Attracts collaborators and hangers-on alike", "Leadership reps that transfer to any domain"]
+  },
+  {
+    name: "Fame",
+    tag: "recognized by strangers at scale",
+    arch: "The movie-star tier. Strangers know him before he speaks; the wrap precedes him everywhere on earth. Inbound interest at volumes no one can honestly process — with distortions to match.",
+    st: ["DMs answered; approach fully inverted, at scale", "People flock — proximity itself is a prize", "Effectively no cold interactions left"],
+    lt: ["Practically unlimited options; total first look", "Caveat: motives blur — the status is the draw", "Vetting for sincerity becomes the hard problem"],
+    bd: ["Access to nearly anyone, instantly", "Attention convertible into any other resource", "Privacy and ordinary friendship become scarce goods"]
+  }
+];
+
+/* ─────────── WRAP LAB DATA ─────────── */
+/* leg/vis on 1–5, stage: 'door' | 'slow' */
+const TRAITS = [
+  { name: "Surfs", frag: "surfs", leg: 5, vis: 4, stage: "door",
+    note: "One word, instantly visual — implies a body, a lifestyle, and a place." },
+  { name: "Plays in a band", frag: "plays in a band", leg: 5, vis: 5, stage: "door",
+    note: "A literal stage. Preselection performed in public, weekly." },
+  { name: "Does standup", frag: "does standup", leg: 5, vis: 5, stage: "door",
+    note: "High risk, high visibility — the audience is the proof." },
+  { name: "Climbs", frag: "climbs", leg: 4, vis: 4, stage: "door",
+    note: "Visual, physical, and comes with a built-in community." },
+  { name: "Sails", frag: "sails", leg: 5, vis: 3, stage: "door",
+    note: "Evokes a whole world in one word; witnessed less often than it's imagined." },
+  { name: "DJs", frag: "DJs", leg: 5, vis: 5, stage: "door",
+    note: "Controls the room's energy while the room watches." },
+  { name: "Rides a motorcycle", frag: "rides a motorcycle", leg: 4, vis: 4, stage: "door",
+    note: "Travels instantly, but the signal is risk itself — polarizing by design." },
+  { name: "Skis", frag: "skis", leg: 4, vis: 3, stage: "door",
+    note: "Seasonal and place-bound, but photographs well and implies means." },
+  { name: "Trains jiu-jitsu", frag: "trains jiu-jitsu", leg: 4, vis: 2, stage: "door",
+    note: "Legible and physical, but practiced away from public view." },
+  { name: "Runs marathons", frag: "runs marathons", leg: 4, vis: 3, stage: "slow",
+    note: "Reads as discipline more than spectacle — respect over intrigue." },
+  { name: "Cooks seriously", frag: "cooks seriously", leg: 4, vis: 2, stage: "slow",
+    note: "Nearly invisible until deployed one-on-one — then devastating." },
+  { name: "Speaks three languages", frag: "speaks three languages", leg: 4, vis: 2, stage: "slow",
+    note: "Surfaces rarely, but when it does it rewrites the whole impression." },
+  { name: "Photographs", frag: "shoots photography", leg: 3, vis: 3, stage: "slow",
+    note: "Common enough to be weak alone; the portfolio does the talking later." },
+  { name: "Is a doctor", frag: "is a doctor", leg: 5, vis: 1, stage: "slow",
+    note: "Maximum legibility, zero ambient visibility — a job only transmits once conversation starts." },
+  { name: "Founded a company", frag: "founded a company", leg: 4, vis: 2, stage: "slow",
+    note: "Ambition made concrete, but it needs a conversation to surface." },
+  { name: "Works in finance", frag: "works in finance", leg: 3, vis: 1, stage: "slow",
+    note: "Signals resources, not identity — a floor, not a hook." },
+  { name: "Lifts", frag: "lifts", leg: 2, vis: 5, stage: "door",
+    note: "The inversion: highly visible on the body, but “he works out” is not a story." },
+  { name: "Is well-read", frag: "is well-read", leg: 1, vis: 1, stage: "slow",
+    note: "The classic illegible trait — real, valuable, and impossible to witness or repeat." },
+  { name: "Coaches a youth team", frag: "coaches a youth team", leg: 4, vis: 3, stage: "slow",
+    note: "A warmth signal — reads as long-term character, not short-term spark." },
+  { name: "Plays pickup ball", frag: "plays pickup ball", leg: 3, vis: 3, stage: "door",
+    note: "Witnessed and physical, but common — legible without being distinctive." }
+];
+
+/* ─────────── RENDER LADDER ─────────── */
+const ladderEl = document.getElementById('ladder');
+TIERS.forEach((t, i) => {
+  const div = document.createElement('div');
+  div.className = 'tier';
+  div.innerHTML = `
+    <div class="tier-head">
+      <div class="tier-num">${i}</div>
+      <div>
+        <div class="tier-name">${t.name}</div>
+        <span class="tier-tag mono">${t.tag}</span>
+      </div>
+      <div class="tier-toggle">+</div>
+    </div>
+    <div class="tier-body">
+      <div class="tier-arch"><span class="mono">Archetype</span>${t.arch}</div>
+      <div class="tier-cols">
+        <div class="tier-col st"><h4>Short-Term Market</h4><ul>${t.st.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+        <div class="tier-col lt"><h4>Long-Term Market</h4><ul>${t.lt.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+        <div class="tier-col bd"><h4>Beyond Dating</h4><ul>${t.bd.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      </div>
+    </div>`;
+  div.querySelector('.tier-head').addEventListener('click', () => div.classList.toggle('open'));
+  ladderEl.appendChild(div);
+});
+ladderEl.children[1].classList.add('open'); // open "Legible" by default
+
+/* ─────────── WRAP LAB ─────────── */
+const chipsEl = document.getElementById('chips');
+const selected = new Set();
+const MAX = 3;
+
+TRAITS.forEach((t, i) => {
+  const b = document.createElement('button');
+  b.className = 'chip';
+  b.textContent = t.name;
+  b.addEventListener('click', () => {
+    if (selected.has(i)) selected.delete(i);
+    else if (selected.size < MAX) selected.add(i);
+    b.classList.toggle('sel', selected.has(i));
+    render();
+  });
+  chipsEl.appendChild(b);
+});
+
+function render() {
+  const picks = [...selected].map(i => TRAITS[i]);
+  const sentence = document.getElementById('sentence');
+  const legBar = document.getElementById('legBar');
+  const visBar = document.getElementById('visBar');
+  const legVal = document.getElementById('legVal');
+  const visVal = document.getElementById('visVal');
+  const stageLine = document.getElementById('stageLine');
+  const verdict = document.getElementById('verdict');
+  const notes = document.getElementById('notes');
+  const hint = document.getElementById('hint');
+
+  hint.textContent = selected.size >= MAX ? 'MAX 3 — DESELECT TO SWAP' : 'SELECT UP TO 3 TRAITS';
+
+  if (picks.length === 0) {
+    sentence.className = 'wrap-sentence empty';
+    sentence.textContent = '“So what’s he like?” — select traits to compose the answer.';
+    legBar.style.width = visBar.style.width = '0%';
+    legVal.textContent = visVal.textContent = '—';
+    stageLine.innerHTML = 'STAGE MIX: —';
+    verdict.textContent = '';
+    notes.style.display = 'none';
+    return;
+  }
+
+  const frags = picks.map(p => p.frag);
+  let joined;
+  if (frags.length === 1) joined = frags[0];
+  else if (frags.length === 2) joined = frags[0] + ' and ' + frags[1];
+  else joined = frags[0] + ', ' + frags[1] + ', and ' + frags[2];
+  sentence.className = 'wrap-sentence';
+  sentence.textContent = '“He ' + joined + '.”';
+
+  const leg = picks.reduce((s,p)=>s+p.leg,0) / picks.length;
+  const vis = picks.reduce((s,p)=>s+p.vis,0) / picks.length;
+  legBar.style.width = (leg/5*100) + '%';
+  visBar.style.width = (vis/5*100) + '%';
+  legVal.textContent = leg.toFixed(1) + ' / 5';
+  visVal.textContent = vis.toFixed(1) + ' / 5';
+
+  const doors = picks.filter(p=>p.stage==='door').length;
+  const slows = picks.length - doors;
+  stageLine.innerHTML = `STAGE MIX: <b>${doors} door-opener${doors===1?'':'s'} · ${slows} slow burn${slows===1?'':'s'}</b>`;
+
+  let v;
+  if (doors > 0 && slows > 0) {
+    v = 'Balanced portfolio: something opens the door at minute one, and something else deepens the story at month two. <em>This is the shape to aim for.</em>';
+  } else if (doors > 0) {
+    v = 'All door-openers: this wrap starts conversations easily, but there’s no floor underneath — nothing that compounds once interest converts. <em>Add a slow burn.</em>';
+  } else {
+    v = 'All slow burns: real depth, but nothing here surfaces at minute one — this person is invisible until a conversation is already happening. <em>Add a door-opener.</em>';
+  }
+  if (leg < 2.5) v += ' Overall legibility is low — much of this never survives being repeated by a third party.';
+  if (vis >= 4.5) v += ' Visibility is near-max: this identity is performed in front of witnesses, which is where preselection comes from.';
+  verdict.innerHTML = v;
+
+  notes.style.display = 'block';
+  notes.innerHTML = picks.map(p=>`<div class="item-note"><b>${p.name}.</b> ${p.note}</div>`).join('');
+}
+render();
+</script>
+
+</body>
+</html>

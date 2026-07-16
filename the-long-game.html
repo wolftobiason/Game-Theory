@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Long Game — Vouches, Options & the Transience Discount</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050509;
+    --surface: #0d0d18;
+    --surface-2: #12121f;
+    --border: #1e1e35;
+    --muted: #3a3a5c;
+    --text: #e2e2f0;
+    --text-dim: #8888aa;
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,.12);
+    --gold: #e0b04f;
+    --violet: #a78bfa;
+    --blue: #3b82f6;
+    --red: #f87171;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  .mono {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 56px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(52,211,153,.06), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--green); }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 640px;
+    margin: 0 auto 28px;
+    line-height: 1.65;
+  }
+  .hero-sub em { color: var(--text); }
+  .hero-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── Section scaffolding ── */
+  section { max-width: 1100px; margin: 0 auto; padding: 64px 24px 24px; }
+  .sec-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 12px;
+  }
+  .sec-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 400;
+    margin-bottom: 14px;
+  }
+  .sec-intro {
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 36px;
+    font-size: .98rem;
+  }
+  .sec-intro em { color: var(--text); font-style: italic; }
+
+  /* ── Quadrant ── */
+  .quad-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; margin-bottom: 40px; }
+  .quad {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    position: relative;
+    padding: 26px 0 0 26px;
+  }
+  .quad-axis {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .quad-axis.x { top: 4px; left: 50%; transform: translateX(-50%); }
+  .quad-axis.y { left: -22px; top: 55%; transform: rotate(-90deg) translateX(50%); transform-origin: left top; }
+  .qcell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    min-height: 150px;
+  }
+  .qcell:hover, .qcell.on { border-color: var(--green); background: var(--surface-2); }
+  .qcell h4 { font-size: 1rem; font-weight: 400; margin-bottom: 6px; }
+  .qcell .mono { font-size: 9px; color: var(--muted); display: block; margin-bottom: 8px; }
+  .qcell p { font-size: .8rem; color: var(--text-dim); line-height: 1.55; }
+  .qcell.best h4 { color: var(--green); }
+  .qcell.worst h4 { color: var(--red); }
+  .quad-note {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  .quad-note h4 {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 400;
+    color: var(--green);
+    margin-bottom: 12px;
+  }
+  .quad-note p { font-size: .88rem; color: var(--text-dim); line-height: 1.7; }
+  .quad-note p em { color: var(--text); }
+  .quad-note p + p { margin-top: 12px; }
+
+  /* ── Cards row ── */
+  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+  }
+  .card h3 { font-size: 1rem; font-weight: 400; margin-bottom: 10px; }
+  .card h3 span {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .card p { font-size: .86rem; color: var(--text-dim); line-height: 1.65; }
+  .card p em { color: var(--text); }
+
+  .callout {
+    margin: 36px 0 0;
+    padding: 20px 24px;
+    background: rgba(248,113,113,.07);
+    border-left: 3px solid var(--red);
+    border-radius: 0 10px 10px 0;
+    max-width: 680px;
+  }
+  .callout .mono { font-size: 10px; color: var(--red); display: block; margin-bottom: 8px; }
+  .callout p { font-size: .92rem; color: var(--text-dim); line-height: 1.7; }
+  .callout p em { color: var(--text); }
+
+  /* ── Option book ── */
+  .rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 36px; }
+  .opt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .opt {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .opt h4 { font-size: .98rem; font-weight: 400; margin-bottom: 4px; }
+  .opt .state {
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    margin: 6px 0 10px;
+  }
+  .opt .state.live { color: var(--green); border-color: rgba(52,211,153,.4); }
+  .opt .state.frozen { color: var(--blue); border-color: rgba(59,130,246,.4); }
+  .opt p { font-size: .82rem; color: var(--text-dim); line-height: 1.6; }
+  .opt p b { color: var(--text); font-weight: 400; font-style: italic; }
+
+  /* ── Discount model ── */
+  .model {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+  .controls { display: flex; flex-direction: column; gap: 22px; }
+  .ctrl {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .ctrl-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .ctrl-sub { font-size: .82rem; color: var(--text-dim); margin-bottom: 14px; line-height: 1.5; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .seg button {
+    font-family: Georgia, serif;
+    font-size: .84rem;
+    color: var(--text-dim);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .seg button:hover { border-color: var(--muted); color: var(--text); }
+  .seg button.on { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: sticky;
+    top: 20px;
+  }
+  .panel-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 14px;
+  }
+  .gauge-num {
+    font-family: 'Courier New', monospace;
+    font-size: 44px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .gauge-cap {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .bar-track {
+    height: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    transition: width .4s ease, background .4s;
+  }
+  .model-verdict { font-size: .9rem; color: var(--text-dim); line-height: 1.7; }
+  .model-verdict em { color: var(--green); font-style: normal; }
+  .model-verdict b { color: var(--text); font-weight: 400; font-style: italic; }
+
+  /* ── Offsets ── */
+  .offsets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 44px; }
+
+  /* ── Principle ── */
+  .principle {
+    max-width: 760px;
+    margin: 72px auto 0;
+    padding: 40px 24px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .principle blockquote {
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .principle blockquote em { color: var(--green); }
+  .principle .attr {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-top: 18px;
+    text-transform: uppercase;
+  }
+
+  .xref {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-top: 20px;
+  }
+  .xref a { color: var(--gold); text-decoration: none; }
+  .xref a:hover { text-decoration: underline; }
+
+  /* ── The Read (gate) ── */
+  .gate {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .gate-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+  }
+  .gate-step .mono {
+    font-size: 10px;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .gate-step.veto { border-color: rgba(248,113,113,.35); }
+  .gate-step.veto .mono { color: var(--red); }
+  .gate-step.hold { border-color: rgba(224,176,79,.35); }
+  .gate-step.hold .mono { color: var(--gold); }
+  .gate-step.pass { border-color: rgba(52,211,153,.35); }
+  .gate-step.pass .mono { color: var(--green); }
+  .gate-step h4 { font-size: 1rem; font-weight: 400; margin-bottom: 8px; }
+  .gate-step p { font-size: .84rem; color: var(--text-dim); line-height: 1.6; }
+  .gate-step p em { color: var(--text); font-style: italic; }
+  .gate-rule {
+    background: var(--green-dim);
+    border-left: 3px solid var(--green);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    margin-bottom: 40px;
+    max-width: 720px;
+  }
+  .gate-rule .mono { font-size: 10px; color: var(--green); display: block; margin-bottom: 8px; }
+  .gate-rule p { font-size: .92rem; color: var(--text-dim); line-height: 1.7; }
+  .gate-rule p em { color: var(--text); font-style: italic; }
+  .gate-rule b { color: var(--green); font-weight: 400; }
+
+  /* ── Convergence engine ── */
+  .conv { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+  .conv-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: sticky;
+    top: 20px;
+  }
+  .conv-big {
+    font-family: 'Courier New', monospace;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .conv-cap {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .conv-single {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    padding: 12px 0;
+    margin-bottom: 16px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .conv-single b { color: var(--gold); font-weight: 400; }
+  .conv-verdict { font-size: .9rem; color: var(--text-dim); line-height: 1.7; }
+  .conv-verdict em { color: var(--green); font-style: normal; }
+  .conv-verdict b { color: var(--text); font-weight: 400; font-style: italic; }
+
+  /* ── Series footer ── */
+  .series { max-width: 1100px; margin: 24px auto 0; padding: 48px 24px 0; border-top: 1px solid var(--border); }
+  .series .sec-label { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+  .series .series-title { font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 400; margin-bottom: 14px; }
+  .series-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 28px; }
+  .series a.card { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-decoration: none; transition: border-color .2s; }
+  .series a.card:hover { border-color: var(--green); }
+  .series a.card .mono { font-family: 'Courier New', monospace; letter-spacing: 2px; text-transform: uppercase; font-size: 9px; display: block; margin-bottom: 8px; }
+  .series a.card h4 { font-size: 1.05rem; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .series a.card p { font-size: .82rem; color: var(--text-dim); line-height: 1.55; }
+  .series a.card.here { border-color: var(--green); background: var(--surface-2); }
+  .s-gold .mono { color: var(--gold); }
+  .s-green .mono { color: var(--green); }
+  .s-violet .mono { color: var(--violet); }
+  .s-blue .mono { color: var(--blue); }
+
+  @media (max-width: 820px) {
+    .cards3, .rules, .opt-grid, .offsets, .gate { grid-template-columns: 1fr; }
+    .quad-wrap, .model, .conv { grid-template-columns: 1fr; }
+    .panel, .conv-panel { position: static; }
+    .series-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-label">Long-Term Markets · Reputation · Real Options</div>
+  <h1>The short game runs on attention.<br>The long game runs on <em>trust</em>.</h1>
+  <p class="hero-sub">
+    Long-term mating markets don't select on who lights up a room — they select through
+    <em>due diligence</em>, over <em>long horizons</em>, across <em>changing circumstances</em>.
+    Four structures decide who wins: the vouch, the option book, whoever solves
+    the transience discount, and the patience to let honest ties <em>converge</em>.
+  </p>
+  <div class="hero-meta">THE VOUCH · THE OPTION BOOK · THE TRANSIENCE DISCOUNT · CONVERGENCE</div>
+</div>
+
+<!-- ═══════════════ PART I: THE VOUCH ═══════════════ -->
+<section>
+  <div class="sec-label">Part I</div>
+  <h2 class="sec-title">The Vouch</h2>
+  <p class="sec-intro">
+    The Ladder measures <em>reach</em> — how far a signal travels. Long-term markets add a second
+    axis: <em>valence</em> — what the signal says when it arrives, and whether anyone stakes their
+    own name on it. Reach wins attention; valence survives vetting.
+  </p>
+
+  <div class="quad-wrap">
+    <div class="quad">
+      <div class="quad-axis x">Reach →</div>
+      <div class="quad-axis y">Valence →</div>
+      <div class="qcell best">
+        <h4>The Beloved Figure</h4>
+        <span class="mono">High reach · positive valence</span>
+        <p>Known widely, spoken of warmly. Maximum long-term market power — the wrap arrives
+        pre-endorsed, everywhere at once.</p>
+      </div>
+      <div class="qcell">
+        <h4>The Well-Vouched</h4>
+        <span class="mono">Low reach · positive valence</span>
+        <p>Few people know him — but everyone who does speaks well of him, and some actively
+        advocate. The marriage-market sleeper. Passes every background check.</p>
+      </div>
+      <div class="qcell worst">
+        <h4>The Notorious</h4>
+        <span class="mono">High reach · negative valence</span>
+        <p>Everyone knows him; the reports are bad. Volume without trust — short-term traffic,
+        long-term veto. Reach amplifies the damage.</p>
+      </div>
+      <div class="qcell">
+        <h4>The Invisible</h4>
+        <span class="mono">Low reach · neutral-to-negative</span>
+        <p>No signal at all. Not vetoed — just never proposed. Every opportunity must be
+        generated cold, in person, alone.</p>
+      </div>
+    </div>
+    <div class="quad-note">
+      <h4>Why valence dominates long-term</h4>
+      <p>Short-term selection happens in the room, on visible signals. Long-term selection is
+      <em>due diligence</em>: she asks friends, mutuals, anyone with history. The verdict that
+      matters is delivered when the candidate isn't present.</p>
+      <p>That's why the referral is the strongest move in the market: a friend who sets two
+      people up is <em>staking their own reputation</em> — a costly signal no self-presentation
+      can imitate — on a match they've already screened from both sides.</p>
+    </div>
+  </div>
+
+  <div class="cards3">
+    <div class="card">
+      <h3><span>Referral requirement 1</span>Describability</h3>
+      <p>“You should meet him — he ___.” The sentence has to complete itself. The wrap still
+      matters in the long game; advocates need material to advocate with.</p>
+    </div>
+    <div class="card">
+      <h3><span>Referral requirement 2</span>Confidence</h3>
+      <p>The advocate is spending their own credibility. They only spend it on someone they're
+      <em>certain</em> will treat the other person well and reflect well on them. Years of small
+      reliabilities fund this account.</p>
+    </div>
+    <div class="card">
+      <h3><span>Referral requirement 3</span>Known availability</h3>
+      <p>The silent failure mode: well-liked, fully vouched, and receiving zero referrals —
+      because nobody knows he's looking. The advocacy channel has to be switched on.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="mono">The Negativity Veto</span>
+    <p>Vetting is loss-dominated: one credible bad report — flaky, cruel in a breakup, unreliable —
+    can cancel years of good ones. <em>“Nobody has anything bad to say about him” isn't the absence
+    of a compliment; in this market, it is the credential.</em> The clean record beats the more
+    impressive record with one stain.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ PART II: THE OPTION BOOK ═══════════════ -->
+<section>
+  <div class="sec-label">Part II</div>
+  <h2 class="sec-title">The Option Book</h2>
+  <p class="sec-intro">
+    Long horizons change the math of every connection. A genuine tie kept honestly warm —
+    across cities, countries, circumstances — is a <em>long-dated option</em>: nearly free to
+    maintain, impossible to buy later, exercisable only if both lives converge. Nobody can
+    predict which ties converge. That's precisely why a <em>book</em> of them beats any single bet.
+  </p>
+
+  <div class="rules">
+    <div class="card">
+      <h3><span>Rule 1</span>Cheap to hold</h3>
+      <p>An occasional genuine message, a real conversation when paths cross. If maintaining
+      a tie feels like a campaign, it's mispriced — the whole point of an option is that the
+      carrying cost is near zero.</p>
+    </div>
+    <div class="card">
+      <h3><span>Rule 2</span>States change</h3>
+      <p>People leave relationships, change cities, change countries, change minds. A book
+      built this year is exercised <em>years</em> from now, under circumstances nobody currently
+      holds. The option's value lives in that uncertainty.</p>
+    </div>
+    <div class="card">
+      <h3><span>Rule 3</span>Honest premium only</h3>
+      <p>The tie must be real — a friendship that would be worth having even if nothing ever
+      converged. A tie held under false pretenses is discovered, and the discovery converts
+      an option into a <em>negative vouch</em> that travels through her whole network.</p>
+    </div>
+  </div>
+
+  <div class="opt-grid">
+    <div class="opt">
+      <h4>The distant tie</h4>
+      <span class="state live">Live · long-dated</span>
+      <p>Met abroad, real rapport, different countries. Worth nothing this month; potentially
+      everything in five years. <b>Converges only if someone moves — which people do.</b></p>
+    </div>
+    <div class="opt">
+      <h4>The committed tie</h4>
+      <span class="state frozen">Frozen · not exercisable</span>
+      <p>Currently in a relationship. The honest move is genuine, agenda-free friendship or
+      distance — nothing else. <b>Most relationships in a lifetime end; the friendship that
+      behaved well is remembered when one does.</b></p>
+    </div>
+    <div class="opt">
+      <h4>The dormant tie</h4>
+      <span class="state">Dormant · re-openable</span>
+      <p>Warm history, long silence. Re-opens at the cost of one honest message — the cheapest
+      re-entry in the book. <b>Dormant ties famously outperform: history plus fresh information.</b></p>
+    </div>
+    <div class="opt">
+      <h4>The network tie</h4>
+      <span class="state live">Live · compounding</span>
+      <p>Not a prospect — a <b>friend who knows prospects</b>. One well-vouched connection into a
+      new circle generates referrals for years. Often the highest-value position in the book.</p>
+    </div>
+    <div class="opt">
+      <h4>The local anchor</h4>
+      <span class="state live">Live · place-bound</span>
+      <p>A tie to a <b>place</b> — a community, a scene, a city returned to yearly. Anchors make
+      every other tie in that geography cheaper to hold and more credible to re-open.</p>
+    </div>
+    <div class="opt">
+      <h4>The expired tie</h4>
+      <span class="state">Closed</span>
+      <p>Interest confirmed absent, or the tie went cold beyond honest revival. <b>Closing
+      cleanly is a vouch in itself</b> — the network remembers who handled a no gracefully.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PART III: THE TRANSIENCE DISCOUNT ═══════════════ -->
+<section>
+  <div class="sec-label">Part III</div>
+  <h2 class="sec-title">The Transience Discount</h2>
+  <p class="sec-intro">
+    The standard objection to the traveler: <em>“why invest in someone who's leaving?”</em>
+    It's not an excuse — it's rational pricing. Long-term interest is an investment, and an
+    investment needs a horizon. A short local clock collapses expected value no matter how
+    good the in-person signal is: charisma is experienced only in person, so it
+    <em>stops compounding the moment the plane leaves</em>. What survives distance is structure —
+    status that travels, and credible reasons the clock isn't really short.
+  </p>
+
+  <div class="model">
+    <div class="controls">
+      <div class="ctrl">
+        <div class="ctrl-label">Local horizon</div>
+        <div class="ctrl-sub">How long until he leaves — as far as she can tell.</div>
+        <div class="seg" id="segH"></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">Status tier <span style="color:var(--muted)">(see: The Ladder)</span></div>
+        <div class="ctrl-sub">How far his signal travels without him. High tiers are worth knowing <i>from anywhere</i> — the national-champion effect: geography stops being an objection because the connection itself is the prize.</div>
+        <div class="seg" id="segS"></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">Return credibility</div>
+        <div class="ctrl-sub">Structural reasons the departure isn't final — recurring work, family ties, a community he demonstrably comes back to.</div>
+        <div class="seg" id="segR"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Her investment case</div>
+      <div class="gauge-num" id="gNum">—</div>
+      <div class="gauge-cap" id="gCap">out of 100</div>
+      <div class="bar-track"><div class="bar-fill" id="gBar"></div></div>
+      <div class="model-verdict" id="gVerdict"></div>
+    </div>
+  </div>
+
+  <div class="offsets">
+    <div class="card">
+      <h3><span>Offset 1</span>Status that travels</h3>
+      <p>Scene status usually stops at the scene's border — but national-tier status inverts the
+      problem entirely: <em>the connection is valuable regardless of geography</em>, so “he's
+      leaving” stops mattering. Below that tier, status softens the discount; it doesn't erase it.</p>
+    </div>
+    <div class="card">
+      <h3><span>Offset 2</span>Credible return structure</h3>
+      <p>“I might be back” is noise. “I'm here every summer — my closest friends are here” is
+      structure: verifiable, costly, and it converts a departure into a <em>recurrence</em>.
+      The discount prices the horizon she can verify, not the one he claims.</p>
+    </div>
+    <div class="card">
+      <h3><span>Offset 3</span>Reframe the channel</h3>
+      <p>If the local clock can't be extended, stop selling a local relationship. The honest
+      alternative is the option book: a real correspondence with no demanded outcome. It asks
+      for no investment at short-horizon prices — <em>which is exactly why it's accepted</em>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PART IV: CONVERGENCE ═══════════════ -->
+<section>
+  <div class="sec-label">Part IV</div>
+  <h2 class="sec-title">Convergence</h2>
+  <p class="sec-intro">
+    A tie is never exercised the day it's made. It's exercised <em>years later</em>, on the rare
+    occasion that everything lines up at once: both people single, both at a life stage that wants
+    the same thing, geography willing to move, and the timing simply right. Nobody can predict
+    which tie converges — which is the entire argument for holding a <em>book</em> of them rather
+    than betting on one. But first, a tie only counts if it passed the read.
+  </p>
+
+  <h2 class="sec-title" style="font-size:1.3rem;">The Read — the entry gate</h2>
+  <p class="sec-intro" style="margin-bottom:24px;">
+    Not every contact is an option. A contact becomes a real position in the book only if it
+    survives a fast character screen — the goal isn't to rate people, it's to
+    <em>not fool yourself</em>. Thin-slice judgment is reliable for warmth and intelligence, and
+    for one dark trait in particular — but it's asymmetric, and knowing the asymmetry is the
+    whole skill.
+  </p>
+
+  <div class="gate">
+    <div class="gate-step veto">
+      <span class="mono">Stage 1 · The Alarm</span>
+      <h4>Trust the hit</h4>
+      <p>Grandiose narcissism <em>leaks</em> at first contact — dominance, status-jockeying, the
+      conversation always bending back. When the detector fires, it's a true positive. Act on it;
+      don't argue yourself out of a real red flag. <em>Presence is strong evidence.</em></p>
+    </div>
+    <div class="gate-step hold">
+      <span class="mono">Stage 2 · The Silence</span>
+      <h4>Don't trust the quiet</h4>
+      <p>A clean read isn't a clean person. Covert narcissism presents as shy and sensitive;
+      the grandiose kind often wears charm. The miss, not the false alarm, is the danger.
+      <em>Absence is weak evidence — “nothing yet,” not “safe.”</em></p>
+    </div>
+    <div class="gate-step pass">
+      <span class="mono">Stage 3 · The Clock</span>
+      <h4>Let time break the tie</h4>
+      <p>Repeated contact is the instrument the thin slice lacks: narcissists get
+      <em>less</em> likable over exposure; kind people hold or improve. A clean first read only
+      clears once consistency over time confirms it. Then it enters the book.</p>
+    </div>
+  </div>
+
+  <div class="gate-rule">
+    <span class="mono">The Screening Rule</span>
+    <p>Trust the alarm, distrust the silence, and let time break the tie. The cost structure
+    justifies a hair-trigger: you have many options, so the price of a false alarm (skipping one
+    good person) is trivial, while the price of a miss (years lost to a narcissist) is
+    catastrophic. <b>A hair-trigger on this one flag is rational, not paranoid.</b></p>
+  </div>
+
+  <h2 class="sec-title" style="font-size:1.3rem;">The Convergence Engine</h2>
+  <p class="sec-intro" style="margin-bottom:24px;">
+    Each qualified tie has a small chance <em>per year</em> of becoming exercisable. Individually,
+    almost every tie is a long shot — the honest math never pretends otherwise. But probability
+    compounds across the book and across the years of patience. Set the inputs and read what
+    the portfolio actually implies.
+  </p>
+
+  <div class="conv">
+    <div class="controls">
+      <div class="ctrl">
+        <div class="ctrl-label">Qualified ties in the book</div>
+        <div class="ctrl-sub">Contacts that passed The Read and are kept honestly warm. Not raw numbers — screened positions.</div>
+        <div class="seg" id="segN"></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">Years of patience</div>
+        <div class="ctrl-sub">The horizon over which you keep the book alive. Convergence is a multi-year event, not a this-trip event.</div>
+        <div class="seg" id="segY"></div>
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-label">Per-tie annual convergence odds</div>
+        <div class="ctrl-sub">How likely any one tie aligns in a given year — driven by honest maintenance and willingness to move. Deliberately kept low; single ties are long shots.</div>
+        <div class="seg" id="segP"></div>
+      </div>
+    </div>
+
+    <div class="conv-panel">
+      <div class="panel-label">The portfolio math</div>
+      <div class="conv-big" id="cBig">—</div>
+      <div class="conv-cap">chance at least one tie converges<br>over the full horizon</div>
+      <div class="conv-single" id="cSingle">—</div>
+      <div class="conv-verdict" id="cVerdict"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PRINCIPLE ═══════════════ -->
+<div class="principle">
+  <blockquote>
+    You can't pick which tie converges —<br>
+    <em>so keep the record clean, the ties honest,<br>
+    and hold the field until the stars align.</em>
+  </blockquote>
+  <div class="attr">The Closing Principle</div>
+</div>
+
+<!-- ═══════════════ SERIES FOOTER ═══════════════ -->
+<div class="series">
+  <div class="sec-label">The Series</div>
+  <h2 class="series-title">One System, Four Pages</h2>
+  <div class="series-grid">
+    <a class="card s-gold" href="status.html">
+      <span class="mono">I · The Signal</span>
+      <h4>Status — The Ladder &amp; The Wrap</h4>
+      <p>Five tiers of social legibility, and the one-sentence version of a man that travels without him.</p>
+    </a>
+    <a class="card s-green here" href="the-long-game.html">
+      <span class="mono">II · The Trust</span>
+      <h4>The Long Game — Vouches, Options &amp; Convergence</h4>
+      <p>You are here. Valence over reach: the vouch, the option book, the transience discount, and convergence over years.</p>
+    </a>
+    <a class="card s-blue" href="channels.html">
+      <span class="mono">III · The Strategy</span>
+      <h4>The Channels — Four Ways Into the Market</h4>
+      <p>Network overlap as the master variable, and the portfolio doctrine for running all four channels.</p>
+    </a>
+    <a class="card s-violet" href="the-evidence.html">
+      <span class="mono">IV · The Science</span>
+      <h4>The Evidence — What the Research Actually Shows</h4>
+      <p>Every claim in the series traced to its study — and its limits — with a calibration ledger.</p>
+    </a>
+  </div>
+</div>
+
+<script>
+/* ─────────── TRANSIENCE DISCOUNT MODEL ─────────── */
+const HORIZONS = [
+  { label: "1 week",     base: 8  },
+  { label: "1 month",    base: 22 },
+  { label: "3 months",   base: 40 },
+  { label: "1 year",     base: 62 },
+  { label: "Indefinite", base: 85 }
+];
+const STATUS = [
+  { label: "Anonymous",     bump: 0,  travels: false },
+  { label: "Legible",       bump: 6,  travels: false },
+  { label: "Locally known", bump: 12, travels: false },
+  { label: "Scene status",  bump: 20, travels: false },
+  { label: "National tier", bump: 45, travels: true  }
+];
+const RETURN = [
+  { label: "None",                          bump: 0  },
+  { label: "Vague (“might be back”)",       bump: 3  },
+  { label: "Structural (recurring, verifiable)", bump: 22 }
+];
+
+let hIdx = 1, sIdx = 0, rIdx = 0;
+
+function buildSeg(elId, items, getIdx, setIdx) {
+  const el = document.getElementById(elId);
+  items.forEach((item, i) => {
+    const b = document.createElement('button');
+    b.textContent = item.label;
+    b.addEventListener('click', () => { setIdx(i); update(); });
+    el.appendChild(b);
+  });
+}
+buildSeg('segH', HORIZONS, () => hIdx, i => hIdx = i);
+buildSeg('segS', STATUS,   () => sIdx, i => sIdx = i);
+buildSeg('segR', RETURN,   () => rIdx, i => rIdx = i);
+
+function update() {
+  document.querySelectorAll('#segH button').forEach((b,i)=>b.classList.toggle('on', i===hIdx));
+  document.querySelectorAll('#segS button').forEach((b,i)=>b.classList.toggle('on', i===sIdx));
+  document.querySelectorAll('#segR button').forEach((b,i)=>b.classList.toggle('on', i===rIdx));
+
+  const h = HORIZONS[hIdx], s = STATUS[sIdx], r = RETURN[rIdx];
+
+  /* National-tier status makes the horizon largely irrelevant:
+     score floors at a high value regardless of clock. */
+  let score = h.base + s.bump + r.bump;
+  if (s.travels) score = Math.max(score, 72 + r.bump * 0.3);
+  score = Math.round(Math.min(score, 97));
+
+  const bar = document.getElementById('gBar');
+  bar.style.width = score + '%';
+  bar.style.background = score < 30 ? 'var(--red)' : score < 60 ? 'var(--gold)' : 'var(--green)';
+  document.getElementById('gNum').textContent = score;
+  document.getElementById('gNum').style.color =
+    score < 30 ? 'var(--red)' : score < 60 ? 'var(--gold)' : 'var(--green)';
+
+  let v;
+  if (s.travels) {
+    v = '<em>The national-champion effect.</em> At this tier the geography objection inverts: ' +
+        'the connection itself is the prize, so the local clock barely prices in. ' +
+        'She stays in touch <b>because</b> he\'s worth knowing from anywhere.';
+  } else if (score < 30) {
+    v = '<b>Rational pass.</b> Short verifiable horizon, no structure holding the tie open. ' +
+        'Declining to invest here isn\'t an objection to the man — it\'s correct pricing. ' +
+        'The honest play is Offset 3: don\'t sell a local relationship; open an option instead.';
+  } else if (score < 60) {
+    v = '<b>Acquaintance, not investment.</b> Enough signal to keep the tie alive, not enough ' +
+        'horizon to justify real investment. This is option-book territory: keep it genuine, ' +
+        'keep it cheap, and let the clock or the structure improve.';
+  } else if (score < 80) {
+    v = '<b>Worth investing.</b> The horizon is long enough — or the return structure credible ' +
+        'enough — that the discount no longer dominates. From here, the vouch and the vetting ' +
+        'record decide the outcome, not the calendar.';
+  } else {
+    v = '<b>The clock is not the constraint.</b> With this horizon and structure, transience ' +
+        'is fully priced out. What remains is everything Part I is about: what her network ' +
+        'says about him when he isn\'t in the room.';
+  }
+  document.getElementById('gVerdict').innerHTML = v;
+}
+update();
+
+/* ─────────── CONVERGENCE ENGINE ─────────── */
+const NTIES = [
+  { label: "1 tie",   n: 1  },
+  { label: "3 ties",  n: 3  },
+  { label: "6 ties",  n: 6  },
+  { label: "12 ties", n: 12 },
+  { label: "20 ties", n: 20 }
+];
+const YEARS = [
+  { label: "1 year",   y: 1  },
+  { label: "3 years",  y: 3  },
+  { label: "5 years",  y: 5  },
+  { label: "10 years", y: 10 }
+];
+const PTIE = [
+  { label: "Cold / neglected (1%)",        p: 0.01 },
+  { label: "Honest light-touch (3%)",      p: 0.03 },
+  { label: "Deep + both mobile (7%)",      p: 0.07 }
+];
+
+let nIdx = 2, yIdx = 2, pIdx = 1;
+
+function buildConvSeg(elId, items, setIdx) {
+  const el = document.getElementById(elId);
+  items.forEach((item, i) => {
+    const b = document.createElement('button');
+    b.textContent = item.label;
+    b.addEventListener('click', () => { setIdx(i); conv(); });
+    el.appendChild(b);
+  });
+}
+buildConvSeg('segN', NTIES, i => nIdx = i);
+buildConvSeg('segY', YEARS, i => yIdx = i);
+buildConvSeg('segP', PTIE,  i => pIdx = i);
+
+function conv() {
+  document.querySelectorAll('#segN button').forEach((b,i)=>b.classList.toggle('on', i===nIdx));
+  document.querySelectorAll('#segY button').forEach((b,i)=>b.classList.toggle('on', i===yIdx));
+  document.querySelectorAll('#segP button').forEach((b,i)=>b.classList.toggle('on', i===pIdx));
+
+  const n = NTIES[nIdx].n, y = YEARS[yIdx].y, p = PTIE[pIdx].p;
+
+  /* Independent ties, independent years:
+     P(a single tie converges at some point over y years) = 1 - (1-p)^y
+     P(at least one of n ties converges)                  = 1 - (1-p)^(n*y)  */
+  const single = 1 - Math.pow(1 - p, y);
+  const book   = 1 - Math.pow(1 - p, n * y);
+
+  const pct = x => (x * 100).toFixed(x < 0.1 ? 1 : 0) + '%';
+  document.getElementById('cBig').textContent = pct(book);
+  document.getElementById('cSingle').innerHTML =
+    `ANY <b>ONE</b> TIE OVER ${y} YR${y===1?'':'S'}: <b>${pct(single)}</b> — the long shot the book is built to survive.`;
+
+  let v;
+  if (book < 0.20) {
+    v = '<b>Too thin, too soon.</b> A small book on a short clock is mostly hope. The fix isn\'t ' +
+        'pressure on any single tie — it\'s more qualified positions and more patience. ' +
+        '<em>Breadth and time, not intensity.</em>';
+  } else if (book < 0.55) {
+    v = '<b>The portfolio is starting to work.</b> No single tie is likely, yet the book as a whole ' +
+        'is now a real bet. This is the argument for the strategy in one number: ' +
+        '<em>you can\'t pick the winner, so you hold the field.</em>';
+  } else if (book < 0.85) {
+    v = '<b>Convergence becomes probable.</b> Across this many honest ties and this many years, ' +
+        'it\'s now more likely than not that <em>at least one</em> aligns — even though every ' +
+        'individual tie remains a long shot. Breadth × patience is doing the work.';
+  } else {
+    v = '<b>Near-certain — but read it honestly.</b> The high number is the <em>book\'s</em>, not ' +
+        'any person\'s. It says the strategy pays off <b>somewhere</b> over the horizon; it says ' +
+        'nothing about which tie or when. The discipline is to keep every tie genuine anyway — ' +
+        'the math only holds if the maintenance stays honest.';
+  }
+  document.getElementById('cVerdict').innerHTML = v;
+}
+conv();
+</script>
+
+</body>
+</html>
