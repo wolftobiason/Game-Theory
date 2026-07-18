@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Two Axes — Governments, Markets, and the Tradeoffs</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050509;
+    --surface: #0d0d18;
+    --surface-2: #12121f;
+    --border: #1e1e35;
+    --muted: #3a3a5c;
+    --text: #e2e2f0;
+    --text-dim: #8888aa;
+    --accent: #22d3ee;
+    --accent-dim: rgba(34,211,238,.12);
+    /* validated categorical palette (dark mode) */
+    --c-full: #3b82f6;
+    --c-flawed: #059669;
+    --c-hybrid: #d97706;
+    --c-auth: #ef4444;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  .mono {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 56px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34,211,238,.07), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 680px;
+    margin: 0 auto 28px;
+    line-height: 1.65;
+  }
+  .hero-sub em { color: var(--text); }
+  .hero-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  section { max-width: 1100px; margin: 0 auto; padding: 64px 24px 24px; }
+  .sec-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .sec-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 400;
+    margin-bottom: 14px;
+  }
+  .sec-intro {
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 720px;
+    margin-bottom: 36px;
+    font-size: .98rem;
+  }
+  .sec-intro em { color: var(--text); font-style: italic; }
+  .sec-intro strong { color: var(--text); font-weight: 600; }
+
+  /* ── One-axis myth strip ── */
+  .myth-strip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px 28px 24px;
+    margin-bottom: 20px;
+  }
+  .myth-track {
+    position: relative;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--c-auth), var(--muted), var(--c-full));
+    margin: 44px 30px 54px;
+  }
+  .myth-end {
+    position: absolute;
+    top: -34px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .myth-pin {
+    position: absolute;
+    top: -7px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 2px solid var(--text-dim);
+    transform: translateX(-50%);
+  }
+  .myth-pin span {
+    position: absolute;
+    top: 20px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .myth-pin.q span { top: auto; bottom: 22px; color: var(--accent); }
+  .myth-caption { color: var(--text-dim); font-size: .93rem; line-height: 1.65; max-width: 700px; }
+  .myth-caption em { color: var(--text); }
+
+  /* ── Chart ── */
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 18px 10px;
+    position: relative;
+  }
+  .chart-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px 14px;
+  }
+  .view-toggle { display: flex; gap: 8px; }
+  .view-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .view-btn:hover { color: var(--text); border-color: var(--muted); }
+  .view-btn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; }
+  .lg-item {
+    display: flex; align-items: center; gap: 7px;
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .lg-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  #scatter { width: 100%; height: auto; display: block; }
+  #scatter circle.cty {
+    cursor: pointer;
+    stroke: var(--surface);
+    stroke-width: 2;
+    fill-opacity: .82;
+    transition: cx .7s cubic-bezier(.4,0,.2,1), cy .7s cubic-bezier(.4,0,.2,1), fill-opacity .2s;
+  }
+  #scatter circle.cty:hover { fill-opacity: 1; }
+  #scatter circle.cty.sel { fill-opacity: 1; stroke: var(--text); }
+  #scatter text.cl {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    fill: var(--text-dim);
+    pointer-events: none;
+    transition: x .7s cubic-bezier(.4,0,.2,1), y .7s cubic-bezier(.4,0,.2,1);
+  }
+  #scatter .grid { stroke: var(--border); stroke-width: 1; }
+  #scatter .axis-t {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    fill: var(--muted);
+    letter-spacing: 1px;
+  }
+  #scatter .axis-name {
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    fill: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  #scatter .quad {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    fill: var(--muted);
+    text-transform: uppercase;
+    opacity: 1;
+    transition: opacity .4s;
+  }
+  #scatter .quad.hot { fill: var(--accent); opacity: .85; }
+  #scatter .qline { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 5; opacity: .5; }
+
+  #tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--surface-2);
+    border: 1px solid var(--muted);
+    border-radius: 8px;
+    padding: 10px 13px;
+    font-size: .85rem;
+    line-height: 1.55;
+    color: var(--text);
+    max-width: 260px;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 10;
+  }
+  #tooltip .tt-name { font-weight: 600; margin-bottom: 3px; }
+  #tooltip .tt-row { color: var(--text-dim); font-size: .8rem; }
+  #tooltip .tt-row b { color: var(--text); font-weight: 600; }
+
+  .chart-note {
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    padding: 12px 6px 10px;
+  }
+
+  /* ── Detail card ── */
+  #detail {
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 28px;
+    display: none;
+  }
+  #detail.show { display: block; }
+  .dt-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  .dt-flag { font-size: 1.9rem; }
+  .dt-name { font-size: 1.5rem; }
+  .dt-sys {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .dt-gov { color: var(--text-dim); font-size: .92rem; margin-bottom: 18px; font-style: italic; }
+  .dt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .dt-stat {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dt-stat .k {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .dt-stat .v { font-size: 1.15rem; color: var(--text); }
+  .dt-stat .v small { font-size: .75rem; color: var(--text-dim); }
+  .dt-note { color: var(--text-dim); line-height: 1.65; font-size: .95rem; }
+  .dt-note em { color: var(--text); }
+
+  /* ── Timeline ── */
+  .timeline { position: relative; margin: 8px 0 8px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: var(--border);
+  }
+  .tl-item { position: relative; padding: 0 0 26px 36px; }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 5px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+  }
+  .tl-item.dark::before { border-color: var(--c-auth); }
+  .tl-year {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .tl-item.dark .tl-year { color: var(--c-auth); }
+  .tl-txt { color: var(--text-dim); line-height: 1.65; font-size: .95rem; max-width: 640px; }
+  .tl-txt em { color: var(--text); }
+
+  .quote-block {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 10px 10px 0;
+    padding: 20px 24px;
+    margin: 28px 0;
+    max-width: 720px;
+  }
+  .quote-block p { font-style: italic; font-size: 1.05rem; line-height: 1.6; color: var(--text); }
+  .quote-block cite {
+    display: block;
+    margin-top: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-style: normal;
+  }
+
+  /* ── Who pays: bars ── */
+  .bars-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px 20px;
+    margin-bottom: 20px;
+  }
+  .bars-title { font-size: 1.08rem; margin-bottom: 4px; }
+  .bars-sub { color: var(--text-dim); font-size: .88rem; margin-bottom: 20px; line-height: 1.5; }
+  .bar-row { display: grid; grid-template-columns: 118px 1fr 52px; gap: 12px; align-items: center; margin-bottom: 9px; }
+  .bar-name {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-align: right;
+  }
+  .bar-track { height: 14px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .bar-fill {
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+    background: var(--accent);
+    opacity: .75;
+    width: 0;
+    transition: width 1s cubic-bezier(.4,0,.2,1);
+  }
+  .bar-fill.hi { opacity: 1; }
+  .bar-val {
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    color: var(--text);
+  }
+  .twin { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { .twin { grid-template-columns: 1fr; } }
+
+  /* ── Under the hood: US vs Denmark duel ── */
+  .duel { margin-top: 30px; }
+  .duel-intro { color: var(--text-dim); font-size: .95rem; line-height: 1.7; max-width: 820px; margin-bottom: 20px; }
+  .duel-intro strong { color: var(--text); font-weight: 400; }
+  .duel-legend { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin-bottom: 16px; }
+  .duel-legend .lg-item { display: flex; align-items: center; gap: 7px; font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 1.5px; color: var(--text-dim); }
+  .duel .bar-row { grid-template-columns: 64px 1fr 44px; margin-bottom: 5px; }
+  .duel-comp { font-size: .93rem; margin: 15px 0 7px; }
+  .duel-comp:first-of-type { margin-top: 0; }
+  .duel-pillar-name {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+  .bar-fill.usa { background: var(--c-flawed); }
+  .bar-fill.dnk { background: var(--c-full); }
+
+  .vat-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .vat-chip {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 7px 11px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    background: var(--surface-2);
+  }
+  .vat-chip b { color: var(--text); font-weight: 400; }
+  .vat-chip.hot { border-color: var(--accent); color: var(--accent); }
+  .vat-chip.hot b { color: var(--accent); }
+
+  .law {
+    text-align: center;
+    padding: 34px 24px;
+    margin: 34px 0 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .law .big {
+    font-size: clamp(1.25rem, 2.6vw, 1.7rem);
+    line-height: 1.45;
+    font-style: italic;
+    max-width: 680px;
+    margin: 0 auto 12px;
+  }
+  .law .big span { color: var(--accent); }
+  .law cite {
+    font-family: 'Courier New', monospace;
+    font-size: 10.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-style: normal;
+  }
+
+  /* ── Tradeoff cards ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 24px 20px;
+  }
+  .card-num {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .card h3 { font-size: 1.12rem; font-weight: 400; margin-bottom: 10px; line-height: 1.35; }
+  .card p { color: var(--text-dim); font-size: .92rem; line-height: 1.65; }
+  .card p em { color: var(--text); }
+  .card p + p { margin-top: 10px; }
+
+  /* ── Table ── */
+  details.tblbox { margin-top: 8px; }
+  details.tblbox summary {
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 10px 0;
+    list-style: none;
+  }
+  details.tblbox summary::before { content: '+ '; }
+  details.tblbox[open] summary::before { content: '− '; }
+  .tbl-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 900px; font-size: .84rem; }
+  th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+  th {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+    background: var(--surface);
+    cursor: pointer;
+  }
+  th:hover { color: var(--accent); }
+  td { color: var(--text-dim); }
+  td:first-child { color: var(--text); }
+  tr:hover td { background: rgba(34,211,238,.04); }
+
+  .foot {
+    max-width: 1100px;
+    margin: 60px auto 0;
+    padding: 28px 24px 0;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: .85rem;
+    line-height: 1.7;
+  }
+  .foot a { color: var(--text-dim); }
+  .foot a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">Political Economy · Interactive</div>
+  <h1>The <em>Two</em> Axes</h1>
+  <p class="hero-sub">"Capitalism vs socialism" is usually drawn as one line. It is actually a plane:
+    <em>how free are the markets</em> is one axis, <em>how big is the state</em> is the other.
+    Put the world's major economies on that plane and the familiar labels fall apart:
+    the "socialist" Nordics sit on the free-market side, and the fight turns out to be about
+    something else entirely: who pays, and for what.</p>
+  <div class="hero-meta">24 ECONOMIES · TOP GDP + THE NORDICS · DATA C. 2023-25</div>
+</div>
+
+<section>
+  <div class="sec-label">01 · The Broken Ruler</div>
+  <h2 class="sec-title">One line can't hold these countries</h2>
+  <p class="sec-intro">The textbook definition is about <strong>ownership of the means of production</strong>:
+    under socialism the state owns and directs production; under capitalism private actors do, coordinated by prices.
+    By that definition almost every country below is capitalist. But the one-line version forces absurd placements.
+    Where does Denmark go, with easier firing rules than the US and a bigger welfare state than France?
+    Where does Singapore go, with the world's freest markets and a state that builds 80% of its housing?</p>
+
+  <div class="myth-strip">
+    <div class="myth-track">
+      <span class="myth-end" style="left:0">Socialism</span>
+      <span class="myth-end" style="right:0">Capitalism</span>
+      <div class="myth-pin" style="left:8%"><span>USSR ✓</span></div>
+      <div class="myth-pin" style="left:88%"><span>USA ✓</span></div>
+      <div class="myth-pin q" style="left:38%"><span>Denmark??</span></div>
+      <div class="myth-pin q" style="left:58%"><span>Singapore??</span></div>
+      <div class="myth-pin q" style="left:47%"><span>China??</span></div>
+    </div>
+    <p class="myth-caption">The fix is to split the line into two questions that turn out to be
+      <em>independent</em>: (1) how freely do markets operate: trade, prices, regulation, property rights;
+      and (2) how much of the economy flows through the state: taxes, transfers, public services.
+      A country can score high on both, low on both, or split them. That gives four corners, not two ends.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">02 · The Map</div>
+  <h2 class="sec-title">24 economies on the plane</h2>
+  <p class="sec-intro">Every bubble is a country: the top economies by GDP plus all five Nordics
+    (true microstates like Luxembourg, Liechtenstein and the Caymans are excluded; Iceland is kept as an honorary Nordic
+    and flagged as tiny). Bubble area tracks total GDP. Color is the political system, which is deliberately a
+    <em>separate</em> dimension: market freedom and political freedom do not always travel together.
+    <strong>Click any bubble</strong> for the full card. Then flip to the <em>Outcomes</em> view: same bubbles,
+    repositioned by inequality and income per person.</p>
+
+  <div class="chart-wrap">
+    <div class="chart-controls">
+      <div class="view-toggle">
+        <button class="view-btn on" id="btn-sys">Systems · freedom × state size</button>
+        <button class="view-btn" id="btn-out">Outcomes · inequality × income</button>
+      </div>
+      <div class="legend">
+        <span class="lg-item"><span class="lg-dot" style="background:var(--c-full)"></span>Full democracy</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--c-flawed)"></span>Flawed democracy</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--c-hybrid)"></span>Hybrid</span>
+        <span class="lg-item"><span class="lg-dot" style="background:var(--c-auth)"></span>Authoritarian</span>
+      </div>
+    </div>
+    <svg id="scatter" viewBox="0 0 960 560" role="img" aria-label="Scatter plot of economies by economic freedom and government spending"></svg>
+    <div id="tooltip"></div>
+    <div class="chart-note" id="chart-note">BUBBLE AREA ∝ GDP · X: FRASER ECONOMIC FREEDOM INDEX (0–10) · Y: GOVERNMENT SPENDING, % OF GDP · REGIME COLOR: EIU DEMOCRACY INDEX 2024</div>
+  </div>
+
+  <div id="detail"></div>
+
+  <details class="tblbox">
+    <summary>Full data table (click headers to sort)</summary>
+    <div class="tbl-scroll"><table id="tbl"></table></div>
+  </details>
+
+  <div class="duel">
+    <h2 class="sec-title" style="font-size:clamp(1.15rem,2.4vw,1.5rem)">Under the hood: two free economies, opposite recipes</h2>
+    <p class="duel-intro">One freedom score compresses a dozen dials, and the compression hides the best story
+      on the map. The Heritage Foundation's 2025 index breaks it apart for the US
+      (<strong>70.2, ranked 26th</strong>) and Denmark (<strong>79.1, ranked 7th</strong>).
+      The US wins exactly where the state is small: lighter taxes, less spending. Denmark wins nearly everywhere
+      markets actually operate: starting and running a business, trading across borders, foreign investment, and a
+      cleaner rule of law. And the single worst score in either column belongs to the US:
+      <strong>a flat 0.0 on fiscal health</strong>. Public debt is 118.7% of GDP against Denmark's 29.7%.
+      <strong>The smaller American state is bought with borrowed money; the bigger Danish one is paid for in full.</strong></p>
+    <div class="duel-legend">
+      <span class="lg-item"><span class="lg-dot" style="background:var(--c-flawed)"></span>USA · 70.2 overall</span>
+      <span class="lg-item"><span class="lg-dot" style="background:var(--c-full)"></span>DENMARK · 79.1 overall</span>
+      <span class="lg-item" style="opacity:.7">HERITAGE 2025 · 0–100, HIGHER = FREER / LIGHTER</span>
+    </div>
+    <div class="twin">
+      <div class="bars-panel">
+        <div class="duel-pillar-name">Government size</div>
+        <div class="bars-sub">The American advantage. Higher score = lighter burden. Note the empty track: fiscal health scores deficits and debt, and the US earns a true zero.</div>
+        <div class="duel-comp">Tax burden</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa hi" data-w="75.6"></div></div><span class="bar-val">75.6</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk" data-w="45"></div></div><span class="bar-val">45.0</span></div>
+        <div class="duel-comp">Government spending</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa hi" data-w="55.8"></div></div><span class="bar-val">55.8</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk" data-w="33.6"></div></div><span class="bar-val">33.6</span></div>
+        <div class="duel-comp">Fiscal health</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="0"></div></div><span class="bar-val">0.0</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="98.2"></div></div><span class="bar-val">98.2</span></div>
+      </div>
+      <div class="bars-panel">
+        <div class="duel-pillar-name">Regulatory efficiency</div>
+        <div class="bars-sub">Denmark's red tape is thinner for business; the one American win here is labor, where Heritage scores US hiring-and-firing rules freer than flexicurity.</div>
+        <div class="duel-comp">Business freedom</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="88.5"></div></div><span class="bar-val">88.5</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="93"></div></div><span class="bar-val">93.0</span></div>
+        <div class="duel-comp">Labor freedom</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa hi" data-w="77"></div></div><span class="bar-val">77.0</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk" data-w="64.9"></div></div><span class="bar-val">64.9</span></div>
+        <div class="duel-comp">Monetary freedom</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="70.7"></div></div><span class="bar-val">70.7</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="76.6"></div></div><span class="bar-val">76.6</span></div>
+      </div>
+      <div class="bars-panel">
+        <div class="duel-pillar-name">Open markets</div>
+        <div class="bars-sub">Denmark is more open to trade and foreign capital; the financial systems tie.</div>
+        <div class="duel-comp">Trade freedom</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="75.6"></div></div><span class="bar-val">75.6</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="79.6"></div></div><span class="bar-val">79.6</span></div>
+        <div class="duel-comp">Investment freedom</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="70"></div></div><span class="bar-val">70.0</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="90"></div></div><span class="bar-val">90.0</span></div>
+        <div class="duel-comp">Financial freedom</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="80"></div></div><span class="bar-val">80.0</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk" data-w="80"></div></div><span class="bar-val">80.0</span></div>
+      </div>
+      <div class="bars-panel">
+        <div class="duel-pillar-name">Rule of law</div>
+        <div class="bars-sub">A Danish sweep, and the widest gap is integrity: Heritage docks the US for cronyism and eroding trust in government.</div>
+        <div class="duel-comp">Property rights</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="95.4"></div></div><span class="bar-val">95.4</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="99.3"></div></div><span class="bar-val">99.3</span></div>
+        <div class="duel-comp">Judicial effectiveness</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="76.6"></div></div><span class="bar-val">76.6</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="90.5"></div></div><span class="bar-val">90.5</span></div>
+        <div class="duel-comp">Government integrity</div>
+        <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill usa" data-w="77.3"></div></div><span class="bar-val">77.3</span></div>
+        <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill dnk hi" data-w="98"></div></div><span class="bar-val">98.0</span></div>
+      </div>
+    </div>
+    <p class="duel-intro" style="margin-top:18px;margin-bottom:0">One honest caveat: the map's x-axis uses Fraser's index,
+      which puts the US a hair <em>above</em> Denmark; Heritage puts Denmark nine points ahead. The disagreement is
+      mostly weighting. Fraser rewards a small state as freedom per se; Heritage also asks whether the books balance.
+      Where the two agree completely is the shape: <strong>America's freedom is a small, indebted state with
+      middling openness; Denmark's is a big, solvent state wrapped around some of the openest markets on earth.</strong></p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">03 · Case Study</div>
+  <h2 class="sec-title">Sweden ran the experiment so you don't have to</h2>
+  <p class="sec-intro">Bernie Sanders' favorite example of socialism that works is Scandinavia. The Cato Institute's
+    favorite rebuttal, by the Swedish historian Johan Norberg, is that Sweden got rich under radical free markets,
+    nearly wrecked itself in its one genuinely socialist-leaning stretch (roughly 1970-1990), and then re-liberalized
+    harder than almost anyone. The timeline below is Norberg's account; the caveats section afterward is where his
+    framing gets pushback. Both are worth holding at once.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-year">1850s–1860s</div>
+      <div class="tl-txt">Finance minister <em>Johan August Gripenstedt</em>, a Bastiat devotee, abolishes the guilds,
+        tears down trade barriers, deregulates business. He is mocked as a coward who fled office before the wreckage. Instead:</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1870–1913</div>
+      <div class="tl-txt">GDP per capita grows <em>2% a year, about 50% faster than the rest of Western Europe</em>,
+        with public spending under a tenth of GDP. A poor backwater industrializes.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1950</div>
+      <div class="tl-txt"><em>4th richest country in the world, 5th freest economy.</em> Taxes are just 21% of GDP,
+        lower than in the United States at the time. The Social Democrats (in power since 1932) govern as pragmatic
+        free-traders who redistribute part of the surplus.</div>
+    </div>
+    <div class="tl-item dark">
+      <div class="tl-year">1960–1980</div>
+      <div class="tl-txt">The socialist experiment. Public spending more than doubles, <em>31% → 60% of GDP</em>.
+        Detailed labor-market regulation; "wage earners' funds" designed to gradually socialize company ownership.
+        IKEA relocates to the Netherlands, Tetra Pak to Switzerland, Bergman and Borg leave.</div>
+    </div>
+    <div class="tl-item dark">
+      <div class="tl-year">1970 → 1995</div>
+      <div class="tl-txt">Sweden falls from <em>10% richer than the G7 average to 10% poorer</em>.
+        Over the whole period the private sector creates <em>zero net jobs</em>. The share of Swedes saying it's
+        acceptable to lie to get public benefits goes from 5% (1960) to 43% (2000). Crisis in 1990-92:
+        an 11%-of-GDP deficit and, briefly, a 500% central-bank interest rate.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1991–2006</div>
+      <div class="tl-txt">The counter-revolution, run by right <em>and</em> left. Government cut by a third; wealth,
+        property, gift and inheritance taxes abolished; state firms privatized; a universal <em>school voucher</em> system;
+        social security converted to defined-contribution with <em>private accounts</em>. Between 1980 and 2000 Sweden
+        gains 2 full points on the Economic Freedom index, vs 0.5 for Reagan's America.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1995 →</div>
+      <div class="tl-txt">Real wages rise <em>65%</em> after 25 years of inflation eating nearly all gains.
+        Sweden today: big welfare state, free markets underneath it. Polls find only ~9% of Swedes call themselves
+        socialists, a lower share than among US Republicans (15%).</div>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    <p>"The Social Democrats' success formula is socialist rhetoric but center-right policies."</p>
+    <cite>Björn Rosengren, Social Democratic minister of industry, via Norberg / Cato Policy Report 2020</cite>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">04 · Who Pays</div>
+  <h2 class="sec-title">The part nobody's slogan survives</h2>
+  <p class="sec-intro">Here is the counterintuitive core, and it cuts against a common assumption
+    (including one I'd have guessed): <strong>the US income tax code is more progressive than the Nordic ones.</strong>
+    The Nordics don't fund their welfare states by soaking the rich. There aren't enough rich people, and the 1970s
+    taught them that capital flees. Instead they tax <em>everyone</em>, heavily and flatly: roughly a third of every
+    paycheck in payroll and municipal taxes, then a 25% VAT on nearly everything bought. In Sweden, 97% of income-tax
+    revenue comes from those flat broad taxes; only ~3% comes from taxing "the rich" as a class.
+    The redistribution happens on the <em>spending</em> side: everyone pays in big, and everyone gets
+    healthcare, childcare and college out. The US does the reverse: steeply progressive taxes, but a much smaller pot.</p>
+
+  <div class="twin">
+    <div class="bars-panel">
+      <div class="bars-title">Share of all income tax paid by the top 10%</div>
+      <div class="bars-sub">OECD comparison cited in the Cato piece. The "make the rich pay" system is... the American one.</div>
+      <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill hi" data-w="75"></div></div><span class="bar-val">45%</span></div>
+      <div class="bar-row"><span class="bar-name">SWEDEN</span><div class="bar-track"><div class="bar-fill" data-w="45"></div></div><span class="bar-val">&lt;27%</span></div>
+    </div>
+    <div class="bars-panel">
+      <div class="bars-title">Standard VAT / consumption tax rate</div>
+      <div class="bars-sub">A flat tax on consumption: the poor pay the same rate as the rich on every purchase. The Nordic welfare state runs on it.</div>
+      <div class="vat-chips">
+        <span class="vat-chip hot"><b>25.5%</b> FI</span>
+        <span class="vat-chip hot"><b>25%</b> SE · DK · NO</span>
+        <span class="vat-chip hot"><b>24%</b> IS</span>
+        <span class="vat-chip"><b>22%</b> IT</span>
+        <span class="vat-chip"><b>21%</b> ES · NL</span>
+        <span class="vat-chip"><b>20%</b> FR · UK · RU</span>
+        <span class="vat-chip"><b>19%</b> DE</span>
+        <span class="vat-chip"><b>10%</b> JP · KR · AU</span>
+        <span class="vat-chip"><b>9%</b> SG</span>
+        <span class="vat-chip"><b>8.1%</b> CH</span>
+        <span class="vat-chip"><b>~0%</b> US (state sales taxes avg ~7%)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bars-panel">
+    <div class="bars-title">Tax wedge on the average single worker, 2024</div>
+    <div class="bars-sub">Income tax plus employee and employer social contributions, as a share of total labor cost (OECD Taxing Wages).
+      This is what the <em>middle class</em> pays before VAT even starts. Universal welfare is a middle-class purchase.</div>
+    <div class="bar-row"><span class="bar-name">GERMANY</span><div class="bar-track"><div class="bar-fill" data-w="96"></div></div><span class="bar-val">~48%</span></div>
+    <div class="bar-row"><span class="bar-name">FRANCE</span><div class="bar-track"><div class="bar-fill" data-w="94"></div></div><span class="bar-val">~47%</span></div>
+    <div class="bar-row"><span class="bar-name">ITALY</span><div class="bar-track"><div class="bar-fill" data-w="90"></div></div><span class="bar-val">~45%</span></div>
+    <div class="bar-row"><span class="bar-name">FINLAND</span><div class="bar-track"><div class="bar-fill hi" data-w="86"></div></div><span class="bar-val">~43%</span></div>
+    <div class="bar-row"><span class="bar-name">SWEDEN</span><div class="bar-track"><div class="bar-fill hi" data-w="83"></div></div><span class="bar-val">~41%</span></div>
+    <div class="bar-row"><span class="bar-name">DENMARK</span><div class="bar-track"><div class="bar-fill hi" data-w="72"></div></div><span class="bar-val">~36%</span></div>
+    <div class="bar-row"><span class="bar-name">NORWAY</span><div class="bar-track"><div class="bar-fill hi" data-w="72"></div></div><span class="bar-val">~36%</span></div>
+    <div class="bar-row"><span class="bar-name">UK</span><div class="bar-track"><div class="bar-fill" data-w="63"></div></div><span class="bar-val">~31%</span></div>
+    <div class="bar-row"><span class="bar-name">USA</span><div class="bar-track"><div class="bar-fill" data-w="60"></div></div><span class="bar-val">~30%</span></div>
+    <div class="bar-row"><span class="bar-name">SWITZERLAND</span><div class="bar-track"><div class="bar-fill" data-w="46"></div></div><span class="bar-val">~23%</span></div>
+    <div class="bar-row"><span class="bar-name">KOREA</span><div class="bar-track"><div class="bar-fill" data-w="50"></div></div><span class="bar-val">~25%</span></div>
+  </div>
+
+  <div class="law">
+    <p class="big">"You can have a big government, or you can make the rich pay for it all.
+      <span>You can't have both.</span>"</p>
+    <cite>Johan Norberg, "Sweden's Lessons for America," Cato Policy Report, Jan/Feb 2020 (CC BY-NC-SA)</cite>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">05 · The Tradeoffs</div>
+  <h2 class="sec-title">What you actually choose between</h2>
+  <p class="sec-intro">Once the two axes are separated, the real tradeoffs stop being "freedom vs fairness"
+    and become much more specific. Six of them, with the caveats the Cato framing tends to skip.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-num">T1 · Funding</div>
+      <h3>Progressive taxes vs broad taxes</h3>
+      <p>A steeply progressive code (US) is politically satisfying but revenue-limited: the base is narrow and mobile.
+        Broad flat-ish taxes plus VAT (Nordics) raise enormous, stable revenue, at the cost of being regressive on the
+        tax side. <em>The size of your welfare state is set by how much you're willing to tax the middle class,
+        not the rich.</em></p>
+    </div>
+    <div class="card">
+      <div class="card-num">T2 · Compensation</div>
+      <h3>Cash in hand vs services in kind</h3>
+      <p>The American worker keeps more of the paycheck and shops for healthcare, childcare and college in markets:
+        higher mean, much higher variance. The Nordic worker pre-pays for all three through taxes: lower disposable
+        income, near-zero catastrophic risk. <em>This is an insurance premium, and whether it's "worth it" depends on
+        your risk aversion and your luck.</em></p>
+    </div>
+    <div class="card">
+      <div class="card-num">T3 · The Frontier</div>
+      <h3>Equality vs dynamism (weaker than advertised)</h3>
+      <p>Among rich democracies the growth-equality tradeoff looks surprisingly weak: the Nordics are rich <em>and</em> equal,
+        and a kid born poor in Denmark climbs the income ladder more easily than one born poor in the US
+        (intergenerational elasticity ~0.15 vs ~0.45 in the Chetty/Corak literature).</p>
+      <p>But the frontier still tilts American: the trillion-dollar companies, the top-end wages and most of the
+        breakthrough R&D come out of the big, unequal, high-variance market. <em>Sweden consumes technologies
+        that Silicon Valley's incentive structure produced.</em></p>
+    </div>
+    <div class="card">
+      <div class="card-num">T4 · Two Freedoms</div>
+      <h3>Free markets ≠ free politics</h3>
+      <p>The color and the position of each bubble are separate facts. Singapore pairs the world's freest economy with
+        dominant-party soft authoritarianism; China runs markets under one-party control; Norway pairs the world's
+        strongest democracy with a state that owns a $1.8T oil fund. <em>Neither axis buys the other automatically,
+        though the poorest performers tend to be unfree on both.</em></p>
+    </div>
+    <div class="card">
+      <div class="card-num">T5 · Preconditions</div>
+      <h3>Trust is the load-bearing wall</h3>
+      <p>The Nordic model was built in small, homogeneous, extremely high-trust societies where free-riding was
+        socially policed. Even there it eroded: Gunnar Myrdal, the model's own architect, despaired at the
+        "population of cheats" the benefit system trained. <em>Whether the machinery transplants to a country of
+        330 million with low institutional trust is the genuinely open question, and both sides of the US debate
+        answer it with vibes.</em></p>
+    </div>
+    <div class="card">
+      <div class="card-num">T6 · Labor</div>
+      <h3>Protect the job vs protect the worker</h3>
+      <p>Italy and France make firing hard: insiders are safe, outsiders (the young) queue for years.
+        Denmark's "flexicurity" makes firing <em>easy</em> and unemployment generous with aggressive retraining:
+        protection attaches to the person, not the position. Notably, Denmark and Sweden have
+        <em>no statutory minimum wage at all</em>; unions negotiate sector floors instead. Security and flexibility
+        are not opposites if you're willing to redesign where the safety net hangs.</p>
+    </div>
+  </div>
+
+  <div class="quote-block" style="margin-top:34px">
+    <p>"Denmark is far from a socialist planned economy. Denmark is a market economy."</p>
+    <cite>Lars Løkke Rasmussen, Danish Prime Minister, Harvard Kennedy School, 2015</cite>
+  </div>
+</section>
+
+<div class="foot">
+  <p><strong style="color:var(--text-dim)">Sources & caveats.</strong>
+    GDP and government spending: IMF World Economic Outlook (2024-25 estimates). Tax revenue, Gini (disposable income,
+    post tax-and-transfer), tax wedge, top marginal rates: OECD. Economic freedom: Fraser Institute EFW (0-10 scale).
+    US-Denmark component decomposition: Heritage Foundation Index of Economic Freedom 2025 country pages (0-100 scale;
+    a different index from Fraser's, with different weightings and rankings).
+    Regime classification: EIU Democracy Index 2024 (Full ≥8, Flawed 6-8, Hybrid 4-6, Authoritarian &lt;4).
+    Sweden narrative and tax-progressivity figures: <a href="https://www.cato.org/policy-report/january/february-2020/swedens-lessons-america">Norberg, "Sweden's Lessons for America," Cato Policy Report (2020), CC BY-NC-SA 4.0</a>.
+    All figures rounded and approximate (c. 2023-25); Gini for non-OECD countries uses World Bank estimates and mixes
+    income/consumption bases; Saudi Gini not reliably published; Norway's spending share is distorted by oil revenue;
+    Singapore's Gini falls to ~0.36 after transfers. Cato is a libertarian think tank: its history of Sweden is
+    accurate but selective. The same Sweden also kept universal healthcare, near-free universities, sectoral union
+    bargaining covering ~90% of workers, and higher social mobility than the US. Read the axes, not the vibes.</p>
+</div>
+
+<script>
+// ── Data (approx, c. 2023-25; see footer for sources) ─────────────────────────
+// dem: EIU score → cat: full/flawed/hybrid/auth
+// efw: Fraser EFW 0-10 · spend: govt spending %GDP · tax: tax revenue %GDP
+// gdp: $T nominal · pc: $k per capita · gini: disposable-income Gini · vat %, top marginal %
+const C = [
+ {n:"United States", iso:"USA", f:"🇺🇸", gov:"Federal presidential republic", sys:"Liberal market economy",
+  dem:7.85, cat:"flawed", efw:8.1, spend:37.5, tax:25, gdp:30.8, pc:90, gini:.395, vat:0, top:43.7,
+  note:"The richest large economy in history and the biggest outlier: huge output, small(ish) state, steeply progressive taxes on a narrow base, and the most unequal outcomes of any rich democracy. Maximum variance, in both directions."},
+ {n:"China", iso:"CHN", f:"🇨🇳", gov:"One-party socialist republic", sys:"State capitalism",
+  dem:2.1, cat:"auth", efw:6.2, spend:33, tax:20, gdp:19.4, pc:13.7, gini:.47, vat:13, top:45,
+  note:"Markets do the growing, the Party does the steering: SOEs dominate banking and energy, private firms exist at pleasure. Lifted ~800M people from poverty after abandoning actual socialism in 1978; now faces aging, debt and the middle-income question."},
+ {n:"Germany", iso:"DEU", f:"🇩🇪", gov:"Federal parliamentary republic", sys:"Social market economy",
+  dem:8.7, cat:"full", efw:7.6, spend:48, tax:38, gdp:5.0, pc:59, gini:.30, vat:19, top:47.5,
+  note:"The 'social market economy': ordoliberal rules plus co-determination (workers on corporate boards). Export machine with the OECD's near-highest tax wedge on labor, and a manufacturing model under strain."},
+ {n:"Japan", iso:"JPN", f:"🇯🇵", gov:"Parliamentary constitutional monarchy", sys:"Coordinated market economy",
+  dem:8.4, cat:"full", efw:7.7, spend:43, tax:34, gdp:4.2, pc:34, gini:.334, vat:10, top:55.9,
+  note:"Coordinated capitalism: keiretsu networks, lifetime employment norms (fading), low inequality by rich-country standards, and three decades of near-zero growth plus the world's oldest population and highest public debt (~250% GDP)."},
+ {n:"India", iso:"IND", f:"🇮🇳", gov:"Federal parliamentary republic", sys:"Developing mixed economy",
+  dem:7.3, cat:"flawed", efw:6.6, spend:28, tax:18, gdp:4.2, pc:2.9, gini:.34, vat:18, top:39,
+  note:"The License Raj's slow unwinding since 1991 turned a socialist-planned economy into the fastest-growing large one. Still heavily protectionist and state-entangled; per-capita income remains 1/30th of the US."},
+ {n:"United Kingdom", iso:"GBR", f:"🇬🇧", gov:"Parliamentary constitutional monarchy", sys:"Liberal market economy",
+  dem:8.3, cat:"full", efw:7.9, spend:44.5, tax:35, gdp:3.8, pc:55, gini:.355, vat:20, top:45,
+  note:"Anglo capitalism with a European-scale state bolted on: the NHS is the closest thing to actual socialized production in this dataset (government owns the hospitals and employs the doctors)."},
+ {n:"France", iso:"FRA", f:"🇫🇷", gov:"Semi-presidential republic", sys:"Dirigiste mixed economy",
+  dem:8.1, cat:"full", efw:7.3, spend:57, tax:45.6, gdp:3.4, pc:50, gini:.298, vat:20, top:55.4,
+  note:"The biggest state share of any large democracy: 57% of GDP flows through government. World-class healthcare, trains and infrastructure; chronically high unemployment, deficits, and a political system that riots at every reform."},
+ {n:"Italy", iso:"ITA", f:"🇮🇹", gov:"Parliamentary republic", sys:"Mixed economy",
+  dem:7.7, cat:"flawed", efw:7.3, spend:54, tax:42.8, gdp:2.5, pc:41, gini:.33, vat:22, top:47.2,
+  note:"Big state, rigid labor law, and the classic insider/outsider problem: protected permanent contracts for the old, precarity for the young. Real incomes have barely grown since 2000."},
+ {n:"Canada", iso:"CAN", f:"🇨🇦", gov:"Federal parliamentary democracy", sys:"Liberal market economy",
+  dem:8.7, cat:"full", efw:8.0, spend:42, tax:34.8, gdp:2.3, pc:56, gini:.292, vat:5, top:53.5,
+  note:"America's economy with Europe's healthcare and lower inequality. Single-payer coverage, high immigration, and a productivity gap with the US that Canadian economists call a national emergency."},
+ {n:"Brazil", iso:"BRA", f:"🇧🇷", gov:"Federal presidential republic", sys:"Developing mixed economy",
+  dem:6.8, cat:"flawed", efw:6.3, spend:44, tax:33, gdp:2.3, pc:11, gini:.52, vat:26.5, top:27.5,
+  note:"A European-sized state on a developing-country income: French-level spending, Nordic-level VAT, and the worst inequality in this dataset. Proof that big government per se buys neither equality nor growth."},
+ {n:"Russia", iso:"RUS", f:"🇷🇺", gov:"Presidential republic (electoral autocracy)", sys:"State capitalism / rentier",
+  dem:2.0, cat:"auth", efw:5.9, spend:37, tax:23, gdp:2.1, pc:15, gini:.36, vat:20, top:22,
+  note:"Oil-and-gas rents distributed through a loyalty network; a flat 13% income tax for decades (now mildly progressive to 22%). Sanctioned war economy since 2022; freedom scores in free fall."},
+ {n:"South Korea", iso:"KOR", f:"🇰🇷", gov:"Presidential republic", sys:"State-guided market economy",
+  dem:7.8, cat:"flawed", efw:7.5, spend:28, tax:28.9, gdp:1.95, pc:37, gini:.324, vat:10, top:49.5,
+  note:"The developmental state that worked: chaebol conglomerates grown under government direction, then liberalized. Small welfare state, brutal work culture, lowest fertility rate on earth (0.7)."},
+ {n:"Australia", iso:"AUS", f:"🇦🇺", gov:"Federal parliamentary democracy", sys:"Liberal market economy",
+  dem:8.9, cat:"full", efw:8.0, spend:38, tax:29.9, gdp:1.9, pc:68, gini:.318, vat:10, top:47,
+  note:"Anglo markets plus a clever welfare design: means-tested benefits (cheap but targeted) and compulsory private retirement savings ('superannuation'), a third way between US 401(k)s and Nordic state pensions. 30+ years without a recession until covid."},
+ {n:"Spain", iso:"ESP", f:"🇪🇸", gov:"Parliamentary constitutional monarchy", sys:"Mixed economy",
+  dem:8.0, cat:"full", efw:7.5, spend:45.5, tax:37.3, gdp:1.85, pc:38, gini:.32, vat:21, top:54,
+  note:"Continental welfare state with a dual labor market: strong protection for permanent workers, temporary contracts for everyone else. Youth unemployment has hit 40%+ in downturns."},
+ {n:"Mexico", iso:"MEX", f:"🇲🇽", gov:"Federal presidential republic", sys:"Developing mixed economy",
+  dem:5.3, cat:"hybrid", efw:6.6, spend:27, tax:17.7, gdp:1.9, pc:15, gini:.40, vat:16, top:35,
+  note:"The smallest tax take in the OECD (~18% of GDP) and a state that struggles to provide security, the most basic public good. Nearshoring boom meets institutional erosion."},
+ {n:"Netherlands", iso:"NLD", f:"🇳🇱", gov:"Parliamentary constitutional monarchy", sys:"Coordinated market economy",
+  dem:9.0, cat:"full", efw:7.8, spend:43, tax:38, gdp:1.35, pc:76, gini:.27, vat:21, top:49.5,
+  note:"The 'polder model' of permanent employer-union-state negotiation. Nordic-level equality, world-leading part-time labor market, mandatory private (funded) pensions rather than pay-as-you-go."},
+ {n:"Switzerland", iso:"CHE", f:"🇨🇭", gov:"Federal republic, direct democracy", sys:"Liberal market economy",
+  dem:9.3, cat:"full", efw:8.4, spend:33, tax:27.2, gdp:1.0, pc:112, gini:.316, vat:8.1, top:41.7,
+  note:"The quiet champion: highest income per person of any real country, small federal state, taxes set by canton competition and referendum. Universal healthcare, but via regulated private insurance mandates, not a state system."},
+ {n:"Saudi Arabia", iso:"SAU", f:"🇸🇦", gov:"Absolute monarchy", sys:"Rentier oil economy",
+  dem:1.7, cat:"auth", efw:6.6, spend:35, tax:10, gdp:1.1, pc:33, gini:null, vat:15, top:0,
+  note:"The inverse welfare state: instead of taxing citizens to fund the state, the state (oil) funds the citizens: no income tax, subsidized everything, public employment as distribution. The bargain is material comfort for political silence."},
+ {n:"Singapore", iso:"SGP", f:"🇸🇬", gov:"Parliamentary republic (dominant-party)", sys:"State-guided free market",
+  dem:6.2, cat:"flawed", efw:8.6, spend:15, tax:13, gdp:0.56, pc:93, gini:.40, vat:9, top:24,
+  note:"The freest economy on earth run by a state that plans obsessively: ~80% of residents live in government-built housing (and ~90% own their homes), retirement is forced savings (CPF), not transfers. The whole 'small state' runs on markets plus compulsion."},
+ {n:"Sweden", iso:"SWE", f:"🇸🇪", gov:"Parliamentary constitutional monarchy", sys:"Nordic model",
+  dem:9.4, cat:"full", efw:7.6, spend:49, tax:41, gdp:0.65, pc:62, gini:.286, vat:25, top:52.3,
+  note:"The case study (section 03). School vouchers, private pension accounts, no inheritance or wealth tax, freer trade than the US, and a giant universal welfare state funded by flat-ish taxes on everyone. Not socialism: capitalism with a big subscription fee."},
+ {n:"Norway", iso:"NOR", f:"🇳🇴", gov:"Parliamentary constitutional monarchy", sys:"Nordic model + oil fund",
+  dem:9.8, cat:"full", efw:7.4, spend:46, tax:41.4, gdp:0.52, pc:94, gini:.262, vat:25, top:47.4,
+  note:"The world's top-ranked democracy, lowest inequality among large-ish economies, and a cheat code: a $1.8T sovereign wealth fund (~$320k per citizen) from state-owned oil. The one place 'the state owns the means of production' is partly true, and it owns index funds."},
+ {n:"Denmark", iso:"DNK", f:"🇩🇰", gov:"Parliamentary constitutional monarchy", sys:"Nordic model / flexicurity",
+  dem:9.3, cat:"full", efw:8.0, spend:47.5, tax:44, gdp:0.45, pc:75, gini:.268, vat:25, top:55.9,
+  note:"Freer markets than the US on several Fraser subscores: easiest firing rules in Europe, no minimum wage law, top-10 economic freedom overall, plus the world's highest tax burden and a cradle-to-grave safety net. Both axes maxed. This bubble is why the one-line model dies."},
+ {n:"Finland", iso:"FIN", f:"🇫🇮", gov:"Parliamentary republic", sys:"Nordic model",
+  dem:9.3, cat:"full", efw:7.7, spend:57, tax:43, gdp:0.32, pc:57, gini:.273, vat:25.5, top:55,
+  note:"Ties France for the biggest state share in this dataset, with far better outcomes: top-tier schools, lowest-in-class inequality, and eight straight 'happiest country' titles. Also the EU's highest VAT and a decade of sluggish growth."},
+ {n:"Iceland", iso:"ISL", f:"🇮🇸", gov:"Parliamentary republic", sys:"Nordic model (pop. 0.4M)", small:true,
+  dem:9.5, cat:"full", efw:7.6, spend:45, tax:36, gdp:0.035, pc:90, gini:.25, vat:24, top:46.3,
+  note:"Included as an honorary Nordic despite microstate size (390k people, smaller than Wichita). The most equal disposable incomes in the OECD. Also: jailed its bankers after 2008."}
+];
+
+const CAT_COLOR = { full:"var(--c-full)", flawed:"var(--c-flawed)", hybrid:"var(--c-hybrid)", auth:"var(--c-auth)" };
+const CAT_NAME = { full:"Full democracy", flawed:"Flawed democracy", hybrid:"Hybrid regime", auth:"Authoritarian" };
+
+// ── Scatter ───────────────────────────────────────────────────────────────────
+const svg = document.getElementById('scatter');
+const NS = "http://www.w3.org/2000/svg";
+const W = 960, H = 560, M = {l:60, r:20, t:26, b:46};
+let view = 'sys', selected = null;
+
+const sysX = v => M.l + (v - 5.6) / (8.8 - 5.6) * (W - M.l - M.r);
+const sysY = v => H - M.b - (v - 10) / (60 - 10) * (H - M.t - M.b);
+const outX = v => M.l + (v - .23) / (.55 - .23) * (W - M.l - M.r);
+const outY = v => { const lo = Math.log10(2.5), hi = Math.log10(130);
+  return H - M.b - (Math.log10(v) - lo) / (hi - lo) * (H - M.t - M.b); };
+const rad = g => Math.max(7, 3.3 * Math.sqrt(g));
+
+// label offsets [systems view, outcomes view] to dodge collisions; default below bubble
+const OFF = {
+  USA:[[0,1],[0,1]], CHN:[[0,1],[0,1]], DEU:[[-24,-1],[10,-14]], JPN:[[0,1],[0,1]],
+  IND:[[0,1],[0,1]], GBR:[[24,-6],[0,1]], FRA:[[0,1],[-30,-4]], ITA:[[0,1],[24,-4]],
+  CAN:[[26,4],[-28,-4]], BRA:[[0,1],[0,1]], RUS:[[0,1],[0,1]], KOR:[[0,1],[26,-4]],
+  AUS:[[0,1],[26,-4]], ESP:[[-28,-4],[0,1]], MEX:[[0,1],[-28,-4]], NLD:[[26,-8],[26,-6]],
+  CHE:[[0,1],[0,1]], SAU:[[0,1],[0,1]], SGP:[[0,1],[0,1]], SWE:[[-26,-6],[-28,-6]],
+  NOR:[[-26,2],[0,-12]], DNK:[[26,-6],[24,-8]], FIN:[[26,-2],[10,-13]], ISL:[[0,1],[26,2]]
+};
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  (parent || svg).appendChild(e);
+  return e;
+}
+
+const gGrid = el('g', {}), gQuad = el('g', {}), gDots = el('g', {}), gLabels = el('g', {});
+
+function axes() {
+  gGrid.innerHTML = '';
+  if (view === 'sys') {
+    for (let x = 6; x <= 8.5; x += .5) {
+      el('line', {x1:sysX(x), x2:sysX(x), y1:M.t, y2:H-M.b, class:'grid'}, gGrid);
+      el('text', {x:sysX(x), y:H-M.b+18, 'text-anchor':'middle', class:'axis-t'}, gGrid).textContent = x.toFixed(1);
+    }
+    for (let y = 10; y <= 60; y += 10) {
+      el('line', {x1:M.l, x2:W-M.r, y1:sysY(y), y2:sysY(y), class:'grid'}, gGrid);
+      el('text', {x:M.l-10, y:sysY(y)+4, 'text-anchor':'end', class:'axis-t'}, gGrid).textContent = y;
+    }
+    el('text', {x:(M.l+W-M.r)/2, y:H-8, 'text-anchor':'middle', class:'axis-name'}, gGrid)
+      .textContent = 'ECONOMIC FREEDOM → (FRASER EFW, 0–10)';
+    const yn = el('text', {x:16, y:(M.t+H-M.b)/2, 'text-anchor':'middle', class:'axis-name',
+      transform:`rotate(-90 16 ${(M.t+H-M.b)/2})`}, gGrid);
+    yn.textContent = 'GOVT SPENDING, % OF GDP →';
+    // quadrant dividers + labels
+    el('line', {x1:sysX(7.35), x2:sysX(7.35), y1:M.t, y2:H-M.b, class:'qline'}, gGrid);
+    el('line', {x1:M.l, x2:W-M.r, y1:sysY(40), y2:sysY(40), class:'qline'}, gGrid);
+    gQuad.innerHTML = '';
+    const q = (x, y, txt, hot) => { const t = el('text', {x, y, 'text-anchor':'middle', class:'quad'+(hot?' hot':'')}, gQuad); t.textContent = txt; };
+    q(sysX(8.05), sysY(57.5), 'FREE MARKET · BIG WELFARE STATE', true);
+    q(sysX(8.05), sysY(56), '');
+    q(sysX(8.08), sysY(55.5), '');
+    el('text', {x:sysX(8.05), y:sysY(55.7), 'text-anchor':'middle', class:'quad hot'}, gQuad).textContent = '("the socialism that works" lives here)';
+    q(sysX(6.35), sysY(57.5), 'MANAGED MARKET · BIG STATE');
+    q(sysX(6.35), sysY(13), 'STATE-LED · SMALLER STATE');
+    q(sysX(8.05), sysY(13), 'FREE MARKET · SMALL STATE');
+  } else {
+    for (let x = .25; x <= .55; x += .05) {
+      el('line', {x1:outX(x), x2:outX(x), y1:M.t, y2:H-M.b, class:'grid'}, gGrid);
+      el('text', {x:outX(x), y:H-M.b+18, 'text-anchor':'middle', class:'axis-t'}, gGrid).textContent = x.toFixed(2);
+    }
+    for (const y of [3, 10, 30, 100]) {
+      el('line', {x1:M.l, x2:W-M.r, y1:outY(y), y2:outY(y), class:'grid'}, gGrid);
+      el('text', {x:M.l-10, y:outY(y)+4, 'text-anchor':'end', class:'axis-t'}, gGrid).textContent = '$'+y+'k';
+    }
+    el('text', {x:(M.l+W-M.r)/2, y:H-8, 'text-anchor':'middle', class:'axis-name'}, gGrid)
+      .textContent = 'INCOME INEQUALITY → (GINI, AFTER TAXES & TRANSFERS)';
+    const yn = el('text', {x:16, y:(M.t+H-M.b)/2, 'text-anchor':'middle', class:'axis-name',
+      transform:`rotate(-90 16 ${(M.t+H-M.b)/2})`}, gGrid);
+    yn.textContent = 'GDP PER CAPITA, $K (LOG) →';
+    gQuad.innerHTML = '';
+    el('text', {x:outX(.275), y:outY(100), 'text-anchor':'middle', class:'quad hot'}, gQuad).textContent = 'RICH & EQUAL';
+    el('text', {x:outX(.50), y:outY(100), 'text-anchor':'middle', class:'quad'}, gQuad).textContent = 'RICH & UNEQUAL';
+    el('text', {x:outX(.50), y:outY(3.4), 'text-anchor':'middle', class:'quad'}, gQuad).textContent = 'POOR & UNEQUAL';
+  }
+}
+
+function pos(c) {
+  if (view === 'sys') return [sysX(c.efw), sysY(c.spend)];
+  if (c.gini == null) return null;
+  return [outX(c.gini), outY(c.pc)];
+}
+
+const tooltip = document.getElementById('tooltip');
+const wrap = document.querySelector('.chart-wrap');
+
+function drawDots() {
+  gDots.innerHTML = ''; gLabels.innerHTML = '';
+  C.forEach(c => {
+    const p = pos(c);
+    const r = rad(c.gdp);
+    const cx = p ? p[0] : -100, cy = p ? p[1] : -100;
+    const circ = el('circle', {class:'cty' + (selected === c.iso ? ' sel' : ''), r,
+      fill:CAT_COLOR[c.cat]}, gDots);
+    circ.style.cx = cx + 'px'; circ.style.cy = cy + 'px';
+    circ.addEventListener('mousemove', ev => {
+      const b = wrap.getBoundingClientRect();
+      tooltip.style.opacity = 1;
+      tooltip.style.left = Math.min(ev.clientX - b.left + 16, b.width - 270) + 'px';
+      tooltip.style.top = (ev.clientY - b.top + 14) + 'px';
+      tooltip.innerHTML = `<div class="tt-name">${c.f} ${c.n}</div>
+        <div class="tt-row">${CAT_NAME[c.cat]} · ${c.sys}</div>
+        <div class="tt-row">GDP <b>$${c.gdp >= 1 ? c.gdp.toFixed(1)+'T' : (c.gdp*1000).toFixed(0)+'B'}</b> · per capita <b>$${c.pc}k</b></div>
+        <div class="tt-row">Freedom <b>${c.efw.toFixed(1)}</b> · Govt spend <b>${c.spend}%</b>${c.gini != null ? ' · Gini <b>'+c.gini.toFixed(2)+'</b>' : ''}</div>
+        <div class="tt-row" style="margin-top:3px;color:var(--accent);font-size:.75rem">click for full card</div>`;
+    });
+    circ.addEventListener('mouseleave', () => tooltip.style.opacity = 0);
+    circ.addEventListener('click', () => { selected = c.iso; showDetail(c); drawDots(); });
+    const off = (OFF[c.iso] || [[0,1],[0,1]])[view === 'sys' ? 0 : 1];
+    const lx = cx + off[0], ly = off[1] === 1 ? cy + r + 11 : cy + off[1];
+    const t = el('text', {class:'cl', 'text-anchor': off[0] === 0 ? 'middle' : (off[0] > 0 ? 'start' : 'end')}, gLabels);
+    t.style.setProperty('x', lx + 'px'); t.style.setProperty('y', ly + 'px');
+    t.setAttribute('x', lx); t.setAttribute('y', ly);
+    t.textContent = c.iso + (c.small ? '*' : '');
+  });
+}
+
+function showDetail(c) {
+  const d = document.getElementById('detail');
+  d.className = 'show';
+  const stat = (k, v) => `<div class="dt-stat"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  d.innerHTML = `
+    <div class="dt-head"><span class="dt-flag">${c.f}</span><span class="dt-name">${c.n}</span>
+      <span class="dt-sys">${c.sys}</span></div>
+    <div class="dt-gov">${c.gov} · ${CAT_NAME[c.cat]} (EIU ${c.dem.toFixed(1)}/10)</div>
+    <div class="dt-grid">
+      ${stat('GDP (nominal)', c.gdp >= 1 ? '$'+c.gdp.toFixed(1)+'T' : '$'+(c.gdp*1000).toFixed(0)+'B')}
+      ${stat('GDP / capita', '$'+c.pc+'k')}
+      ${stat('Econ freedom', c.efw.toFixed(1)+' <small>/10</small>')}
+      ${stat('Govt spending', c.spend+'% <small>GDP</small>')}
+      ${stat('Tax revenue', '~'+c.tax+'% <small>GDP</small>')}
+      ${stat('Gini (disp.)', c.gini != null ? c.gini.toFixed(2) : 'n/a')}
+      ${stat('VAT', c.vat ? c.vat+'%' : 'none')}
+      ${stat('Top income rate', '~'+c.top+'%')}
+    </div>
+    <p class="dt-note">${c.note}</p>`;
+}
+
+function setView(v) {
+  view = v;
+  document.getElementById('btn-sys').className = 'view-btn' + (v === 'sys' ? ' on' : '');
+  document.getElementById('btn-out').className = 'view-btn' + (v === 'out' ? ' on' : '');
+  document.getElementById('chart-note').textContent = v === 'sys'
+    ? 'BUBBLE AREA ∝ GDP · X: FRASER ECONOMIC FREEDOM INDEX (0–10) · Y: GOVERNMENT SPENDING, % OF GDP · *ISL = MICROSTATE'
+    : 'BUBBLE AREA ∝ GDP · X: GINI COEFFICIENT AFTER TAXES & TRANSFERS (LOWER = MORE EQUAL) · Y: GDP PER CAPITA, LOG SCALE · SAU HIDDEN (NO RELIABLE GINI)';
+  axes(); drawDots();
+}
+document.getElementById('btn-sys').onclick = () => setView('sys');
+document.getElementById('btn-out').onclick = () => setView('out');
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+const COLS = [
+  ['Country', c => c.n, c => c.n],
+  ['Regime', c => CAT_NAME[c.cat], c => c.dem],
+  ['System', c => c.sys, c => c.sys],
+  ['GDP $T', c => c.gdp >= 1 ? c.gdp.toFixed(1) : c.gdp.toFixed(2), c => c.gdp],
+  ['GDP/cap $k', c => c.pc, c => c.pc],
+  ['Freedom /10', c => c.efw.toFixed(1), c => c.efw],
+  ['Spend %GDP', c => c.spend, c => c.spend],
+  ['Tax %GDP', c => c.tax, c => c.tax],
+  ['Gini', c => c.gini != null ? c.gini.toFixed(2) : '—', c => c.gini ?? -1],
+  ['VAT %', c => c.vat || '0', c => c.vat],
+  ['Top rate %', c => c.top, c => c.top],
+];
+let sortCol = 3, sortDir = -1;
+function renderTable() {
+  const tbl = document.getElementById('tbl');
+  const rows = [...C].sort((a,b) => {
+    const va = COLS[sortCol][2](a), vb = COLS[sortCol][2](b);
+    return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * sortDir;
+  });
+  tbl.innerHTML = '<tr>' + COLS.map(([h], i) =>
+    `<th data-i="${i}">${h}${i === sortCol ? (sortDir < 0 ? ' ↓' : ' ↑') : ''}</th>`).join('') + '</tr>' +
+    rows.map(c => '<tr>' + COLS.map(([,fmt], i) =>
+      `<td>${i === 0 ? c.f + ' ' : ''}${fmt(c)}</td>`).join('') + '</tr>').join('');
+  tbl.querySelectorAll('th').forEach(th => th.onclick = () => {
+    const i = +th.dataset.i;
+    if (i === sortCol) sortDir *= -1; else { sortCol = i; sortDir = -1; }
+    renderTable();
+  });
+}
+
+// ── Bars animate on scroll ────────────────────────────────────────────────────
+const io = new IntersectionObserver(entries => entries.forEach(e => {
+  if (e.isIntersecting) {
+    e.target.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.w + '%');
+    io.unobserve(e.target);
+  }
+}), {threshold:.3});
+document.querySelectorAll('.bars-panel').forEach(p => io.observe(p));
+
+axes(); drawDots(); renderTable();
+</script>
+</body>
+</html>
