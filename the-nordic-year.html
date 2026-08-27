@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Nordic Year</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --panel: #fafafa;
+  --line: #e5e5e5;
+  --line2: #f0f0f0;
+  --ink: #111111;
+  --soft: #555555;
+  --muted: #9a9a9a;
+  --blue: #2563eb;
+  --blue-fill: rgba(37,99,235,0.14);
+  --amber: #b45309;
+  --amber-fill: rgba(180,83,9,0.14);
+  --grey-fill: #ececec;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 34px 28px 60px; }
+
+header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+header h1 { font-family: Georgia, serif; font-weight: 400; font-size: 1.6rem; letter-spacing: -0.01em; }
+header .sub { color: var(--muted); font-size: 12px; }
+header .name { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); }
+
+/* calibration */
+.calib {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
+  gap: 20px 26px;
+  padding: 18px 20px;
+  margin-top: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+@media (max-width: 900px) { .calib { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 540px) { .calib { grid-template-columns: 1fr; } }
+.f label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 10px; letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 7px;
+}
+.f label b { font-family: Georgia, serif; font-size: 14px; color: var(--ink); font-weight: 400; letter-spacing: 0; text-transform: none; }
+.seg { display: flex; gap: 6px; }
+.seg button {
+  flex: 1; padding: 7px 4px; font: inherit; font-size: 12.5px; cursor: pointer;
+  background: #fff; color: var(--soft); border: 1px solid var(--line); border-radius: 5px;
+  transition: all .12s;
+}
+.seg button:hover { border-color: #c9c9c9; }
+.seg button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+select {
+  width: 100%; padding: 6px 8px; font: inherit; font-size: 13px;
+  background: #fff; border: 1px solid var(--line); border-radius: 5px; color: var(--ink);
+}
+input[type=range] { width: 100%; -webkit-appearance: none; height: 2px; background: #d6d6d6; border-radius: 2px; outline: none; margin-top: 8px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--ink); cursor: pointer; }
+
+.verdict { grid-column: 1 / -1; font-size: 12.5px; color: var(--soft); border-top: 1px solid var(--line); padding-top: 12px; }
+.verdict b { color: var(--ink); font-weight: 600; }
+
+/* kpis */
+.kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 16px; }
+@media (max-width: 700px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi { background: #fff; padding: 14px 16px; }
+.kpi .n { font-family: Georgia, serif; font-size: 1.7rem; line-height: 1.15; }
+.kpi .l { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+
+/* charts */
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 860px) { .charts { grid-template-columns: 1fr; } }
+.chart { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px 12px; }
+.chart h3 { font-family: Georgia, serif; font-weight: 400; font-size: 1.02rem; }
+.chart .cap { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+.legend { display: flex; gap: 16px; font-size: 11.5px; color: var(--soft); margin-top: 4px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+svg { display: block; width: 100%; height: auto; }
+.gl { stroke: var(--line2); stroke-width: 1; }
+.ax { fill: var(--muted); font-size: 10px; font-family: -apple-system, sans-serif; }
+
+/* table */
+.lower { display: grid; grid-template-columns: 1.9fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 860px) { .lower { grid-template-columns: 1fr; } }
+.box { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
+.box h3 { font-family: Georgia, serif; font-weight: 400; font-size: 1.02rem; margin-bottom: 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+th { font-size: 10px; letter-spacing: 1.1px; text-transform: uppercase; color: var(--muted); font-weight: 400; text-align: right; padding: 6px 6px; border-bottom: 1px solid var(--line); }
+th:first-child { text-align: left; }
+td { text-align: right; padding: 7px 6px; border-bottom: 1px solid var(--line2); }
+td:first-child { text-align: left; color: var(--soft); }
+tr.top td { color: var(--amber); }
+tr.total td { border-bottom: none; font-weight: 600; }
+button.roll { padding: 7px 14px; font: inherit; font-size: 12.5px; background: #fff; border: 1px solid var(--line); border-radius: 5px; cursor: pointer; }
+button.roll:hover { border-color: #c9c9c9; }
+.rollout { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: var(--soft); white-space: pre-wrap; margin-top: 12px; line-height: 1.75; }
+
+details { margin-top: 16px; font-size: 12.5px; color: var(--soft); }
+summary { cursor: pointer; color: var(--muted); font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; }
+details ul { margin: 10px 0 0 18px; }
+details li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>The Nordic Year</h1>
+      <div class="sub" id="headline"></div>
+    </div>
+    <div class="name">Wolfgang Tobiason</div>
+  </header>
+
+  <div class="calib">
+    <div class="f">
+      <label>City</label>
+      <div class="seg" id="cityseg"></div>
+    </div>
+    <div class="f">
+      <label>Height <b id="hLbl"></b></label>
+      <select id="height"></select>
+    </div>
+    <div class="f">
+      <label>Approach every <b id="iLbl"></b></label>
+      <input type="range" id="interval" min="1" max="14" step="1" value="4">
+    </div>
+    <div class="f">
+      <label>Min caliber <b id="mLbl"></b></label>
+      <input type="range" id="minCal" min="1" max="9.5" step="0.5" value="1">
+    </div>
+    <div class="f">
+      <label>Date to relationship <b id="rLbl"></b></label>
+      <input type="range" id="relRate" min="0" max="50" step="1" value="15">
+    </div>
+    <div class="f" style="grid-column:1 / -1">
+      <label>Elapsed <b id="tLbl"></b></label>
+      <input type="range" id="months" min="1" max="12" step="1" value="12">
+    </div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="charts">
+    <div class="chart">
+      <h3>Approached versus dated</h3>
+      <div class="cap" id="cap1"></div>
+      <svg id="svg1" viewBox="0 0 480 250"></svg>
+      <div class="legend">
+        <span><i style="background:var(--grey-fill);border:1px solid #d8d8d8"></i>Approached</span>
+        <span><i style="background:var(--blue)"></i>Dates</span>
+        <span><i style="background:var(--amber)"></i>Relationships</span>
+      </div>
+    </div>
+    <div class="chart">
+      <h3>Cumulative over the year</h3>
+      <div class="cap">Running total month by month. The marker is your elapsed point.</div>
+      <svg id="svg2" viewBox="0 0 480 250"></svg>
+      <div class="legend">
+        <span><i style="background:var(--blue)"></i>Dates</span>
+        <span><i style="background:var(--amber)"></i>Relationships</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lower">
+    <div class="box">
+      <h3>By caliber</h3>
+      <table>
+        <thead><tr><th>Band</th><th>Approached</th><th>Numbers</th><th>Dates</th><th>Relationships</th><th>Close</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="box">
+      <h3>One realized run</h3>
+      <button class="roll" id="roll">Roll</button>
+      <div class="rollout" id="rollout">Expected values are smooth. A single year is not.</div>
+    </div>
+  </div>
+
+  <details>
+    <summary>Assumptions</summary>
+    <ul>
+      <li>Ratings are normal. City sets the mean and spread. About one in fifteen women you approach is at or below 6.5, one in fifteen at or above 9.5.</li>
+      <li>Odds of being single fall from 60 percent at a 6 to 10 percent at a 10, so about 35 percent at an 8.</li>
+      <li>You get the number 80 percent of the time from a single woman, 50 percent from a taken one, calibrated at the 6'0" baseline.</li>
+      <li>Only single women go out with you, and every number from a single woman becomes one date. No flake rate.</li>
+      <li>Height scales the close rate and the penalty grows with caliber, since a 9 filters harder on it than a 6.</li>
+      <li>Relationships are non-exclusive, so the counts are concurrent rather than sequential.</li>
+      <li>No learning curve. Your close rate on day one equals your close rate on day 365.</li>
+    </ul>
+  </details>
+
+</div>
+
+<script>
+const CITIES = {
+  copenhagen: { name: "Copenhagen", mean: 8.15, sd: 1.00, recep: 0.85,
+    note: "deep middle, high floor, cold approach is not a local custom" },
+  stockholm: { name: "Stockholm", mean: 8.25, sd: 1.00, recep: 0.78,
+    note: "highest average and the hardest room to open in" },
+  amsterdam: { name: "Amsterdam", mean: 8.00, sd: 1.25, recep: 1.00,
+    note: "lower average, wider spread, so more genuine standouts at the very top" }
+};
+
+const HEIGHTS = [
+  [62,"5'2\"",0.22],[63,"5'3\"",0.24],[64,"5'4\"",0.30],[65,"5'5\"",0.37],
+  [66,"5'6\"",0.45],[67,"5'7\"",0.54],[68,"5'8\"",0.64],[69,"5'9\"",0.74],
+  [70,"5'10\"",0.84],[71,"5'11\"",0.92],[72,"6'0\"",1.00],[73,"6'1\"",1.00],
+  [74,"6'2\"",1.00],[75,"6'3\"",1.04],[76,"6'4\"",1.06],[77,"6'5\"",1.05],[78,"6'6\"",1.03]
+];
+
+const S = { city:"copenhagen", height:72, interval:4, minCal:1, relRate:0.15, months:12 };
+const DPM = 365 / 12;
+
+const normPdf = (x,m,s) => Math.exp(-((x-m)*(x-m))/(2*s*s)) / (s*Math.sqrt(2*Math.PI));
+const singleRate = r => Math.min(0.75, Math.max(0.10, 0.60 - 0.125*(r-6)));
+const hBase = i => (HEIGHTS.find(h => h[0]===i) || [0,"",1])[2];
+const hLabel = i => (HEIGHTS.find(h => h[0]===i) || [0,"",1])[1];
+const heightAdj = (r,b) => Math.max(0.12, 1 - (1-b)*(0.70 + 0.15*(r-6)));
+function closeProbs(r) {
+  const c = CITIES[S.city], adj = heightAdj(r, hBase(S.height));
+  return { single: Math.min(0.95, 0.80*adj*c.recep), taken: Math.min(0.95, 0.50*adj*c.recep) };
+}
+
+const BANDS = [
+  {lo:0,hi:6,label:"Below 6.0"},{lo:6,hi:7,label:"6.0 to 6.9"},{lo:7,hi:8,label:"7.0 to 7.9"},
+  {lo:8,hi:9,label:"8.0 to 8.9"},{lo:9,hi:9.5,label:"9.0 to 9.4"},{lo:9.5,hi:99,label:"9.5 and up",top:true}
+];
+
+function compute(months) {
+  const c = CITIES[S.city];
+  const approaches = (months * DPM) / S.interval;
+  const step = 0.05;
+  const bins = [];
+  let wSum = 0;
+  for (let r = 1 + step/2; r < 10; r += step) {
+    const w = r >= S.minCal ? normPdf(r, c.mean, c.sd) : 0;
+    wSum += w; bins.push({ r:r, w:w });
+  }
+  if (wSum === 0) wSum = 1;
+  bins.forEach(b => b.p = b.w / wSum);
+  const rows = BANDS.map(b => ({ band:b, appr:0, nums:0, dates:0, rels:0 }));
+  const tot = { appr:0, nums:0, dates:0, rels:0 };
+  bins.forEach(b => {
+    if (!b.p) return;
+    const n = approaches * b.p, sr = singleRate(b.r), cp = closeProbs(b.r);
+    b.nApp = n;
+    b.nDate = n * sr * cp.single;
+    b.nRel = b.nDate * S.relRate;
+    const nums = n * (sr*cp.single + (1-sr)*cp.taken);
+    const row = rows.find(x => b.r >= x.band.lo && b.r < x.band.hi);
+    row.appr += n; row.nums += nums; row.dates += b.nDate; row.rels += b.nRel;
+    tot.appr += n; tot.nums += nums; tot.dates += b.nDate; tot.rels += b.nRel;
+  });
+  return { approaches, bins, rows, tot, days: months*DPM };
+}
+
+const fmt = x => x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2);
+const esc = s => String(s);
+
+/* ---------- chart 1: density of approached vs dated across rating ---------- */
+function drawDensity(R) {
+  const W = 480, H = 250, L = 38, Rp = 12, T = 14, B = 30;
+  const x0 = 5, x1 = 10;
+  const px = v => L + (v - x0) / (x1 - x0) * (W - L - Rp);
+  const band = 0.25;
+  const cells = [];
+  for (let x = x0; x < x1 - 1e-9; x += band) {
+    let a = 0, d = 0, rl = 0;
+    R.bins.forEach(b => { if (b.r >= x && b.r < x + band && b.p) { a += b.nApp; d += b.nDate; rl += b.nRel; } });
+    cells.push({ x:x, a:a, d:d, r:rl });
+  }
+  const maxY = Math.max(0.001, ...cells.map(c => c.a));
+  const py = v => H - B - (v / maxY) * (H - T - B);
+  let g = "";
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = maxY * i / ticks, y = py(v);
+    g += '<line class="gl" x1="' + L + '" y1="' + y + '" x2="' + (W-Rp) + '" y2="' + y + '"/>';
+    g += '<text class="ax" x="' + (L-7) + '" y="' + (y+3) + '" text-anchor="end">' + (v >= 10 ? v.toFixed(0) : v.toFixed(1)) + '</text>';
+  }
+  const bw = (W - L - Rp) / cells.length;
+  let bars = "";
+  cells.forEach(c => {
+    const bx = px(c.x) + 0.6, w = Math.max(1, bw - 1.2);
+    if (c.a > 0) bars += '<rect x="' + bx + '" y="' + py(c.a) + '" width="' + w + '" height="' + (H-B-py(c.a)) + '" fill="#ececec"/>';
+    if (c.d > 0) bars += '<rect x="' + bx + '" y="' + py(c.d) + '" width="' + w + '" height="' + (H-B-py(c.d)) + '" fill="rgba(37,99,235,0.85)"/>';
+    if (c.r > 0) bars += '<rect x="' + bx + '" y="' + py(c.r) + '" width="' + w + '" height="' + (H-B-py(c.r)) + '" fill="#b45309"/>';
+  });
+  let ax = '<line class="gl" x1="' + L + '" y1="' + (H-B) + '" x2="' + (W-Rp) + '" y2="' + (H-B) + '" stroke="#d0d0d0"/>';
+  for (let v = 5; v <= 10; v++) {
+    ax += '<text class="ax" x="' + px(v) + '" y="' + (H-B+15) + '" text-anchor="middle">' + v.toFixed(1) + '</text>';
+  }
+  ax += '<text class="ax" x="' + ((L+W-Rp)/2) + '" y="' + (H-2) + '" text-anchor="middle">rating</text>';
+  ax += '<text class="ax" x="' + (L-30) + '" y="' + ((T+H-B)/2) + '" text-anchor="middle" transform="rotate(-90 ' + (L-30) + ' ' + ((T+H-B)/2) + ')">women per 0.25 band</text>';
+  document.getElementById("svg1").innerHTML = g + bars + ax;
+}
+
+/* ---------- chart 2: cumulative dates and relationships by month ---------- */
+function drawCumulative() {
+  const W = 480, H = 250, L = 38, Rp = 12, T = 14, B = 30;
+  const pts = [];
+  for (let m = 0; m <= 12; m++) {
+    if (m === 0) { pts.push({ m:0, d:0, r:0 }); continue; }
+    const c = compute(m);
+    pts.push({ m:m, d:c.tot.dates, r:c.tot.rels });
+  }
+  const maxY = Math.max(0.001, pts[12].d);
+  const px = m => L + (m / 12) * (W - L - Rp);
+  const py = v => H - B - (v / maxY) * (H - T - B);
+  let g = "";
+  for (let i = 0; i <= 4; i++) {
+    const v = maxY * i / 4, y = py(v);
+    g += '<line class="gl" x1="' + L + '" y1="' + y + '" x2="' + (W-Rp) + '" y2="' + y + '"/>';
+    g += '<text class="ax" x="' + (L-7) + '" y="' + (y+3) + '" text-anchor="end">' + (v >= 10 ? v.toFixed(0) : v.toFixed(1)) + '</text>';
+  }
+  const line = k => pts.map((p,i) => (i ? "L" : "M") + px(p.m) + " " + py(p[k])).join(" ");
+  const area = k => line(k) + " L" + px(12) + " " + py(0) + " L" + px(0) + " " + py(0) + " Z";
+  let body = '<path d="' + area("d") + '" fill="rgba(37,99,235,0.10)"/>';
+  body += '<path d="' + line("d") + '" fill="none" stroke="#2563eb" stroke-width="2"/>';
+  body += '<path d="' + line("r") + '" fill="none" stroke="#b45309" stroke-width="2"/>';
+  const cur = pts[S.months];
+  body += '<line x1="' + px(S.months) + '" y1="' + T + '" x2="' + px(S.months) + '" y2="' + (H-B) + '" stroke="#111" stroke-width="1" stroke-dasharray="3 3" opacity="0.45"/>';
+  body += '<circle cx="' + px(S.months) + '" cy="' + py(cur.d) + '" r="4" fill="#2563eb"/>';
+  body += '<circle cx="' + px(S.months) + '" cy="' + py(cur.r) + '" r="4" fill="#b45309"/>';
+  const lx = px(S.months) < W - 90 ? px(S.months) + 8 : px(S.months) - 8;
+  const anchor = px(S.months) < W - 90 ? "start" : "end";
+  body += '<text class="ax" x="' + lx + '" y="' + (py(cur.d) - 8) + '" text-anchor="' + anchor + '" fill="#2563eb">' + fmt(cur.d) + ' dates</text>';
+  body += '<text class="ax" x="' + lx + '" y="' + (py(cur.r) - 8) + '" text-anchor="' + anchor + '" fill="#b45309">' + fmt(cur.r) + ' rel.</text>';
+  let ax = '<line x1="' + L + '" y1="' + (H-B) + '" x2="' + (W-Rp) + '" y2="' + (H-B) + '" stroke="#d0d0d0"/>';
+  [0,3,6,9,12].forEach(m => {
+    ax += '<text class="ax" x="' + px(m) + '" y="' + (H-B+15) + '" text-anchor="middle">' + (m === 0 ? "0" : "m" + m) + '</text>';
+  });
+  ax += '<text class="ax" x="' + (L-30) + '" y="' + ((T+H-B)/2) + '" text-anchor="middle" transform="rotate(-90 ' + (L-30) + ' ' + ((T+H-B)/2) + ')">cumulative count</text>';
+  document.getElementById("svg2").innerHTML = g + body + ax;
+}
+
+function render() {
+  const c = CITIES[S.city];
+  const R = compute(S.months);
+
+  document.getElementById("hLbl").textContent = hLabel(S.height);
+  document.getElementById("iLbl").textContent = S.interval + (S.interval === 1 ? " day" : " days");
+  document.getElementById("mLbl").textContent = S.minCal.toFixed(1);
+  document.getElementById("rLbl").textContent = Math.round(S.relRate*100) + "%";
+  document.getElementById("tLbl").textContent = S.months + (S.months === 1 ? " month" : " months");
+  document.getElementById("headline").textContent =
+    c.name + ", " + S.months + (S.months === 1 ? " month" : " months") + ", " +
+    R.approaches.toFixed(0) + " approaches at one every " + S.interval + (S.interval === 1 ? " day" : " days");
+
+  const hb = hBase(S.height);
+  const lossMid = Math.round((1 - heightAdj(8, hb)) * 100);
+  const lossTop = Math.round((1 - heightAdj(9.5, hb)) * 100);
+  const v = document.getElementById("verdict");
+  if (S.height >= 72) {
+    v.innerHTML = "<b>" + hLabel(S.height) + "</b> is the top tier. No height penalty at any caliber, and at the top of the curve that is one of the few filters you are already through. " + c.name + ": " + c.note + ".";
+  } else if (S.height >= 70) {
+    v.innerHTML = "<b>" + hLabel(S.height) + "</b> sits under the top tier. You give up about " + lossMid + " percent of your close rate against an 8 and " + lossTop + " percent against a 9.5. Real, but recoverable with volume.";
+  } else {
+    v.innerHTML = "<b>" + hLabel(S.height) + "</b> is a hard filter in these cities, where the local men are tall. You lose roughly " + lossMid + " percent of your close rate against an 8 and " + lossTop + " percent against a 9.5. It bites hardest at the top, because the 9s can afford to filter on it. Volume is the only lever that moves it.";
+  }
+
+  const nine = R.rows.filter(x => x.band.lo >= 9).reduce((a,x) => a + x.dates, 0);
+  document.getElementById("kpis").innerHTML = [
+    [fmt(R.approaches), "Approaches"],
+    [fmt(R.tot.nums), "Numbers"],
+    [fmt(R.tot.dates), "Dates"],
+    [fmt(nine), "Dates with a 9+"],
+    [fmt(R.tot.rels), "Relationships"]
+  ].map(k => '<div class="kpi"><div class="n">' + k[0] + '</div><div class="l">' + k[1] + '</div></div>').join("");
+
+  document.getElementById("cap1").textContent =
+    "Grey is everyone you approach, blue is who actually goes out with you. The gap is taken women plus misses.";
+
+  document.getElementById("tbody").innerHTML = R.rows.map(r => {
+    if (r.appr < 0.005) return "";
+    return '<tr class="' + (r.band.top ? "top" : "") + '"><td>' + r.band.label + '</td><td>' +
+      fmt(r.appr) + '</td><td>' + fmt(r.nums) + '</td><td>' + fmt(r.dates) + '</td><td>' +
+      fmt(r.rels) + '</td><td>' + Math.round(100*r.nums/r.appr) + '%</td></tr>';
+  }).join("") +
+  '<tr class="total"><td>Total</td><td>' + fmt(R.tot.appr) + '</td><td>' + fmt(R.tot.nums) + '</td><td>' +
+  fmt(R.tot.dates) + '</td><td>' + fmt(R.tot.rels) + '</td><td>' +
+  (R.tot.appr > 0 ? Math.round(100*R.tot.nums/R.tot.appr) : 0) + '%</td></tr>';
+
+  drawDensity(R);
+  drawCumulative();
+}
+
+function rollRun() {
+  const c = CITIES[S.city];
+  const n = Math.round((S.months * DPM) / S.interval);
+  const draws = [];
+  for (let i = 0; i < n; i++) {
+    let r, guard = 0;
+    do {
+      const u = Math.random(), w = Math.random();
+      r = c.mean + c.sd * Math.sqrt(-2*Math.log(u || 1e-9)) * Math.cos(2*Math.PI*w);
+      guard++;
+    } while ((r < S.minCal || r < 1 || r > 10) && guard < 300);
+    r = Math.min(10, Math.max(1, r));
+    const single = Math.random() < singleRate(r);
+    const cp = closeProbs(r);
+    const got = Math.random() < (single ? cp.single : cp.taken);
+    const date = single && got;
+    draws.push({ r:r, got:got, date:date, rel: date && Math.random() < S.relRate });
+  }
+  const L = [];
+  L.push(n + " approaches  ->  " + draws.filter(d => d.got).length + " numbers  ->  " +
+         draws.filter(d => d.date).length + " dates  ->  " + draws.filter(d => d.rel).length + " relationships");
+  L.push("");
+  BANDS.slice().reverse().forEach(b => {
+    const inB = draws.filter(d => d.r >= b.lo && d.r < b.hi);
+    if (!inB.length) return;
+    L.push(b.label.padEnd(11) + String(inB.length).padStart(3) + " met" +
+           String(inB.filter(d => d.date).length).padStart(4) + " dated" +
+           String(inB.filter(d => d.rel).length).padStart(3) + " rel");
+  });
+  const best = draws.filter(d => d.date).sort((a,b) => b.r - a.r)[0];
+  L.push("");
+  L.push(best ? "Best you took out: " + best.r.toFixed(1) + (best.rel ? ", and it stuck." : ".") : "No dates in this run.");
+  document.getElementById("rollout").textContent = L.join("\n");
+}
+
+/* wiring */
+document.getElementById("cityseg").innerHTML = Object.keys(CITIES)
+  .map(k => '<button data-k="' + k + '" class="' + (k === S.city ? "on" : "") + '">' + CITIES[k].name + '</button>').join("");
+document.querySelectorAll("#cityseg button").forEach(b => {
+  b.onclick = () => {
+    S.city = b.dataset.k;
+    document.querySelectorAll("#cityseg button").forEach(x => x.classList.toggle("on", x === b));
+    render();
+  };
+});
+const hSel = document.getElementById("height");
+hSel.innerHTML = HEIGHTS.map(h => '<option value="' + h[0] + '"' + (h[0] === S.height ? " selected" : "") + '>' + h[1] + '</option>').join("");
+hSel.onchange = e => { S.height = +e.target.value; render(); };
+document.getElementById("interval").oninput = e => { S.interval = +e.target.value; render(); };
+document.getElementById("minCal").oninput = e => { S.minCal = +e.target.value; render(); };
+document.getElementById("relRate").oninput = e => { S.relRate = +e.target.value/100; render(); };
+document.getElementById("months").oninput = e => { S.months = +e.target.value; render(); };
+document.getElementById("roll").onclick = rollRun;
+
+render();
+</script>
+</body>
+</html>
